@@ -13,6 +13,7 @@ const STATUS_COLORS: Record<string, string> = {
   confirmed: "bg-green-500/10 text-green-500 border-green-500/30",
   completed: "bg-primary/10 text-primary border-primary/30",
   rejected: "bg-destructive/10 text-destructive border-destructive/30",
+  returned: "bg-blue-500/10 text-blue-500 border-blue-500/30",
   cancelled: "bg-muted text-muted-foreground border-border",
 };
 
@@ -36,6 +37,11 @@ export default function Bookings() {
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     }
+  };
+
+  const formatDate = (d: string) => {
+    if (!d) return "";
+    return new Date(d).toLocaleString();
   };
 
   return (
@@ -62,15 +68,15 @@ export default function Bookings() {
                 className="rounded-lg border border-border bg-card p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-3">
-                    <h3 className="font-display font-bold">{b.bike_name || b.vehicle_name || `Booking #${b.id?.slice(0, 8)}`}</h3>
+                    <h3 className="font-display font-bold">{b.bike_name || `Booking #${String(b.id).slice(0, 8)}`}</h3>
                     <Badge variant="outline" className={STATUS_COLORS[b.status] || ""}>
                       {b.status}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {b.start_date && new Date(b.start_date).toLocaleDateString()} — {b.end_date && new Date(b.end_date).toLocaleDateString()}
+                    {formatDate(b.start_time)} — {formatDate(b.end_time)}
                   </p>
-                  {b.total_price && <p className="text-sm text-primary font-display font-bold">${b.total_price}</p>}
+                  {b.total_price && <p className="text-sm text-primary font-display font-bold">₹{b.total_price}</p>}
                 </div>
                 {(b.status === "pending") && (
                   <Button variant="outline" size="sm" className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10" onClick={() => cancelBooking(b.id)}>
