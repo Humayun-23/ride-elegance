@@ -5,6 +5,7 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "lucide-react";
 
@@ -12,21 +13,23 @@ export default function Profile() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [name, setName] = useState("");
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
-    setName(user.name || "");
-    setPhone(user.phone || "");
+    setFirstname(user.firstname || "");
+    setLastname(user.lastname || "");
+    setPhone(user.phone_number || "");
   }, [user]);
 
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
     try {
-      await api.updateUser(user.id, { name, phone });
+      await api.updateUser(user.id, { firstname, lastname, phone_number: phone });
       toast({ title: "Profile updated" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -43,12 +46,21 @@ export default function Profile() {
             <User className="h-10 w-10 text-primary" />
           </div>
           <h1 className="font-display text-3xl font-bold">Profile</h1>
+          {user?.user_type && (
+            <Badge variant="outline" className="font-display capitalize">{user.user_type.replace("_", " ")}</Badge>
+          )}
         </div>
 
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Name</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} className="bg-card" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>First Name</Label>
+              <Input value={firstname} onChange={(e) => setFirstname(e.target.value)} className="bg-card" />
+            </div>
+            <div className="space-y-2">
+              <Label>Last Name</Label>
+              <Input value={lastname} onChange={(e) => setLastname(e.target.value)} className="bg-card" />
+            </div>
           </div>
           <div className="space-y-2">
             <Label>Email</Label>

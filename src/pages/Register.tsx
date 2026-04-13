@@ -8,10 +8,12 @@ import { Car } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Register() {
-  const [name, setName] = useState("");
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
+  const [userType, setUserType] = useState("customer");
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -21,7 +23,7 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
     try {
-      await register({ name, email, password, phone: phone || undefined });
+      await register({ firstname, lastname, email, password, phone_number: phone || undefined, user_type: userType });
       navigate("/");
     } catch (err: any) {
       toast({ title: "Registration failed", description: err.message, variant: "destructive" });
@@ -41,9 +43,15 @@ export default function Register() {
           <p className="text-muted-foreground text-sm">Create your account</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required className="bg-card" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="firstname">First Name</Label>
+              <Input id="firstname" value={firstname} onChange={(e) => setFirstname(e.target.value)} required className="bg-card" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastname">Last Name</Label>
+              <Input id="lastname" value={lastname} onChange={(e) => setLastname(e.target.value)} required className="bg-card" />
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -52,6 +60,18 @@ export default function Register() {
           <div className="space-y-2">
             <Label htmlFor="phone">Phone (optional)</Label>
             <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} className="bg-card" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="userType">Account Type</Label>
+            <select
+              id="userType"
+              value={userType}
+              onChange={(e) => setUserType(e.target.value)}
+              className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground"
+            >
+              <option value="customer">Customer</option>
+              <option value="shop_owner">Shop Owner</option>
+            </select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>

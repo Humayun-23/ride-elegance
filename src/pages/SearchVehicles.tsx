@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Search, Filter } from "lucide-react";
 import { motion } from "framer-motion";
 
-const TYPES = ["all", "car", "bike", "scooter", "bicycle"];
+const TYPES = ["all", "scooty", "bike", "car"];
 
 export default function SearchVehicles() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,10 +21,10 @@ export default function SearchVehicles() {
     try {
       let data: any[];
       if (activeType && activeType !== "all") {
-        data = await api.searchVehiclesByType(activeType);
+        data = await api.searchVehiclesByType(activeType, { is_available: "true" });
       } else {
-        const params: Record<string, string> = {};
-        if (query) params.q = query;
+        const params: Record<string, string> = { is_available: "true" };
+        if (query) params.vehicle_type = query;
         data = await api.searchVehicles(params);
       }
       setVehicles(Array.isArray(data) ? data : []);
@@ -76,7 +76,7 @@ export default function SearchVehicles() {
                 className="font-display capitalize"
                 onClick={() => { setActiveType(t); setSearchParams(t !== "all" ? { type: t } : {}); }}
               >
-                {t}
+                {t === "scooty" ? "Scooty" : t}
               </Button>
             ))}
           </div>

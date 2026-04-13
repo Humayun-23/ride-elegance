@@ -3,8 +3,11 @@ import { api } from "@/lib/api";
 
 interface User {
   id: string;
-  name: string;
+  firstname: string;
+  lastname: string;
   email: string;
+  phone_number?: string;
+  user_type?: string;
   is_admin?: boolean;
   [key: string]: any;
 }
@@ -15,7 +18,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   adminLogin: (email: string, password: string) => Promise<void>;
-  register: (data: { name: string; email: string; password: string; phone?: string }) => Promise<void>;
+  register: (data: { firstname: string; lastname: string; email: string; password: string; phone_number?: string; user_type: string }) => Promise<void>;
   logout: () => void;
 }
 
@@ -28,7 +31,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (token) {
-      // Decode JWT to get user id (basic decode)
       try {
         const payload = JSON.parse(atob(token.split(".")[1]));
         const userId = payload.sub || payload.user_id || payload.id;
@@ -45,19 +47,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [token]);
 
   const login = async (email: string, password: string) => {
-    const res = await api.login({ email, password });
+    const res = await api.login({ username: email, password });
     localStorage.setItem("auth_token", res.access_token);
     setToken(res.access_token);
   };
 
   const adminLogin = async (email: string, password: string) => {
-    const res = await api.adminLogin({ email, password });
+    const res = await api.adminLogin({ username: email, password });
     localStorage.setItem("auth_token", res.access_token);
     localStorage.setItem("is_admin", "true");
     setToken(res.access_token);
   };
 
-  const register = async (data: { name: string; email: string; password: string; phone?: string }) => {
+  const register = async (data: { firstname: string; lastname: string; email: string; password: string; phone_number?: string; user_type: string }) => {
     await api.register(data);
     await login(data.email, data.password);
   };
