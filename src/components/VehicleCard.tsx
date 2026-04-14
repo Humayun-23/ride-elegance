@@ -7,6 +7,7 @@ interface VehicleCardProps {
   vehicle: {
     id: string | number;
     name: string;
+    model?: string;
     bike_type?: string;
     engine_cc?: number;
     price_per_hour?: number;
@@ -15,6 +16,9 @@ interface VehicleCardProps {
     rating?: number;
     location?: string;
     shop_name?: string;
+    condition?: string;
+    is_available?: boolean;
+    description?: string;
   };
 }
 
