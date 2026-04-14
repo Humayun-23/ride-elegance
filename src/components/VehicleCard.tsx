@@ -7,6 +7,7 @@ interface VehicleCardProps {
   vehicle: {
     id: string | number;
     name: string;
+    model?: string;
     bike_type?: string;
     engine_cc?: number;
     price_per_hour?: number;
@@ -15,6 +16,9 @@ interface VehicleCardProps {
     rating?: number;
     location?: string;
     shop_name?: string;
+    condition?: string;
+    is_available?: boolean;
+    description?: string;
   };
 }
 
@@ -44,9 +48,16 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
           </div>
           <div className="p-4 space-y-2">
             <h3 className="font-display font-bold text-foreground text-lg leading-tight">{vehicle.name}</h3>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            {vehicle.model && <p className="text-sm text-muted-foreground">{vehicle.model}</p>}
+            <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
               {vehicle.engine_cc && (
                 <span className="flex items-center gap-1"><Gauge className="h-3 w-3" />{vehicle.engine_cc}cc</span>
+              )}
+              {vehicle.condition && (
+                <Badge variant="outline" className="text-xs capitalize h-5">{vehicle.condition}</Badge>
+              )}
+              {vehicle.is_available === false && (
+                <Badge variant="destructive" className="text-xs h-5">Unavailable</Badge>
               )}
               {vehicle.shop_name && (
                 <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{vehicle.shop_name}</span>

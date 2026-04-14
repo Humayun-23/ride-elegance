@@ -13,7 +13,7 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
-  const [userType, setUserType] = useState("customer");
+  const [userType, setUserType] = useState<"customer" | "shop_owner">("customer");
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -21,9 +21,27 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (firstname.length < 1 || firstname.length > 50) {
+      toast({ title: "First name must be 1-50 characters", variant: "destructive" });
+      return;
+    }
+    if (lastname.length < 1 || lastname.length > 50) {
+      toast({ title: "Last name must be 1-50 characters", variant: "destructive" });
+      return;
+    }
+    if (phone.length < 10 || phone.length > 20) {
+      toast({ title: "Phone number must be 10-20 characters", variant: "destructive" });
+      return;
+    }
+    if (password.length < 8 || password.length > 128) {
+      toast({ title: "Password must be 8-128 characters", variant: "destructive" });
+      return;
+    }
+
     setLoading(true);
     try {
-      await register({ firstname, lastname, email, password, phone_number: phone || undefined, user_type: userType });
+      await register({ firstname, lastname, email, password, phone_number: phone, user_type: userType });
       navigate("/");
     } catch (err: any) {
       toast({ title: "Registration failed", description: err.message, variant: "destructive" });
@@ -46,11 +64,11 @@ export default function Register() {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="firstname">First Name</Label>
-              <Input id="firstname" value={firstname} onChange={(e) => setFirstname(e.target.value)} required className="bg-card" />
+              <Input id="firstname" value={firstname} onChange={(e) => setFirstname(e.target.value)} required maxLength={50} placeholder="1-50 chars" className="bg-card" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="lastname">Last Name</Label>
-              <Input id="lastname" value={lastname} onChange={(e) => setLastname(e.target.value)} required className="bg-card" />
+              <Input id="lastname" value={lastname} onChange={(e) => setLastname(e.target.value)} required maxLength={50} placeholder="1-50 chars" className="bg-card" />
             </div>
           </div>
           <div className="space-y-2">
@@ -58,15 +76,15 @@ export default function Register() {
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="bg-card" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone (optional)</Label>
-            <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} className="bg-card" />
+            <Label htmlFor="phone">Phone Number</Label>
+            <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} required minLength={10} maxLength={20} placeholder="10-20 chars" className="bg-card" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="userType">Account Type</Label>
             <select
               id="userType"
               value={userType}
-              onChange={(e) => setUserType(e.target.value)}
+              onChange={(e) => setUserType(e.target.value as "customer" | "shop_owner")}
               className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground"
             >
               <option value="customer">Customer</option>
@@ -75,7 +93,7 @@ export default function Register() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="bg-card" />
+            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} maxLength={128} placeholder="8-128 chars" className="bg-card" />
           </div>
           <Button type="submit" className="w-full font-display" disabled={loading}>
             {loading ? "Creating account..." : "Create Account"}

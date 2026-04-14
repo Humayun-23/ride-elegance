@@ -35,21 +35,39 @@ export const api = {
       body: new URLSearchParams(data).toString(),
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
     }),
-  register: (data: { email: string; password: string; firstname: string; lastname: string; phone_number?: string; user_type: string }) =>
-    request<any>("/users/", { method: "POST", body: JSON.stringify(data) }),
+  register: (data: {
+    email: string;
+    password: string;
+    firstname: string;
+    lastname: string;
+    phone_number: string;
+    user_type: "customer" | "shop_owner";
+  }) => request<any>("/users/", { method: "POST", body: JSON.stringify(data) }),
   passwordResetRequest: (data: { email: string }) =>
-    request<any>("/password-reset/request", { method: "POST", body: JSON.stringify(data) }),
+    request<{ message: string }>("/password-reset/request", { method: "POST", body: JSON.stringify(data) }),
   passwordResetConfirm: (data: { token: string; new_password: string }) =>
-    request<any>("/password-reset/confirm", { method: "POST", body: JSON.stringify(data) }),
+    request<{ message: string }>("/password-reset/confirm", { method: "POST", body: JSON.stringify(data) }),
 
   // Users
   getUser: (id: string) => request<any>(`/users/${id}`),
-  updateUser: (id: string, data: any) => request<any>(`/users/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  updateUser: (id: string, data: { firstname?: string; lastname?: string; phone_number?: string }) =>
+    request<any>(`/users/${id}`, { method: "PUT", body: JSON.stringify(data) }),
 
   // Shops
   getShops: (params?: { skip?: number; limit?: number }) =>
     request<any[]>(`/shops/${params ? "?" + new URLSearchParams(params as any) : ""}`),
-  createShop: (data: any) => request<any>("/shops/", { method: "POST", body: JSON.stringify(data) }),
+  createShop: (data: {
+    name: string;
+    phone_number: string;
+    address: string;
+    city: string;
+    description?: string;
+    state?: string;
+    zip_code?: string;
+    opening_time?: string;
+    closing_time?: string;
+    is_active?: boolean;
+  }) => request<any>("/shops/", { method: "POST", body: JSON.stringify(data) }),
   getShop: (id: string) => request<any>(`/shops/${id}`),
   updateShop: (id: string, data: any) => request<any>(`/shops/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteShop: (id: string) => request<any>(`/shops/${id}`, { method: "DELETE" }),
@@ -69,10 +87,30 @@ export const api = {
   returnBooking: (id: string) => request<any>(`/bookings/${id}/return`, { method: "POST" }),
 
   // Bikes/Vehicles
-  createBike: (data: { name: string; bike_type: string; engine_cc: number; price_per_hour: number; price_per_day: number; shop_id: number }) =>
-    request<any>("/bikes/", { method: "POST", body: JSON.stringify(data) }),
+  createBike: (data: {
+    shop_id: number;
+    name: string;
+    model: string;
+    bike_type: string;
+    engine_cc?: number;
+    description?: string;
+    price_per_hour: number;
+    price_per_day: number;
+    condition?: "excellent" | "good" | "fair";
+    is_available?: boolean;
+  }) => request<any>("/bikes/", { method: "POST", body: JSON.stringify(data) }),
   getBike: (id: string) => request<any>(`/bikes/${id}`),
-  updateBike: (id: string, data: any) => request<any>(`/bikes/${id}`, { method: "PUT", body: JSON.stringify(data) }),
+  updateBike: (id: string, data: {
+    name?: string;
+    model?: string;
+    bike_type?: string;
+    engine_cc?: number;
+    description?: string;
+    price_per_hour?: number;
+    price_per_day?: number;
+    condition?: "excellent" | "good" | "fair";
+    is_available?: boolean;
+  }) => request<any>(`/bikes/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteBike: (id: string) => request<any>(`/bikes/${id}`, { method: "DELETE" }),
   getBikesByShop: (shopId: string, params?: { skip?: number; limit?: number }) =>
     request<any[]>(`/bikes/shop/${shopId}${params ? "?" + new URLSearchParams(params as any) : ""}`),
@@ -98,7 +136,7 @@ export const api = {
   // Reviews
   getShopReviews: (shopId: string, params?: { skip?: number; limit?: number }) =>
     request<any[]>(`/shops/${shopId}/reviews${params ? "?" + new URLSearchParams(params as any) : ""}`),
-  createReview: (shopId: string, data: { rating: number; comment: string }) =>
+  createReview: (shopId: string, data: { rating: number; comment?: string }) =>
     request<any>(`/shops/${shopId}/reviews`, { method: "POST", body: JSON.stringify(data) }),
   updateReview: (shopId: string, reviewId: string, data: { rating?: number; comment?: string }) =>
     request<any>(`/shops/${shopId}/reviews/${reviewId}`, { method: "PUT", body: JSON.stringify(data) }),
