@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
-import { ArrowLeft, MapPin, Star, Send, Phone, Clock } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, MapPin, Star, Send, Phone, Clock, Plus, Trash2, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 export default function ShopDetail() {
   const { id } = useParams<{ id: string }>();
@@ -20,9 +22,20 @@ export default function ShopDetail() {
   const [reviewText, setReviewText] = useState("");
   const [reviewRating, setReviewRating] = useState("5");
   const [submitting, setSubmitting] = useState(false);
+  const [showAddVehicle, setShowAddVehicle] = useState(false);
+  const [addingVehicle, setAddingVehicle] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<any>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [vehicleForm, setVehicleForm] = useState({
+    name: "", model: "", bike_type: "bike", engine_cc: "",
+    description: "", price_per_hour: "", price_per_day: "",
+    condition: "good" as "excellent" | "good" | "fair",
+  });
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const isOwner = user?.user_type === "shop_owner";
 
   useEffect(() => {
     if (!id) return;
@@ -61,6 +74,51 @@ export default function ShopDetail() {
     }
   };
 
+  const handleAddVehicle = async () => {
+    if (!vehicleForm.name || !vehicleForm.model || !vehicleForm.price_per_hour || !vehicleForm.price_per_day) {
+      toast({ title: "Please fill all required fields", variant: "destructive" });
+      return;
+    }
+    setAddingVehicle(true);
+    try {
+      const newBike = await api.createBike({
+        shop_id: Number(id),
+        name: vehicleForm.name,
+        model: vehicleForm.model,
+        bike_type: vehicleForm.bike_type,
+        engine_cc: vehicleForm.engine_cc ? Number(vehicleForm.engine_cc) : undefined,
+        description: vehicleForm.description || undefined,
+        price_per_hour: Number(vehicleForm.price_per_hour),
+        price_per_day: Number(vehicleForm.price_per_day),
+        condition: vehicleForm.condition,
+        is_available: true,
+      });
+      setBikes((prev) => [...prev, newBike]);
+      setShowAddVehicle(false);
+      setVehicleForm({ name: "", model: "", bike_type: "bike", engine_cc: "", description: "", price_per_hour: "", price_per_day: "", condition: "good" });
+      toast({ title: "Vehicle added!" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setAddingVehicle(false);
+    }
+  };
+
+  const handleDeleteVehicle = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await api.deleteBike(String(deleteTarget.id));
+      setBikes((prev) => prev.filter((b) => b.id !== deleteTarget.id));
+      toast({ title: "Vehicle deleted" });
+      setDeleteTarget(null);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) return <div className="min-h-screen pt-24 flex items-center justify-center text-muted-foreground">Loading...</div>;
   if (!shop) return <div className="min-h-screen pt-24 flex items-center justify-center text-muted-foreground">Shop not found</div>;
 
@@ -93,15 +151,127 @@ export default function ShopDetail() {
 
         {/* Vehicles */}
         <div className="space-y-4">
-          <h2 className="font-display text-2xl font-bold">Available Vehicles</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-2xl font-bold">Available Vehicles</h2>
+            {isOwner && (
+              <Button onClick={() => setShowAddVehicle(true)} className="font-display gap-2">
+                <Plus className="h-4 w-4" /> Add Vehicle
+              </Button>
+            )}
+          </div>
+
+          {/* Add Vehicle Form */}
+          <AnimatePresence>
+            {showAddVehicle && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="rounded-lg border border-border bg-card p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display font-bold text-lg">New Vehicle</h3>
+                    <Button variant="ghost" size="icon" onClick={() => setShowAddVehicle(false)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Name *</Label>
+                      <Input value={vehicleForm.name} onChange={(e) => setVehicleForm((f) => ({ ...f, name: e.target.value }))} placeholder="Honda Activa" className="bg-background" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Model *</Label>
+                      <Input value={vehicleForm.model} onChange={(e) => setVehicleForm((f) => ({ ...f, model: e.target.value }))} placeholder="2024" className="bg-background" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Type</Label>
+                      <Select value={vehicleForm.bike_type} onValueChange={(v) => setVehicleForm((f) => ({ ...f, bike_type: v }))}>
+                        <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {["scooty", "bike", "car", "mountain", "road", "hybrid", "electric"].map((t) => (
+                            <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Engine CC</Label>
+                      <Input type="number" value={vehicleForm.engine_cc} onChange={(e) => setVehicleForm((f) => ({ ...f, engine_cc: e.target.value }))} placeholder="150" className="bg-background" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Price/Hour (₹) *</Label>
+                      <Input type="number" value={vehicleForm.price_per_hour} onChange={(e) => setVehicleForm((f) => ({ ...f, price_per_hour: e.target.value }))} placeholder="50" className="bg-background" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Price/Day (₹) *</Label>
+                      <Input type="number" value={vehicleForm.price_per_day} onChange={(e) => setVehicleForm((f) => ({ ...f, price_per_day: e.target.value }))} placeholder="500" className="bg-background" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Condition</Label>
+                      <Select value={vehicleForm.condition} onValueChange={(v: any) => setVehicleForm((f) => ({ ...f, condition: v }))}>
+                        <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="excellent">Excellent</SelectItem>
+                          <SelectItem value="good">Good</SelectItem>
+                          <SelectItem value="fair">Fair</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1 md:col-span-2">
+                      <Label className="text-xs">Description</Label>
+                      <Textarea value={vehicleForm.description} onChange={(e) => setVehicleForm((f) => ({ ...f, description: e.target.value }))} placeholder="Optional description..." className="bg-background" />
+                    </div>
+                  </div>
+                  <Button onClick={handleAddVehicle} disabled={addingVehicle} className="font-display gap-2">
+                    <Plus className="h-4 w-4" /> {addingVehicle ? "Adding..." : "Add Vehicle"}
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {bikes.length === 0 ? (
             <p className="text-muted-foreground">No vehicles at this shop.</p>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {bikes.map((b) => <VehicleCard key={b.id} vehicle={b} />)}
+              {bikes.map((b) => (
+                <div key={b.id} className="relative group">
+                  <VehicleCard vehicle={b} />
+                  {isOwner && (
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute top-3 right-3 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget(b); }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Vehicle</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete <span className="font-semibold text-foreground">{deleteTarget?.name}</span>? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+              <Button variant="destructive" onClick={handleDeleteVehicle} disabled={deleting} className="gap-2">
+                <Trash2 className="h-4 w-4" /> {deleting ? "Deleting..." : "Delete"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Reviews */}
         <div className="space-y-6">
