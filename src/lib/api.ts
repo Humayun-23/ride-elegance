@@ -24,9 +24,17 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 export const api = {
   // Auth
   login: (data: { username: string; password: string }) =>
-    request<{ access_token: string; token_type: string }>("/login", { method: "POST", body: JSON.stringify(data) }),
+    request<{ access_token: string; token_type: string }>("/login", {
+      method: "POST",
+      body: new URLSearchParams(data).toString(),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    }),
   adminLogin: (data: { username: string; password: string }) =>
-    request<{ access_token: string; token_type: string }>("/admin/login", { method: "POST", body: JSON.stringify(data) }),
+    request<{ access_token: string; token_type: string }>("/admin/login", {
+      method: "POST",
+      body: new URLSearchParams(data).toString(),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    }),
   register: (data: { email: string; password: string; firstname: string; lastname: string; phone_number?: string; user_type: string }) =>
     request<any>("/users/", { method: "POST", body: JSON.stringify(data) }),
   passwordResetRequest: (data: { email: string }) =>
