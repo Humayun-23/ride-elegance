@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { ArrowLeft, MapPin, Star, Send } from "lucide-react";
+import { ArrowLeft, MapPin, Star, Send, Phone, Clock } from "lucide-react";
 
 export default function ShopDetail() {
   const { id } = useParams<{ id: string }>();
@@ -39,10 +39,18 @@ export default function ShopDetail() {
 
   const submitReview = async () => {
     if (!user) { navigate("/login"); return; }
-    if (!reviewText.trim()) return;
+    if (!reviewText.trim() || reviewText.length > 500) {
+      toast({ title: "Comment must be 1-500 characters", variant: "destructive" });
+      return;
+    }
+    const rating = Number(reviewRating);
+    if (rating < 1 || rating > 5) {
+      toast({ title: "Rating must be 1-5", variant: "destructive" });
+      return;
+    }
     setSubmitting(true);
     try {
-      const newReview = await api.createReview(id!, { rating: Number(reviewRating), comment: reviewText });
+      const newReview = await api.createReview(id!, { rating, comment: reviewText });
       setReviews((prev) => [newReview, ...prev]);
       setReviewText("");
       toast({ title: "Review submitted!" });
@@ -63,10 +71,21 @@ export default function ShopDetail() {
           <ArrowLeft className="h-4 w-4" /> Back
         </Button>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
           <h1 className="font-display text-3xl md:text-4xl font-bold">{shop.name}</h1>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            {shop.location && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{shop.location}</span>}
+          <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+            {shop.address && (
+              <span className="flex items-center gap-1">
+                <MapPin className="h-4 w-4" />
+                {shop.address}{shop.city ? `, ${shop.city}` : ""}{shop.state ? `, ${shop.state}` : ""}{shop.zip_code ? ` ${shop.zip_code}` : ""}
+              </span>
+            )}
+            {shop.phone_number && (
+              <span className="flex items-center gap-1"><Phone className="h-4 w-4" />{shop.phone_number}</span>
+            )}
+            {(shop.opening_time || shop.closing_time) && (
+              <span className="flex items-center gap-1"><Clock className="h-4 w-4" />{shop.opening_time || "?"} – {shop.closing_time || "?"}</span>
+            )}
             {shop.rating && <span className="flex items-center gap-1"><Star className="h-4 w-4 text-primary" />{shop.rating}</span>}
           </div>
           {shop.description && <p className="text-muted-foreground max-w-2xl">{shop.description}</p>}
@@ -92,11 +111,11 @@ export default function ShopDetail() {
             <div className="rounded-lg border border-border bg-card p-6 space-y-4">
               <div className="grid grid-cols-[1fr_auto] gap-3">
                 <div className="space-y-1">
-                  <Label className="text-xs">Your review</Label>
-                  <Textarea value={reviewText} onChange={(e) => setReviewText(e.target.value)} className="bg-background" placeholder="Write a review..." />
+                  <Label className="text-xs">Your review (max 500 chars)</Label>
+                  <Textarea value={reviewText} onChange={(e) => setReviewText(e.target.value)} maxLength={500} className="bg-background" placeholder="Write a review..." />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Rating</Label>
+                  <Label className="text-xs">Rating (1-5)</Label>
                   <Input type="number" min="1" max="5" value={reviewRating} onChange={(e) => setReviewRating(e.target.value)} className="bg-background w-20" />
                 </div>
               </div>

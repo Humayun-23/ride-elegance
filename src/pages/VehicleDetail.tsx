@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { ArrowLeft, Gauge, Calendar } from "lucide-react";
+import { ArrowLeft, Gauge, Calendar, Info } from "lucide-react";
 
 export default function VehicleDetail() {
   const { id } = useParams<{ id: string }>();
@@ -71,11 +71,21 @@ export default function VehicleDetail() {
 
           <div className="space-y-6">
             <div className="space-y-2">
-              {vehicle.bike_type && <Badge className="bg-primary text-primary-foreground font-display uppercase tracking-wider">{vehicle.bike_type}</Badge>}
+              <div className="flex items-center gap-2 flex-wrap">
+                {vehicle.bike_type && <Badge className="bg-primary text-primary-foreground font-display uppercase tracking-wider">{vehicle.bike_type}</Badge>}
+                {vehicle.condition && <Badge variant="outline" className="font-display capitalize">{vehicle.condition}</Badge>}
+                {vehicle.is_available === false && <Badge variant="destructive" className="font-display">Unavailable</Badge>}
+              </div>
               <h1 className="font-display text-3xl md:text-4xl font-bold">{vehicle.name}</h1>
+              {vehicle.model && <p className="text-lg text-muted-foreground">{vehicle.model}</p>}
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 {vehicle.engine_cc && <span className="flex items-center gap-1"><Gauge className="h-4 w-4" />{vehicle.engine_cc}cc</span>}
               </div>
+              {vehicle.description && (
+                <p className="text-sm text-muted-foreground flex items-start gap-2 mt-2">
+                  <Info className="h-4 w-4 mt-0.5 shrink-0" /> {vehicle.description}
+                </p>
+              )}
             </div>
 
             <div className="rounded-lg border border-border bg-card p-6 space-y-4">
@@ -111,9 +121,9 @@ export default function VehicleDetail() {
                 </div>
               </div>
 
-              <Button className="w-full font-display gap-2" size="lg" onClick={handleBook} disabled={booking}>
+              <Button className="w-full font-display gap-2" size="lg" onClick={handleBook} disabled={booking || vehicle.is_available === false}>
                 <Calendar className="h-4 w-4" />
-                {booking ? "Booking..." : "Book Now"}
+                {booking ? "Booking..." : vehicle.is_available === false ? "Unavailable" : "Book Now"}
               </Button>
             </div>
           </div>
