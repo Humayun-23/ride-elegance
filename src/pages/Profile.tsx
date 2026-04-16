@@ -5,9 +5,12 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { User } from "lucide-react";
+import { motion } from "framer-motion";
+import { User, Mail, Phone, LogOut, Save, Shield } from "lucide-react";
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -30,7 +33,7 @@ export default function Profile() {
     setSaving(true);
     try {
       await api.updateUser(user.id, { firstname, lastname, phone_number: phone });
-      toast({ title: "Profile updated" });
+      toast({ title: "Profile updated successfully" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
@@ -40,43 +43,85 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen pt-24 pb-16">
-      <div className="container px-4 max-w-md space-y-8">
-        <div className="text-center space-y-3">
-          <div className="inline-flex rounded-full bg-card border border-border p-6">
-            <User className="h-10 w-10 text-primary" />
+      <div className="container px-4 max-w-lg space-y-8">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+          {/* Avatar + Header */}
+          <div className="text-center space-y-4">
+            <div className="relative inline-block">
+              <div className="h-24 w-24 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center mx-auto">
+                <span className="font-display text-3xl font-bold text-primary">
+                  {(user?.firstname?.[0] || "U").toUpperCase()}
+                </span>
+              </div>
+            </div>
+            <div>
+              <h1 className="font-display text-2xl font-bold">
+                {user?.firstname} {user?.lastname}
+              </h1>
+              {user?.user_type && (
+                <Badge variant="outline" className="font-display capitalize mt-1 text-xs">
+                  {user.user_type === "shop_owner" ? "🏪 Shop Owner" : "🏍️ Customer"}
+                </Badge>
+              )}
+            </div>
           </div>
-          <h1 className="font-display text-3xl font-bold">Profile</h1>
-          {user?.user_type && (
-            <Badge variant="outline" className="font-display capitalize">{user.user_type.replace("_", " ")}</Badge>
-          )}
-        </div>
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label>First Name</Label>
-              <Input value={firstname} onChange={(e) => setFirstname(e.target.value)} className="bg-card" />
-            </div>
-            <div className="space-y-2">
-              <Label>Last Name</Label>
-              <Input value={lastname} onChange={(e) => setLastname(e.target.value)} className="bg-card" />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Email</Label>
-            <Input value={user?.email || ""} disabled className="bg-card opacity-50" />
-          </div>
-          <div className="space-y-2">
-            <Label>Phone</Label>
-            <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="bg-card" />
-          </div>
-          <Button className="w-full font-display" onClick={handleSave} disabled={saving}>
-            {saving ? "Saving..." : "Save Changes"}
-          </Button>
-          <Button variant="outline" className="w-full text-destructive border-destructive/30" onClick={() => { logout(); navigate("/"); }}>
-            Logout
-          </Button>
-        </div>
+          {/* Profile Form */}
+          <Card className="border-border/50 bg-card/60 backdrop-blur">
+            <CardContent className="p-6 space-y-5">
+              <h2 className="font-display font-bold text-sm flex items-center gap-2">
+                <User className="h-4 w-4 text-primary" /> Personal Information
+              </h2>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">First Name</Label>
+                  <Input value={firstname} onChange={(e) => setFirstname(e.target.value)} className="bg-background rounded-xl" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Last Name</Label>
+                  <Input value={lastname} onChange={(e) => setLastname(e.target.value)} className="bg-background rounded-xl" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Mail className="h-3 w-3" /> Email
+                </Label>
+                <Input value={user?.email || ""} disabled className="bg-background/50 rounded-xl opacity-60" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Phone className="h-3 w-3" /> Phone
+                </Label>
+                <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="bg-background rounded-xl" />
+              </div>
+              <Button className="w-full font-display rounded-xl glow gap-2" onClick={handleSave} disabled={saving}>
+                {saving ? (
+                  <span className="flex items-center gap-2">
+                    <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                    Saving...
+                  </span>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" /> Save Changes
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Danger Zone */}
+          <Card className="border-destructive/20 bg-card/60">
+            <CardContent className="p-6">
+              <Button
+                variant="outline"
+                className="w-full text-destructive border-destructive/30 hover:bg-destructive/10 font-display rounded-xl gap-2"
+                onClick={() => { logout(); navigate("/"); }}
+              >
+                <LogOut className="h-4 w-4" /> Sign Out
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );

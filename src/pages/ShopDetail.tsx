@@ -7,9 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, MapPin, Star, Send, Phone, Clock, Plus, Trash2, X } from "lucide-react";
+import {
+  ArrowLeft, MapPin, Star, Send, Phone, Clock, Plus, Trash2, X,
+  Bike, Store, MessageSquare,
+} from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
@@ -20,7 +26,7 @@ export default function ShopDetail() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [reviewText, setReviewText] = useState("");
-  const [reviewRating, setReviewRating] = useState("5");
+  const [reviewRating, setReviewRating] = useState(5);
   const [submitting, setSubmitting] = useState(false);
   const [showAddVehicle, setShowAddVehicle] = useState(false);
   const [addingVehicle, setAddingVehicle] = useState(false);
@@ -56,14 +62,13 @@ export default function ShopDetail() {
       toast({ title: "Comment must be 1-500 characters", variant: "destructive" });
       return;
     }
-    const rating = Number(reviewRating);
-    if (rating < 1 || rating > 5) {
+    if (reviewRating < 1 || reviewRating > 5) {
       toast({ title: "Rating must be 1-5", variant: "destructive" });
       return;
     }
     setSubmitting(true);
     try {
-      const newReview = await api.createReview(id!, { rating, comment: reviewText });
+      const newReview = await api.createReview(id!, { rating: reviewRating, comment: reviewText });
       setReviews((prev) => [newReview, ...prev]);
       setReviewText("");
       toast({ title: "Review submitted!" });
@@ -119,42 +124,101 @@ export default function ShopDetail() {
     }
   };
 
-  if (loading) return <div className="min-h-screen pt-24 flex items-center justify-center text-muted-foreground">Loading...</div>;
+  if (loading) return (
+    <div className="min-h-screen pt-24 flex items-center justify-center">
+      <div className="flex items-center gap-3 text-muted-foreground">
+        <div className="h-5 w-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        Loading shop...
+      </div>
+    </div>
+  );
   if (!shop) return <div className="min-h-screen pt-24 flex items-center justify-center text-muted-foreground">Shop not found</div>;
+
+  const avgRating = reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1)
+    : null;
 
   return (
     <div className="min-h-screen pt-24 pb-16">
-      <div className="container px-4 space-y-10">
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-2 text-muted-foreground">
+      <div className="container px-4 max-w-6xl space-y-10">
+        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-2 text-muted-foreground -ml-2">
           <ArrowLeft className="h-4 w-4" /> Back
         </Button>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
-          <h1 className="font-display text-3xl md:text-4xl font-bold">{shop.name}</h1>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
-            {shop.address && (
-              <span className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
-                {shop.address}{shop.city ? `, ${shop.city}` : ""}{shop.state ? `, ${shop.state}` : ""}{shop.zip_code ? ` ${shop.zip_code}` : ""}
-              </span>
-            )}
-            {shop.phone_number && (
-              <span className="flex items-center gap-1"><Phone className="h-4 w-4" />{shop.phone_number}</span>
-            )}
-            {(shop.opening_time || shop.closing_time) && (
-              <span className="flex items-center gap-1"><Clock className="h-4 w-4" />{shop.opening_time || "?"} – {shop.closing_time || "?"}</span>
-            )}
-            {shop.rating && <span className="flex items-center gap-1"><Star className="h-4 w-4 text-primary" />{shop.rating}</span>}
-          </div>
-          {shop.description && <p className="text-muted-foreground max-w-2xl">{shop.description}</p>}
+        {/* Shop Header */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <Card className="border-border/50 bg-card/60 backdrop-blur overflow-hidden">
+            <div className="h-1.5 w-full bg-gradient-to-r from-primary via-primary/50 to-transparent" />
+            <CardContent className="p-6 md:p-8">
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20">
+                      <Store className="h-7 w-7 text-primary" />
+                    </div>
+                    <div>
+                      <h1 className="font-display text-2xl md:text-3xl font-bold">{shop.name}</h1>
+                      {shop.is_active === false && (
+                        <Badge variant="destructive" className="mt-1 text-[10px]">Inactive</Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
+                    {(shop.address || shop.city) && (
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="h-3.5 w-3.5 text-primary/60" />
+                        {shop.address}{shop.city ? `, ${shop.city}` : ""}{shop.state ? `, ${shop.state}` : ""}{shop.zip_code ? ` ${shop.zip_code}` : ""}
+                      </span>
+                    )}
+                    {shop.phone_number && (
+                      <span className="flex items-center gap-1.5">
+                        <Phone className="h-3.5 w-3.5 text-primary/60" />{shop.phone_number}
+                      </span>
+                    )}
+                    {(shop.opening_time || shop.closing_time) && (
+                      <span className="flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5 text-primary/60" />{shop.opening_time || "?"} – {shop.closing_time || "?"}
+                      </span>
+                    )}
+                  </div>
+
+                  {shop.description && (
+                    <p className="text-sm text-muted-foreground/80 max-w-2xl leading-relaxed">{shop.description}</p>
+                  )}
+                </div>
+
+                {/* Stats sidebar */}
+                <div className="flex md:flex-col items-center gap-6 md:gap-4 md:text-right shrink-0">
+                  {avgRating && (
+                    <div>
+                      <div className="flex items-center gap-1 justify-end">
+                        <Star className="h-5 w-5 text-primary fill-primary" />
+                        <span className="font-display text-2xl font-bold">{avgRating}</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{reviews.length} reviews</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-display text-2xl font-bold">{bikes.length}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Vehicles</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
 
-        {/* Vehicles */}
-        <div className="space-y-4">
+        {/* Vehicles Section */}
+        <div className="space-y-5">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-2xl font-bold">Available Vehicles</h2>
+            <div className="flex items-center gap-3">
+              <Bike className="h-5 w-5 text-primary" />
+              <h2 className="font-display text-xl md:text-2xl font-bold">Available Vehicles</h2>
+              <Badge variant="outline" className="font-display">{bikes.length}</Badge>
+            </div>
             {isOwner && (
-              <Button onClick={() => setShowAddVehicle(true)} className="font-display gap-2">
+              <Button onClick={() => setShowAddVehicle(!showAddVehicle)} className="font-display gap-2 rounded-xl" size="sm">
                 <Plus className="h-4 w-4" /> Add Vehicle
               </Button>
             )}
@@ -169,73 +233,85 @@ export default function ShopDetail() {
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="rounded-lg border border-border bg-card p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-display font-bold text-lg">New Vehicle</h3>
-                    <Button variant="ghost" size="icon" onClick={() => setShowAddVehicle(false)}>
-                      <X className="h-4 w-4" />
+                <Card className="border-primary/20 bg-card/80">
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-display font-bold text-lg">New Vehicle</h3>
+                      <Button variant="ghost" size="icon" onClick={() => setShowAddVehicle(false)} className="h-8 w-8">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Name *</Label>
+                        <Input value={vehicleForm.name} onChange={(e) => setVehicleForm((f) => ({ ...f, name: e.target.value }))} placeholder="Honda Activa" className="bg-background rounded-xl" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Model *</Label>
+                        <Input value={vehicleForm.model} onChange={(e) => setVehicleForm((f) => ({ ...f, model: e.target.value }))} placeholder="2024" className="bg-background rounded-xl" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Type</Label>
+                        <Select value={vehicleForm.bike_type} onValueChange={(v) => setVehicleForm((f) => ({ ...f, bike_type: v }))}>
+                          <SelectTrigger className="bg-background rounded-xl"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {["scooty", "bike", "car", "mountain", "road", "hybrid", "electric"].map((t) => (
+                              <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Engine CC</Label>
+                        <Input type="number" value={vehicleForm.engine_cc} onChange={(e) => setVehicleForm((f) => ({ ...f, engine_cc: e.target.value }))} placeholder="150" className="bg-background rounded-xl" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Price/Hour (₹) *</Label>
+                        <Input type="number" value={vehicleForm.price_per_hour} onChange={(e) => setVehicleForm((f) => ({ ...f, price_per_hour: e.target.value }))} placeholder="50" className="bg-background rounded-xl" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Price/Day (₹) *</Label>
+                        <Input type="number" value={vehicleForm.price_per_day} onChange={(e) => setVehicleForm((f) => ({ ...f, price_per_day: e.target.value }))} placeholder="500" className="bg-background rounded-xl" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Condition</Label>
+                        <Select value={vehicleForm.condition} onValueChange={(v: any) => setVehicleForm((f) => ({ ...f, condition: v }))}>
+                          <SelectTrigger className="bg-background rounded-xl"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="excellent">Excellent</SelectItem>
+                            <SelectItem value="good">Good</SelectItem>
+                            <SelectItem value="fair">Fair</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-1.5 md:col-span-2">
+                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Description</Label>
+                        <Textarea value={vehicleForm.description} onChange={(e) => setVehicleForm((f) => ({ ...f, description: e.target.value }))} placeholder="Optional description..." className="bg-background rounded-xl" />
+                      </div>
+                    </div>
+                    <Button onClick={handleAddVehicle} disabled={addingVehicle} className="font-display gap-2 rounded-xl glow">
+                      <Plus className="h-4 w-4" /> {addingVehicle ? "Adding..." : "Add Vehicle"}
                     </Button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <Label className="text-xs">Name *</Label>
-                      <Input value={vehicleForm.name} onChange={(e) => setVehicleForm((f) => ({ ...f, name: e.target.value }))} placeholder="Honda Activa" className="bg-background" />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">Model *</Label>
-                      <Input value={vehicleForm.model} onChange={(e) => setVehicleForm((f) => ({ ...f, model: e.target.value }))} placeholder="2024" className="bg-background" />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">Type</Label>
-                      <Select value={vehicleForm.bike_type} onValueChange={(v) => setVehicleForm((f) => ({ ...f, bike_type: v }))}>
-                        <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          {["scooty", "bike", "car", "mountain", "road", "hybrid", "electric"].map((t) => (
-                            <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">Engine CC</Label>
-                      <Input type="number" value={vehicleForm.engine_cc} onChange={(e) => setVehicleForm((f) => ({ ...f, engine_cc: e.target.value }))} placeholder="150" className="bg-background" />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">Price/Hour (₹) *</Label>
-                      <Input type="number" value={vehicleForm.price_per_hour} onChange={(e) => setVehicleForm((f) => ({ ...f, price_per_hour: e.target.value }))} placeholder="50" className="bg-background" />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">Price/Day (₹) *</Label>
-                      <Input type="number" value={vehicleForm.price_per_day} onChange={(e) => setVehicleForm((f) => ({ ...f, price_per_day: e.target.value }))} placeholder="500" className="bg-background" />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs">Condition</Label>
-                      <Select value={vehicleForm.condition} onValueChange={(v: any) => setVehicleForm((f) => ({ ...f, condition: v }))}>
-                        <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="excellent">Excellent</SelectItem>
-                          <SelectItem value="good">Good</SelectItem>
-                          <SelectItem value="fair">Fair</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1 md:col-span-2">
-                      <Label className="text-xs">Description</Label>
-                      <Textarea value={vehicleForm.description} onChange={(e) => setVehicleForm((f) => ({ ...f, description: e.target.value }))} placeholder="Optional description..." className="bg-background" />
-                    </div>
-                  </div>
-                  <Button onClick={handleAddVehicle} disabled={addingVehicle} className="font-display gap-2">
-                    <Plus className="h-4 w-4" /> {addingVehicle ? "Adding..." : "Add Vehicle"}
-                  </Button>
-                </div>
+                  </CardContent>
+                </Card>
               </motion.div>
             )}
           </AnimatePresence>
 
           {bikes.length === 0 ? (
-            <p className="text-muted-foreground">No vehicles at this shop.</p>
+            <Card className="border-dashed border-border/50 bg-transparent">
+              <CardContent className="p-12 text-center space-y-3">
+                <Bike className="h-10 w-10 text-muted-foreground/30 mx-auto" />
+                <p className="text-muted-foreground text-sm">No vehicles at this shop yet.</p>
+                {isOwner && (
+                  <Button variant="outline" size="sm" onClick={() => setShowAddVehicle(true)} className="font-display gap-2 rounded-xl">
+                    <Plus className="h-4 w-4" /> Add your first vehicle
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
               {bikes.map((b) => (
                 <div key={b.id} className="relative group">
                   <VehicleCard vehicle={b} />
@@ -243,7 +319,7 @@ export default function ShopDetail() {
                     <Button
                       variant="destructive"
                       size="icon"
-                      className="absolute top-3 right-3 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                      className="absolute top-3 right-3 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity z-10 rounded-xl"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget(b); }}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -265,50 +341,108 @@ export default function ShopDetail() {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
-              <Button variant="destructive" onClick={handleDeleteVehicle} disabled={deleting} className="gap-2">
+              <Button variant="outline" onClick={() => setDeleteTarget(null)} className="rounded-xl">Cancel</Button>
+              <Button variant="destructive" onClick={handleDeleteVehicle} disabled={deleting} className="gap-2 rounded-xl">
                 <Trash2 className="h-4 w-4" /> {deleting ? "Deleting..." : "Delete"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
 
-        {/* Reviews */}
+        {/* Reviews Section */}
         <div className="space-y-6">
-          <h2 className="font-display text-2xl font-bold">Reviews</h2>
+          <div className="flex items-center gap-3">
+            <MessageSquare className="h-5 w-5 text-primary" />
+            <h2 className="font-display text-xl md:text-2xl font-bold">Reviews</h2>
+            <Badge variant="outline" className="font-display">{reviews.length}</Badge>
+          </div>
 
           {user && (
-            <div className="rounded-lg border border-border bg-card p-6 space-y-4">
-              <div className="grid grid-cols-[1fr_auto] gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Your review (max 500 chars)</Label>
-                  <Textarea value={reviewText} onChange={(e) => setReviewText(e.target.value)} maxLength={500} className="bg-background" placeholder="Write a review..." />
+            <Card className="border-border/50 bg-card/60">
+              <CardContent className="p-6 space-y-4">
+                <h3 className="font-display font-bold text-sm">Write a Review</h3>
+                <div className="space-y-4">
+                  {/* Star rating picker */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Rating</Label>
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((v) => (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => setReviewRating(v)}
+                          className="p-0.5 transition-transform hover:scale-110"
+                        >
+                          <Star
+                            className={`h-6 w-6 transition-colors ${
+                              v <= reviewRating ? "text-primary fill-primary" : "text-muted-foreground/20"
+                            }`}
+                          />
+                        </button>
+                      ))}
+                      <span className="text-sm text-muted-foreground ml-2 font-display">{reviewRating}/5</span>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">
+                      Comment <span className="text-muted-foreground/50">({reviewText.length}/500)</span>
+                    </Label>
+                    <Textarea
+                      value={reviewText}
+                      onChange={(e) => setReviewText(e.target.value)}
+                      maxLength={500}
+                      className="bg-background rounded-xl"
+                      placeholder="Share your experience..."
+                      rows={3}
+                    />
+                  </div>
+                  <Button size="sm" onClick={submitReview} disabled={submitting} className="font-display gap-2 rounded-xl">
+                    <Send className="h-3.5 w-3.5" /> {submitting ? "Submitting..." : "Submit Review"}
+                  </Button>
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Rating (1-5)</Label>
-                  <Input type="number" min="1" max="5" value={reviewRating} onChange={(e) => setReviewRating(e.target.value)} className="bg-background w-20" />
-                </div>
-              </div>
-              <Button size="sm" onClick={submitReview} disabled={submitting} className="font-display gap-2">
-                <Send className="h-4 w-4" /> {submitting ? "Submitting..." : "Submit"}
-              </Button>
-            </div>
+              </CardContent>
+            </Card>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {reviews.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No reviews yet.</p>
+              <Card className="border-dashed border-border/50 bg-transparent">
+                <CardContent className="p-8 text-center">
+                  <MessageSquare className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">No reviews yet. Be the first!</p>
+                </CardContent>
+              </Card>
             ) : (
               reviews.map((r, i) => (
-                <motion.div key={r.id || i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }}
-                  className="rounded-lg border border-border bg-card p-4 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 text-primary">
-                      {[...Array(r.rating || 0)].map((_, j) => <Star key={j} className="h-3 w-3 fill-current" />)}
-                    </div>
-                    <span className="text-xs text-muted-foreground">{r.user_name || "User"}</span>
-                  </div>
-                  <p className="text-sm text-foreground">{r.comment}</p>
+                <motion.div
+                  key={r.id || i}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.04 }}
+                >
+                  <Card className="border-border/30 bg-card/40">
+                    <CardContent className="p-5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center">
+                            <span className="text-xs font-display font-bold text-muted-foreground">
+                              {(r.user_name || "U")[0].toUpperCase()}
+                            </span>
+                          </div>
+                          <span className="text-sm font-display font-medium">{r.user_name || "User"}</span>
+                        </div>
+                        <div className="flex items-center gap-0.5">
+                          {[...Array(5)].map((_, j) => (
+                            <Star
+                              key={j}
+                              className={`h-3 w-3 ${j < (r.rating || 0) ? "text-primary fill-primary" : "text-muted-foreground/20"}`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed pl-10">{r.comment}</p>
+                    </CardContent>
+                  </Card>
                 </motion.div>
               ))
             )}
