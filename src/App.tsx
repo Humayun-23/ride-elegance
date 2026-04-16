@@ -17,6 +17,7 @@ import Bookings from "./pages/Bookings";
 import Profile from "./pages/Profile";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import Payment from "./pages/Payment";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/shops/:id" element={<ShopDetail />} />
             <Route path="/bookings" element={<Bookings />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/payment/:bookingId" element={<Payment />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
