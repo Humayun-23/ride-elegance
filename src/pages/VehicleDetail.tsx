@@ -6,9 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { ArrowLeft, Gauge, Calendar, Info } from "lucide-react";
+import { ArrowLeft, Gauge, Calendar, Info, MapPin, Shield, Clock, CheckCircle2 } from "lucide-react";
+
+const TYPE_EMOJI: Record<string, string> = {
+  scooty: "🛵", bike: "🏍️", car: "🚗", mountain: "🚵",
+  road: "🚴", hybrid: "⚡", electric: "🔋",
+};
 
 export default function VehicleDetail() {
   const { id } = useParams<{ id: string }>();
@@ -48,84 +55,131 @@ export default function VehicleDetail() {
     }
   };
 
-  if (loading) return <div className="min-h-screen pt-24 flex items-center justify-center text-muted-foreground">Loading...</div>;
+  if (loading) return (
+    <div className="min-h-screen pt-24 flex items-center justify-center">
+      <div className="flex items-center gap-3 text-muted-foreground">
+        <div className="h-5 w-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        Loading vehicle...
+      </div>
+    </div>
+  );
   if (!vehicle) return <div className="min-h-screen pt-24 flex items-center justify-center text-muted-foreground">Vehicle not found</div>;
 
   return (
     <div className="min-h-screen pt-24 pb-16">
-      <div className="container px-4">
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-6 gap-2 text-muted-foreground">
+      <div className="container px-4 max-w-6xl">
+        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-6 gap-2 text-muted-foreground -ml-2">
           <ArrowLeft className="h-4 w-4" /> Back
         </Button>
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid lg:grid-cols-2 gap-8">
-          <div className="rounded-lg border border-border bg-card overflow-hidden aspect-[4/3]">
+          {/* Image */}
+          <div className="rounded-2xl border border-border/50 bg-card/60 overflow-hidden aspect-[4/3]">
             {vehicle.image_url ? (
               <img src={vehicle.image_url} alt={vehicle.name} className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full items-center justify-center text-muted-foreground font-display text-2xl bg-secondary capitalize">
-                {vehicle.bike_type || "Vehicle"}
+              <div className="flex h-full items-center justify-center bg-gradient-to-br from-secondary to-background">
+                <span className="text-8xl opacity-20">
+                  {TYPE_EMOJI[vehicle.bike_type || ""] || "🚗"}
+                </span>
               </div>
             )}
           </div>
 
+          {/* Details */}
           <div className="space-y-6">
-            <div className="space-y-2">
+            <div className="space-y-3">
               <div className="flex items-center gap-2 flex-wrap">
-                {vehicle.bike_type && <Badge className="bg-primary text-primary-foreground font-display uppercase tracking-wider">{vehicle.bike_type}</Badge>}
-                {vehicle.condition && <Badge variant="outline" className="font-display capitalize">{vehicle.condition}</Badge>}
-                {vehicle.is_available === false && <Badge variant="destructive" className="font-display">Unavailable</Badge>}
+                {vehicle.bike_type && (
+                  <Badge className="bg-primary/10 text-primary border border-primary/20 font-display text-[10px] uppercase tracking-wider">
+                    {TYPE_EMOJI[vehicle.bike_type] || ""} {vehicle.bike_type}
+                  </Badge>
+                )}
+                {vehicle.condition && (
+                  <Badge variant="outline" className="font-display capitalize text-[10px] uppercase tracking-wider">{vehicle.condition}</Badge>
+                )}
+                {vehicle.is_available === false && (
+                  <Badge variant="destructive" className="font-display text-[10px]">Unavailable</Badge>
+                )}
               </div>
               <h1 className="font-display text-3xl md:text-4xl font-bold">{vehicle.name}</h1>
               {vehicle.model && <p className="text-lg text-muted-foreground">{vehicle.model}</p>}
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                {vehicle.engine_cc && <span className="flex items-center gap-1"><Gauge className="h-4 w-4" />{vehicle.engine_cc}cc</span>}
+
+              <div className="flex items-center gap-4 flex-wrap">
+                {vehicle.engine_cc && (
+                  <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground bg-secondary/50 px-3 py-1 rounded-lg">
+                    <Gauge className="h-4 w-4" />{vehicle.engine_cc}cc
+                  </span>
+                )}
               </div>
+
               {vehicle.description && (
-                <p className="text-sm text-muted-foreground flex items-start gap-2 mt-2">
-                  <Info className="h-4 w-4 mt-0.5 shrink-0" /> {vehicle.description}
+                <p className="text-sm text-muted-foreground leading-relaxed flex items-start gap-2 mt-2">
+                  <Info className="h-4 w-4 mt-0.5 shrink-0 text-primary/60" /> {vehicle.description}
                 </p>
               )}
             </div>
 
-            <div className="rounded-lg border border-border bg-card p-6 space-y-4">
-              <div className="flex items-baseline gap-4">
-                {vehicle.price_per_hour != null && (
-                  <div>
-                    <span className="text-primary font-display text-3xl font-bold">₹{vehicle.price_per_hour}</span>
-                    <span className="text-muted-foreground text-sm">/hour</span>
+            {/* Booking Card */}
+            <Card className="border-border/50 bg-card/80 backdrop-blur">
+              <CardContent className="p-6 space-y-5">
+                <div className="flex items-baseline gap-6">
+                  {vehicle.price_per_hour != null && (
+                    <div>
+                      <span className="text-primary font-display text-3xl font-bold">₹{vehicle.price_per_hour}</span>
+                      <span className="text-muted-foreground text-sm">/hour</span>
+                    </div>
+                  )}
+                  {vehicle.price_per_day != null && (
+                    <div>
+                      <span className="text-foreground font-display text-xl font-bold">₹{vehicle.price_per_day}</span>
+                      <span className="text-muted-foreground text-sm">/day</span>
+                    </div>
+                  )}
+                </div>
+
+                {availability && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                    <span className="text-muted-foreground">
+                      <span className="text-foreground font-display font-bold">{availability.available_count ?? 0}</span> of {availability.total_count ?? 0} available
+                    </span>
                   </div>
                 )}
-                {vehicle.price_per_day != null && (
-                  <div>
-                    <span className="text-primary font-display text-3xl font-bold">₹{vehicle.price_per_day}</span>
-                    <span className="text-muted-foreground text-sm">/day</span>
+
+                <Separator />
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> Start
+                    </Label>
+                    <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="bg-background rounded-xl" />
                   </div>
-                )}
-              </div>
-
-              {availability && (
-                <p className="text-sm text-muted-foreground">
-                  {availability.available_count ?? 0} of {availability.total_count ?? 0} available
-                </p>
-              )}
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Start Time</Label>
-                  <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="bg-background" />
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> End
+                    </Label>
+                    <Input type="datetime-local" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="bg-background rounded-xl" />
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">End Time</Label>
-                  <Input type="datetime-local" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="bg-background" />
-                </div>
-              </div>
 
-              <Button className="w-full font-display gap-2" size="lg" onClick={handleBook} disabled={booking || vehicle.is_available === false}>
-                <Calendar className="h-4 w-4" />
-                {booking ? "Booking..." : vehicle.is_available === false ? "Unavailable" : "Book Now"}
-              </Button>
-            </div>
+                <Button
+                  className="w-full font-display gap-2 rounded-xl glow"
+                  size="lg"
+                  onClick={handleBook}
+                  disabled={booking || vehicle.is_available === false}
+                >
+                  <Calendar className="h-4 w-4" />
+                  {booking ? "Booking..." : vehicle.is_available === false ? "Unavailable" : "Book Now"}
+                </Button>
+
+                <div className="flex items-center justify-center gap-4 text-[10px] text-muted-foreground font-display uppercase tracking-wider">
+                  <span className="flex items-center gap-1"><Shield className="h-3 w-3" /> Insured</span>
+                  <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Verified</span>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </motion.div>
       </div>
