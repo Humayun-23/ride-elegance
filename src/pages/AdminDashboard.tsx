@@ -165,6 +165,30 @@ export default function AdminDashboard() {
           Shop Owner <span className="text-gradient">Dashboard</span>
         </h1>
 
+        {/* Quick nav */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            { label: "Shop", to: "/admin/shop", icon: Store, desc: "Edit shop details" },
+            { label: "Inventory", to: "/admin/inventory", icon: Package, desc: "Manage vehicles" },
+            { label: "Bookings", to: "/admin/bookings", icon: Bike, desc: "Confirm / complete" },
+            { label: "Reviews", to: "/admin/reviews", icon: Plus, desc: "Customer feedback" },
+          ].map((n) => (
+            <button
+              key={n.to}
+              onClick={() => navigate(n.to)}
+              className="text-left rounded-xl border border-border bg-card/60 hover:border-primary/30 hover:bg-card transition-all p-4 flex items-center gap-3 group"
+            >
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <n.icon className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-display font-bold">{n.label}</p>
+                <p className="text-xs text-muted-foreground">{n.desc}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-card border border-border">
             <TabsTrigger value="shops" className="font-display gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
