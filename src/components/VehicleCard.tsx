@@ -34,7 +34,7 @@ const TYPE_EMOJI: Record<string, string> = {
 
 export default function VehicleCard({ vehicle }: VehicleCardProps) {
   return (
-    <Link to={`/vehicles/${vehicle.id}`} className="group block h-full">
+    <Link to={`/bikes/${vehicle.id}`} className="group block h-full">
       <div className="overflow-hidden rounded-2xl border border-border/50 bg-card/60 backdrop-blur transition-all group-hover:border-primary/20 group-hover:bg-card group-hover:shadow-[0_8px_30px_hsl(45_100%_51%/0.08)] h-full flex flex-col">
         {/* Image */}
         <div className="aspect-[16/10] bg-secondary relative overflow-hidden">

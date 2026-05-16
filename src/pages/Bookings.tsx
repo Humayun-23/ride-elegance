@@ -345,7 +345,7 @@ export default function Bookings() {
                                     variant="ghost"
                                     size="icon"
                                     className="h-8 w-8 text-muted-foreground"
-                                    onClick={() => navigate(`/vehicles/${b.bike_id || b.id}`)}
+                                    onClick={() => navigate(`/bookings/${b.id}`)}
                                   >
                                     <ChevronRight className="h-4 w-4" />
                                   </Button>

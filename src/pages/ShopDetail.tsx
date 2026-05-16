@@ -48,36 +48,11 @@ export default function ShopDetail() {
     Promise.all([
       api.getShop(id),
       api.getBikesByShop(id).catch(() => []),
-      api.getShopReviews(id).catch(() => []),
-    ]).then(([s, b, r]) => {
+    ]).then(([s, b]) => {
       setShop(s);
       setBikes(Array.isArray(b) ? b : []);
-      setReviews(Array.isArray(r) ? r : []);
     }).finally(() => setLoading(false));
   }, [id]);
-
-  const submitReview = async () => {
-    if (!user) { navigate("/login"); return; }
-    if (!reviewText.trim() || reviewText.length > 500) {
-      toast({ title: "Comment must be 1-500 characters", variant: "destructive" });
-      return;
-    }
-    if (reviewRating < 1 || reviewRating > 5) {
-      toast({ title: "Rating must be 1-5", variant: "destructive" });
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const newReview = await api.createReview(id!, { rating: reviewRating, comment: reviewText });
-      setReviews((prev) => [newReview, ...prev]);
-      setReviewText("");
-      toast({ title: "Review submitted!" });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const handleAddVehicle = async () => {
     if (!vehicleForm.name || !vehicleForm.model || !vehicleForm.price_per_hour || !vehicleForm.price_per_day) {
@@ -349,105 +324,6 @@ export default function ShopDetail() {
           </DialogContent>
         </Dialog>
 
-        {/* Reviews Section */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <MessageSquare className="h-5 w-5 text-primary" />
-            <h2 className="font-display text-xl md:text-2xl font-bold">Reviews</h2>
-            <Badge variant="outline" className="font-display">{reviews.length}</Badge>
-          </div>
-
-          {user && (
-            <Card className="border-border/50 bg-card/60">
-              <CardContent className="p-6 space-y-4">
-                <h3 className="font-display font-bold text-sm">Write a Review</h3>
-                <div className="space-y-4">
-                  {/* Star rating picker */}
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Rating</Label>
-                    <div className="flex items-center gap-1">
-                      {[1, 2, 3, 4, 5].map((v) => (
-                        <button
-                          key={v}
-                          type="button"
-                          onClick={() => setReviewRating(v)}
-                          className="p-0.5 transition-transform hover:scale-110"
-                        >
-                          <Star
-                            className={`h-6 w-6 transition-colors ${
-                              v <= reviewRating ? "text-primary fill-primary" : "text-muted-foreground/20"
-                            }`}
-                          />
-                        </button>
-                      ))}
-                      <span className="text-sm text-muted-foreground ml-2 font-display">{reviewRating}/5</span>
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">
-                      Comment <span className="text-muted-foreground/50">({reviewText.length}/500)</span>
-                    </Label>
-                    <Textarea
-                      value={reviewText}
-                      onChange={(e) => setReviewText(e.target.value)}
-                      maxLength={500}
-                      className="bg-background rounded-xl"
-                      placeholder="Share your experience..."
-                      rows={3}
-                    />
-                  </div>
-                  <Button size="sm" onClick={submitReview} disabled={submitting} className="font-display gap-2 rounded-xl">
-                    <Send className="h-3.5 w-3.5" /> {submitting ? "Submitting..." : "Submit Review"}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <div className="space-y-3">
-            {reviews.length === 0 ? (
-              <Card className="border-dashed border-border/50 bg-transparent">
-                <CardContent className="p-8 text-center">
-                  <MessageSquare className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">No reviews yet. Be the first!</p>
-                </CardContent>
-              </Card>
-            ) : (
-              reviews.map((r, i) => (
-                <motion.div
-                  key={r.id || i}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                >
-                  <Card className="border-border/30 bg-card/40">
-                    <CardContent className="p-5 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center">
-                            <span className="text-xs font-display font-bold text-muted-foreground">
-                              {(r.user_name || "U")[0].toUpperCase()}
-                            </span>
-                          </div>
-                          <span className="text-sm font-display font-medium">{r.user_name || "User"}</span>
-                        </div>
-                        <div className="flex items-center gap-0.5">
-                          {[...Array(5)].map((_, j) => (
-                            <Star
-                              key={j}
-                              className={`h-3 w-3 ${j < (r.rating || 0) ? "text-primary fill-primary" : "text-muted-foreground/20"}`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <p className="text-sm text-muted-foreground leading-relaxed pl-10">{r.comment}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))
-            )}
-          </div>
-        </div>
       </div>
     </div>
   );
