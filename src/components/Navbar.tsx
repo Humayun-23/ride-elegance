@@ -28,7 +28,7 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-1">
-          <Link to="/search" className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary/50">
+          <Link to="/search-vehicles" className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary/50">
             Explore
           </Link>
           <Link to="/shops" className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary/50">
@@ -90,7 +90,7 @@ export default function Navbar() {
             className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl overflow-hidden"
           >
             <div className="p-4 space-y-1">
-              <Link to="/search" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>
+              <Link to="/search-vehicles" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>
                 Explore
               </Link>
               <Link to="/shops" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>

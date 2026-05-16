@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { ArrowLeft, Gauge, Calendar, Info, MapPin, Shield, Clock, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Gauge, Calendar, Info, MapPin, Shield, Clock, CheckCircle2, Star, MessageSquare } from "lucide-react";
 
 const TYPE_EMOJI: Record<string, string> = {
   scooty: "🛵", bike: "🏍️", car: "🚗", mountain: "🚵",
@@ -21,6 +21,7 @@ export default function VehicleDetail() {
   const { id } = useParams<{ id: string }>();
   const [vehicle, setVehicle] = useState<any>(null);
   const [availability, setAvailability] = useState<any>(null);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [loading, setLoading] = useState(true);
@@ -34,9 +35,11 @@ export default function VehicleDetail() {
     Promise.all([
       api.getBike(id),
       api.getAvailableInventory(id).catch(() => null),
-    ]).then(([bike, avail]) => {
+      api.getBikeReviews(id).catch(() => []),
+    ]).then(([bike, avail, revs]) => {
       setVehicle(bike);
       setAvailability(avail);
+      setReviews(Array.isArray(revs) ? revs : []);
     }).finally(() => setLoading(false));
   }, [id]);
 
@@ -182,6 +185,40 @@ export default function VehicleDetail() {
             </Card>
           </div>
         </motion.div>
+
+        {/* Reviews */}
+        <div className="mt-12 space-y-5">
+          <div className="flex items-center gap-3">
+            <MessageSquare className="h-5 w-5 text-primary" />
+            <h2 className="font-display text-xl md:text-2xl font-bold">Reviews</h2>
+            <Badge variant="outline" className="font-display">{reviews.length}</Badge>
+          </div>
+          {reviews.length === 0 ? (
+            <Card className="border-dashed border-border/50 bg-transparent">
+              <CardContent className="p-8 text-center text-sm text-muted-foreground">
+                No reviews yet. Reviews appear after a completed booking.
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {reviews.map((r, i) => (
+                <Card key={r.id || i} className="border-border/30 bg-card/40">
+                  <CardContent className="p-5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-display font-medium">{r.user_name || `User #${r.user_id}`}</span>
+                      <div className="flex items-center gap-0.5">
+                        {[...Array(5)].map((_, j) => (
+                          <Star key={j} className={`h-3 w-3 ${j < (r.rating || 0) ? "text-primary fill-primary" : "text-muted-foreground/20"}`} />
+                        ))}
+                      </div>
+                    </div>
+                    {r.comment && <p className="text-sm text-muted-foreground leading-relaxed">{r.comment}</p>}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

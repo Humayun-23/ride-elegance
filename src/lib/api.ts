@@ -133,13 +133,14 @@ export const api = {
   searchVehiclesByType: (type: string, params?: Record<string, string>) =>
     request<any[]>(`/search/vehicles/type/${type}${params ? "?" + new URLSearchParams(params) : ""}`),
 
-  // Reviews
-  getShopReviews: (shopId: string, params?: { skip?: number; limit?: number }) =>
-    request<any[]>(`/shops/${shopId}/reviews${params ? "?" + new URLSearchParams(params as any) : ""}`),
-  createReview: (shopId: string, data: { rating: number; comment?: string }) =>
-    request<any>(`/shops/${shopId}/reviews`, { method: "POST", body: JSON.stringify(data) }),
-  updateReview: (shopId: string, reviewId: string, data: { rating?: number; comment?: string }) =>
-    request<any>(`/shops/${shopId}/reviews/${reviewId}`, { method: "PUT", body: JSON.stringify(data) }),
-  deleteReview: (shopId: string, reviewId: string) =>
-    request<any>(`/shops/${shopId}/reviews/${reviewId}`, { method: "DELETE" }),
+  // Reviews (per-bike, tied to a completed booking)
+  createReview: (data: { booking_id: number; rating: number; comment?: string }) =>
+    request<any>(`/reviews/`, { method: "POST", body: JSON.stringify(data) }),
+  getBikeReviews: (bikeId: string) => request<any[]>(`/reviews/${bikeId}`),
+  listReviews: (params?: { skip?: number; limit?: number }) =>
+    request<any[]>(`/reviews/${params ? "?" + new URLSearchParams(params as any) : ""}`),
+
+  // Bookings (admin/list)
+  listBookings: (params?: { skip?: number; limit?: number }) =>
+    request<any[]>(`/bookings/${params ? "?" + new URLSearchParams(params as any) : ""}`),
 };
