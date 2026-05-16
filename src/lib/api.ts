@@ -1,4 +1,4 @@
-const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) || "https://rentwheels.duckdns.org/api/v1";
+const API_BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) || "https://api.gopanda.in/api/v1";
 
 function getToken(): string | null {
   return localStorage.getItem("auth_token");
