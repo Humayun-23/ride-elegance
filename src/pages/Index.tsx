@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Zap, Shield, Clock, ArrowRight, MapPin, Star, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
+import VehicleCard from "@/components/VehicleCard";
 
 const VEHICLE_TYPES = [
   { label: "Scooty", icon: "🛵", value: "scooty", desc: "Quick city rides" },
