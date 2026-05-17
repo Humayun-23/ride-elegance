@@ -1,3 +1,3 @@
-# Welcome to your Lovable project
+# GoPanda Frontend
 
-TODO: Document your project here
+React/Vite frontend for GoPanda, a vehicle rental platform.
