@@ -231,7 +231,60 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        {/* Recent activity */}
+        {(recentBookings.length > 0 || recentReviews.length > 0) && (
+          <div className="grid md:grid-cols-2 gap-4">
+            <Card className="border-border/50 bg-card/60">
+              <CardContent className="p-5 space-y-3">
+                <h3 className="font-display font-bold text-sm flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-primary" /> Recent Bookings
+                </h3>
+                {recentBookings.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No bookings yet.</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {recentBookings.map((b) => (
+                      <button key={b.id} onClick={() => navigate(`/bookings/${b.id}`)} className="w-full flex items-center justify-between text-left p-2.5 rounded-lg hover:bg-secondary/50 transition-colors text-xs">
+                        <div className="min-w-0">
+                          <p className="font-display font-medium truncate">Booking #{String(b.id).slice(0, 6)}</p>
+                          <p className="text-muted-foreground text-[11px]">{b.created_at ? new Date(b.created_at).toLocaleDateString("en-IN") : ""}</p>
+                        </div>
+                        <Badge variant="outline" className="capitalize text-[10px] font-display">{b.status}</Badge>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            <Card className="border-border/50 bg-card/60">
+              <CardContent className="p-5 space-y-3">
+                <h3 className="font-display font-bold text-sm flex items-center gap-2">
+                  <Star className="h-4 w-4 text-primary" /> Recent Reviews
+                </h3>
+                {recentReviews.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No reviews yet.</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {recentReviews.map((r) => (
+                      <div key={r.id} className="p-2.5 rounded-lg hover:bg-secondary/50 transition-colors space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-display">Bike #{r.bike_id}</span>
+                          <div className="flex">
+                            {[...Array(5)].map((_, j) => (
+                              <Star key={j} className={`h-3 w-3 ${j < (r.rating || 0) ? "text-primary fill-primary" : "text-muted-foreground/20"}`} />
+                            ))}
+                          </div>
+                        </div>
+                        {r.comment && <p className="text-xs text-muted-foreground line-clamp-1">{r.comment}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
           <TabsList className="bg-card border border-border">
             <TabsTrigger value="shops" className="font-display gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Store className="h-4 w-4" /> Shops
