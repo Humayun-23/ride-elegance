@@ -21,6 +21,7 @@ export default function VerifyEmail() {
   const [status, setStatus] = useState<"idle" | "verifying" | "verified" | "error">("idle");
   const [message, setMessage] = useState<string>("");
   const [resending, setResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
   const canVerify = useMemo(() => token.length > 0, [token]);
 
@@ -42,7 +43,16 @@ export default function VerifyEmail() {
       });
   }, [canVerify, navigate, setAuthToken, token]);
 
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = window.setInterval(() => {
+      setResendCooldown((seconds) => Math.max(seconds - 1, 0));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [resendCooldown]);
+
   const resend = async () => {
+    if (resendCooldown > 0) return;
     if (!email) {
       toast({ title: "Email required", description: "Enter your email to resend the verification link.", variant: "destructive" });
       return;
@@ -50,6 +60,7 @@ export default function VerifyEmail() {
     setResending(true);
     try {
       const res = await api.resendVerification(email);
+      setResendCooldown(30);
       toast({ title: "Verification email sent", description: res.message });
     } catch (err: any) {
       toast({ title: "Resend failed", description: err.message, variant: "destructive" });
@@ -106,8 +117,12 @@ export default function VerifyEmail() {
               />
             </div>
 
-            <Button className="w-full font-display rounded-xl glow" onClick={resend} disabled={resending}>
-              {resending ? "Sending…" : "Resend verification link"}
+            <Button className="w-full font-display rounded-xl glow" onClick={resend} disabled={resending || resendCooldown > 0}>
+              {resending
+                ? "Sending…"
+                : resendCooldown > 0
+                  ? `Resend in ${resendCooldown}s`
+                  : "Resend verification link"}
             </Button>
 
             <div className="text-xs text-muted-foreground text-center">
