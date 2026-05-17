@@ -312,7 +312,7 @@ export default function Index() {
             <span className="text-gradient">GoPanda</span>
           </span>
           <div className="flex items-center gap-6">
-            <a href="/search" className="hover:text-foreground transition-colors">Explore</a>
+            <a href="/search-vehicles" className="hover:text-foreground transition-colors">Explore</a>
             <a href="/shops" className="hover:text-foreground transition-colors">Shops</a>
             <a href="/register" className="hover:text-foreground transition-colors">Sign Up</a>
           </div>
