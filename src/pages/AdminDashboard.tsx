@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Plus, Store, Bike, Package } from "lucide-react";
+import { Plus, Store, Bike, Package, Calendar, TrendingUp, Star, Activity } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
