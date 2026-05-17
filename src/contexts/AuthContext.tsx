@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { api } from "@/lib/api";
 
 interface User {
@@ -19,6 +19,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   adminLogin: (email: string, password: string) => Promise<void>;
   register: (data: { firstname: string; lastname: string; email: string; password: string; phone_number?: string; user_type: string }) => Promise<void>;
+  setAuthToken: (accessToken: string) => void;
   logout: () => void;
 }
 
@@ -59,6 +60,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(res.access_token);
   };
 
+  const setAuthToken = useCallback((accessToken: string) => {
+    localStorage.setItem("auth_token", accessToken);
+    setToken(accessToken);
+  }, []);
+
   const register = async (data: { firstname: string; lastname: string; email: string; password: string; phone_number: string; user_type: "customer" | "shop_owner" }) => {
     await api.register(data);
   };
@@ -71,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, adminLogin, register, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, adminLogin, register, setAuthToken, logout }}>
       {children}
     </AuthContext.Provider>
   );

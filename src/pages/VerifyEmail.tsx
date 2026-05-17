@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,8 @@ import { motion } from "framer-motion";
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { setAuthToken } = useAuth();
   const { toast } = useToast();
   const token = searchParams.get("token") || "";
   const emailFromQuery = searchParams.get("email") || "";
@@ -28,12 +31,16 @@ export default function VerifyEmail() {
       .then((res) => {
         setStatus("verified");
         setMessage(res.message || "Email verified successfully.");
+        if (res.access_token) {
+          setAuthToken(res.access_token);
+          setTimeout(() => navigate("/", { replace: true }), 900);
+        }
       })
       .catch((err: any) => {
         setStatus("error");
         setMessage(err.message || "Verification failed.");
       });
-  }, [canVerify, token]);
+  }, [canVerify, navigate, setAuthToken, token]);
 
   const resend = async () => {
     if (!email) {
