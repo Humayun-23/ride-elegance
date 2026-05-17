@@ -7,10 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { User, Mail, Phone, LogOut, Save, Shield } from "lucide-react";
+import { User, Mail, Phone, LogOut, Save, Calendar, Star, ChevronRight } from "lucide-react";
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -20,12 +19,19 @@ export default function Profile() {
   const [lastname, setLastname] = useState("");
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
     setFirstname(user.firstname || "");
     setLastname(user.lastname || "");
     setPhone(user.phone_number || "");
+    api.getUserBookings({ limit: 50 }).then((b) => setBookings(Array.isArray(b) ? b : [])).catch(() => {});
+    api.listReviews({ limit: 100 }).then((r) => {
+      const mine = Array.isArray(r) ? r.filter((x: any) => x.user_id === user.id) : [];
+      setReviews(mine);
+    }).catch(() => {});
   }, [user]);
 
   const handleSave = async () => {
