@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Plus, Store, Bike, Package } from "lucide-react";
+import { Plus, Store, Bike, Package, Calendar, TrendingUp, Star, Activity } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,8 @@ export default function AdminDashboard() {
   const [shops, setShops] = useState<any[]>([]);
   const [shopBikes, setShopBikes] = useState<Record<string, any[]>>({});
   const [activeTab, setActiveTab] = useState("shops");
+  const [allBookings, setAllBookings] = useState<any[]>([]);
+  const [allReviews, setAllReviews] = useState<any[]>([]);
 
   // Shop form
   const [shopName, setShopName] = useState("");
@@ -60,7 +63,15 @@ export default function AdminDashboard() {
       navigate("/login");
       return;
     }
-    api.getShops().then(setShops).catch(() => {});
+    api.getShops().then(async (s) => {
+      setShops(s);
+      const bikeLists = await Promise.all((s || []).map((sh: any) => api.getBikesByShop(String(sh.id)).catch(() => [])));
+      const bikesMap: Record<string, any[]> = {};
+      (s || []).forEach((sh: any, i: number) => { bikesMap[sh.id] = bikeLists[i] || []; });
+      setShopBikes(bikesMap);
+    }).catch(() => {});
+    api.listBookings({ limit: 100 }).then((b) => setAllBookings(Array.isArray(b) ? b : [])).catch(() => {});
+    api.listReviews({ limit: 100 }).then((r) => setAllReviews(Array.isArray(r) ? r : [])).catch(() => {});
   }, [user]);
 
   const loadBikesForShop = async (shopId: string) => {
@@ -158,12 +169,43 @@ export default function AdminDashboard() {
 
   const selectClasses = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground";
 
+  const totalBikes = Object.values(shopBikes).reduce((a, l) => a + l.length, 0);
+  const activeBookings = allBookings.filter((b) => ["pending", "confirmed"].includes(b.status)).length;
+  const revenue = allBookings.filter((b) => ["completed", "returned"].includes(b.status)).reduce((a, b) => a + (Number(b.total_price) || 0), 0);
+  const avgRating = allReviews.length ? (allReviews.reduce((a, r) => a + (r.rating || 0), 0) / allReviews.length).toFixed(1) : "—";
+  const recentBookings = [...allBookings].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()).slice(0, 5);
+  const recentReviews = [...allReviews].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()).slice(0, 5);
+
+  const metrics = [
+    { label: "Total Vehicles", value: totalBikes, icon: Bike },
+    { label: "Active Bookings", value: activeBookings, icon: Calendar },
+    { label: "Revenue (₹)", value: revenue, icon: TrendingUp },
+    { label: "Avg Rating", value: avgRating, icon: Star },
+  ];
+
   return (
     <div className="min-h-screen pt-24 pb-16">
       <div className="container px-4 space-y-8">
         <h1 className="font-display text-3xl md:text-4xl font-bold">
           Shop Owner <span className="text-gradient">Dashboard</span>
         </h1>
+
+        {/* Metrics */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {metrics.map((m) => (
+            <Card key={m.label} className="border-border/50 bg-card/60 backdrop-blur">
+              <CardContent className="p-5 flex items-center gap-3">
+                <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <m.icon className="h-5 w-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-display text-2xl font-bold truncate">{m.value}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{m.label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
         {/* Quick nav */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -188,6 +230,60 @@ export default function AdminDashboard() {
             </button>
           ))}
         </div>
+
+        {/* Recent activity */}
+        {(recentBookings.length > 0 || recentReviews.length > 0) && (
+          <div className="grid md:grid-cols-2 gap-4">
+            <Card className="border-border/50 bg-card/60">
+              <CardContent className="p-5 space-y-3">
+                <h3 className="font-display font-bold text-sm flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-primary" /> Recent Bookings
+                </h3>
+                {recentBookings.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No bookings yet.</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {recentBookings.map((b) => (
+                      <button key={b.id} onClick={() => navigate(`/bookings/${b.id}`)} className="w-full flex items-center justify-between text-left p-2.5 rounded-lg hover:bg-secondary/50 transition-colors text-xs">
+                        <div className="min-w-0">
+                          <p className="font-display font-medium truncate">Booking #{String(b.id).slice(0, 6)}</p>
+                          <p className="text-muted-foreground text-[11px]">{b.created_at ? new Date(b.created_at).toLocaleDateString("en-IN") : ""}</p>
+                        </div>
+                        <Badge variant="outline" className="capitalize text-[10px] font-display">{b.status}</Badge>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            <Card className="border-border/50 bg-card/60">
+              <CardContent className="p-5 space-y-3">
+                <h3 className="font-display font-bold text-sm flex items-center gap-2">
+                  <Star className="h-4 w-4 text-primary" /> Recent Reviews
+                </h3>
+                {recentReviews.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No reviews yet.</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {recentReviews.map((r) => (
+                      <div key={r.id} className="p-2.5 rounded-lg hover:bg-secondary/50 transition-colors space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-display">Bike #{r.bike_id}</span>
+                          <div className="flex">
+                            {[...Array(5)].map((_, j) => (
+                              <Star key={j} className={`h-3 w-3 ${j < (r.rating || 0) ? "text-primary fill-primary" : "text-muted-foreground/20"}`} />
+                            ))}
+                          </div>
+                        </div>
+                        {r.comment && <p className="text-xs text-muted-foreground line-clamp-1">{r.comment}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-card border border-border">

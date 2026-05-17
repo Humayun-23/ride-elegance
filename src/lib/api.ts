@@ -14,6 +14,12 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
   if (!res.ok) {
+    if (res.status === 401 && typeof window !== "undefined") {
+      localStorage.removeItem("auth_token");
+      const here = window.location.pathname;
+      const isAuthRoute = /^\/(login|register|admin\/login|forgot-password|password-reset)/.test(here);
+      if (!isAuthRoute) window.location.href = "/login";
+    }
     const err = await res.json().catch(() => ({ detail: "Request failed" }));
     throw new Error(err.detail || err.message || `Error ${res.status}`);
   }

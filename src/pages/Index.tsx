@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Zap, Shield, Clock, ArrowRight, MapPin, Star, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
+import VehicleCard from "@/components/VehicleCard";
 
 const VEHICLE_TYPES = [
   { label: "Scooty", icon: "🛵", value: "scooty", desc: "Quick city rides" },
@@ -27,9 +29,16 @@ const STATS = [
 export default function Index() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [featuredShops, setFeaturedShops] = useState<any[]>([]);
+  const [popularBikes, setPopularBikes] = useState<any[]>([]);
+
+  useEffect(() => {
+    api.getShops({ limit: 6 }).then((s) => setFeaturedShops(Array.isArray(s) ? s.slice(0, 6) : [])).catch(() => {});
+    api.searchVehicles({ is_available: "true", limit: "6" }).then((b) => setPopularBikes(Array.isArray(b) ? b.slice(0, 6) : [])).catch(() => {});
+  }, []);
 
   const handleSearch = () => {
-    navigate(`/search${query ? `?q=${encodeURIComponent(query)}` : ""}`);
+    navigate(`/search-vehicles${query ? `?q=${encodeURIComponent(query)}` : ""}`);
   };
 
   return (
@@ -98,7 +107,7 @@ export default function Index() {
                 key={t.value}
                 whileHover={{ y: -6, scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => navigate(`/search?type=${t.value}`)}
+                onClick={() => navigate(`/search-vehicles?type=${t.value}`)}
                 className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card/60 backdrop-blur p-5 w-32 md:w-36 hover:border-primary/30 hover:glow transition-all"
               >
                 <span className="text-3xl md:text-4xl">{t.icon}</span>
@@ -190,7 +199,75 @@ export default function Index() {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* Featured Shops */}
+      {featuredShops.length > 0 && (
+        <section className="py-20 border-t border-border bg-card/30">
+          <div className="container px-4 space-y-10">
+            <div className="flex items-end justify-between gap-4 flex-wrap">
+              <div>
+                <p className="text-xs font-display uppercase tracking-[0.3em] text-muted-foreground mb-2">Trusted partners</p>
+                <h2 className="font-display text-3xl md:text-4xl font-bold">Featured <span className="text-gradient">Shops</span></h2>
+              </div>
+              <Button variant="ghost" className="font-display gap-1" onClick={() => navigate("/shops")}>
+                All shops <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {featuredShops.map((s, i) => (
+                <motion.button
+                  key={s.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05 }}
+                  onClick={() => navigate(`/shops/${s.id}`)}
+                  className="text-left rounded-2xl border border-border bg-card p-5 hover:border-primary/30 hover:glow transition-all group"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center text-xl">🏪</div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-display font-bold truncate group-hover:text-primary transition-colors">{s.name}</h3>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1 truncate">
+                        <MapPin className="h-3 w-3 shrink-0" /> {s.city || s.address || "—"}
+                      </p>
+                      {(s.opening_time || s.closing_time) && (
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                          <Clock className="h-2.5 w-2.5 inline mr-1" />{s.opening_time || "?"} – {s.closing_time || "?"}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Popular Vehicles */}
+      {popularBikes.length > 0 && (
+        <section className="py-20">
+          <div className="container px-4 space-y-10">
+            <div className="flex items-end justify-between gap-4 flex-wrap">
+              <div>
+                <p className="text-xs font-display uppercase tracking-[0.3em] text-muted-foreground mb-2">Hot picks</p>
+                <h2 className="font-display text-3xl md:text-4xl font-bold">Popular <span className="text-gradient">Vehicles</span></h2>
+              </div>
+              <Button variant="ghost" className="font-display gap-1" onClick={() => navigate("/search-vehicles")}>
+                Browse all <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {popularBikes.map((v, i) => (
+                <motion.div key={v.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
+                  <VehicleCard vehicle={v} />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="py-24">
         <div className="container px-4">
           <motion.div
@@ -219,7 +296,7 @@ export default function Index() {
                   variant="outline"
                   size="lg"
                   className="font-display gap-2 rounded-xl px-8"
-                  onClick={() => navigate("/search")}
+                  onClick={() => navigate("/search-vehicles")}
                 >
                   Browse Vehicles
                 </Button>
@@ -235,7 +312,7 @@ export default function Index() {
             <span className="text-gradient">GoPanda</span>
           </span>
           <div className="flex items-center gap-6">
-            <a href="/search" className="hover:text-foreground transition-colors">Explore</a>
+            <a href="/search-vehicles" className="hover:text-foreground transition-colors">Explore</a>
             <a href="/shops" className="hover:text-foreground transition-colors">Shops</a>
             <a href="/register" className="hover:text-foreground transition-colors">Sign Up</a>
           </div>
