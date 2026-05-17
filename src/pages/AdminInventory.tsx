@@ -34,6 +34,7 @@ export default function AdminInventory() {
     name: "", model: "", bike_type: "bike", engine_cc: "",
     description: "", price_per_hour: "", price_per_day: "", condition: "good",
   });
+  const [bikeImages, setBikeImages] = useState<File[]>([]);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -52,6 +53,7 @@ export default function AdminInventory() {
   const openAdd = () => {
     setEditing(null);
     setForm({ name: "", model: "", bike_type: "bike", engine_cc: "", description: "", price_per_hour: "", price_per_day: "", condition: "good" });
+    setBikeImages([]);
     setOpen(true);
   };
   const openEdit = (b: any) => {
@@ -63,6 +65,7 @@ export default function AdminInventory() {
       price_per_day: b.price_per_day?.toString() || "",
       condition: b.condition || "good",
     });
+    setBikeImages([]);
     setOpen(true);
   };
 
@@ -78,12 +81,27 @@ export default function AdminInventory() {
       if (form.description) payload.description = form.description;
       if (editing) {
         const updated = await api.updateBike(String(editing.id), payload);
+        if (bikeImages.length > 0) {
+          try {
+            await api.uploadBikeImages(String(editing.id), bikeImages);
+          } catch (err: any) {
+            toast({ title: "Vehicle updated, image upload failed", description: err.message, variant: "destructive" });
+          }
+        }
         setBikes((p) => p.map((b) => (b.id === updated.id ? updated : b)));
         toast({ title: "Vehicle updated" });
       } else {
         payload.shop_id = Number(shopId);
         const created = await api.createBike(payload);
-        setBikes((p) => [...p, created]);
+        let createdWithImages = created;
+        if (bikeImages.length > 0) {
+          try {
+            createdWithImages = await api.uploadBikeImages(String(created.id), bikeImages);
+          } catch (err: any) {
+            toast({ title: "Vehicle added, image upload failed", description: err.message, variant: "destructive" });
+          }
+        }
+        setBikes((p) => [...p, createdWithImages]);
         toast({ title: "Vehicle added" });
       }
       setOpen(false);
@@ -155,6 +173,18 @@ export default function AdminInventory() {
                       </Select>
                     </div>
                     <div className="space-y-1.5 col-span-2"><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+                    <div className="space-y-1.5 col-span-2">
+                      <Label>Vehicle Photos (max 3)</Label>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={(e) => setBikeImages(Array.from(e.target.files || []).slice(0, 3))}
+                      />
+                      {bikeImages.length > 0 && (
+                        <p className="text-xs text-muted-foreground">Selected {bikeImages.length} file(s)</p>
+                      )}
+                    </div>
                   </div>
                   <Button className="w-full font-display" onClick={submit}>{editing ? "Save changes" : "Add"}</Button>
                 </div>

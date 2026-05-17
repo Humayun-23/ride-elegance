@@ -40,6 +40,7 @@ export default function AdminDashboard() {
   const [shopDesc, setShopDesc] = useState("");
   const [shopOpeningTime, setShopOpeningTime] = useState("");
   const [shopClosingTime, setShopClosingTime] = useState("");
+  const [shopImage, setShopImage] = useState<File | null>(null);
 
   // Vehicle form
   const [bikeName, setBikeName] = useState("");
@@ -52,6 +53,7 @@ export default function AdminDashboard() {
   const [bikeCondition, setBikeCondition] = useState("good");
   const [bikeAvailable, setBikeAvailable] = useState(true);
   const [bikeShopId, setBikeShopId] = useState("");
+  const [bikeImages, setBikeImages] = useState<File[]>([]);
 
   // Inventory form
   const [invBikeId, setInvBikeId] = useState("");
@@ -84,7 +86,7 @@ export default function AdminDashboard() {
   const resetShopForm = () => {
     setShopName(""); setShopPhone(""); setShopAddress(""); setShopCity("");
     setShopState(""); setShopZipCode(""); setShopDesc("");
-    setShopOpeningTime(""); setShopClosingTime("");
+    setShopOpeningTime(""); setShopClosingTime(""); setShopImage(null);
   };
 
   const createShop = async () => {
@@ -106,7 +108,15 @@ export default function AdminDashboard() {
       if (shopClosingTime) payload.closing_time = shopClosingTime;
 
       const shop = await api.createShop(payload);
-      setShops((p) => [...p, shop]);
+      let created = shop;
+      if (shopImage) {
+        try {
+          created = await api.uploadShopImage(String(shop.id), shopImage);
+        } catch (err: any) {
+          toast({ title: "Shop created, image upload failed", description: err.message, variant: "destructive" });
+        }
+      }
+      setShops((p) => [...p, created]);
       resetShopForm();
       toast({ title: "Shop created!" });
     } catch (err: any) {
@@ -117,7 +127,7 @@ export default function AdminDashboard() {
   const resetVehicleForm = () => {
     setBikeName(""); setBikeModel(""); setBikeType("bike"); setBikeEngineCC("");
     setBikeDesc(""); setBikePriceHour(""); setBikePriceDay("");
-    setBikeCondition("good"); setBikeAvailable(true); setBikeShopId("");
+    setBikeCondition("good"); setBikeAvailable(true); setBikeShopId(""); setBikeImages([]);
   };
 
   const createVehicle = async () => {
@@ -135,7 +145,14 @@ export default function AdminDashboard() {
       if (bikeEngineCC) payload.engine_cc = Number(bikeEngineCC);
       if (bikeDesc) payload.description = bikeDesc;
 
-      await api.createBike(payload);
+      const created = await api.createBike(payload);
+      if (bikeImages.length > 0) {
+        try {
+          await api.uploadBikeImages(String(created.id), bikeImages);
+        } catch (err: any) {
+          toast({ title: "Vehicle created, image upload failed", description: err.message, variant: "destructive" });
+        }
+      }
       resetVehicleForm();
       toast({ title: "Vehicle added!" });
     } catch (err: any) {
@@ -347,6 +364,15 @@ export default function AdminDashboard() {
                     <Label>Description</Label>
                     <Textarea value={shopDesc} onChange={(e) => setShopDesc(e.target.value)} className="bg-background" />
                   </div>
+                  <div className="space-y-2">
+                    <Label>Shop Photo (1 image)</Label>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setShopImage(e.target.files?.[0] || null)}
+                      className="bg-background"
+                    />
+                  </div>
                   <Button className="w-full font-display" onClick={createShop}>Create Shop</Button>
                 </div>
               </DialogContent>
@@ -456,6 +482,19 @@ export default function AdminDashboard() {
                   <div className="space-y-2">
                     <Label>Description</Label>
                     <Textarea value={bikeDesc} onChange={(e) => setBikeDesc(e.target.value)} className="bg-background" placeholder="Optional" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Vehicle Photos (max 3)</Label>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => setBikeImages(Array.from(e.target.files || []).slice(0, 3))}
+                      className="bg-background"
+                    />
+                    {bikeImages.length > 0 && (
+                      <p className="text-xs text-muted-foreground">Selected {bikeImages.length} file(s)</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label>Shop <span className="text-destructive">*</span></Label>

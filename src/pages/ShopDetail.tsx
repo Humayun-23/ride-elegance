@@ -37,6 +37,7 @@ export default function ShopDetail() {
     description: "", price_per_hour: "", price_per_day: "",
     condition: "good" as "excellent" | "good" | "fair",
   });
+  const [vehicleImages, setVehicleImages] = useState<File[]>([]);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -73,9 +74,18 @@ export default function ShopDetail() {
         condition: vehicleForm.condition,
         is_available: true,
       });
-      setBikes((prev) => [...prev, newBike]);
+      let created = newBike;
+      if (vehicleImages.length > 0) {
+        try {
+          created = await api.uploadBikeImages(String(newBike.id), vehicleImages);
+        } catch (err: any) {
+          toast({ title: "Vehicle added, image upload failed", description: err.message, variant: "destructive" });
+        }
+      }
+      setBikes((prev) => [...prev, created]);
       setShowAddVehicle(false);
       setVehicleForm({ name: "", model: "", bike_type: "bike", engine_cc: "", description: "", price_per_hour: "", price_per_day: "", condition: "good" });
+      setVehicleImages([]);
       toast({ title: "Vehicle added!" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -128,8 +138,12 @@ export default function ShopDetail() {
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20">
-                      <Store className="h-7 w-7 text-primary" />
+                    <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20 overflow-hidden">
+                      {shop.image_url ? (
+                        <img src={shop.image_url} alt={shop.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <Store className="h-7 w-7 text-primary" />
+                      )}
                     </div>
                     <div>
                       <h1 className="font-display text-2xl md:text-3xl font-bold">{shop.name}</h1>
@@ -258,6 +272,19 @@ export default function ShopDetail() {
                             <SelectItem value="fair">Fair</SelectItem>
                           </SelectContent>
                         </Select>
+                      </div>
+                      <div className="space-y-1.5 md:col-span-2">
+                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Vehicle Photos (max 3)</Label>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={(e) => setVehicleImages(Array.from(e.target.files || []).slice(0, 3))}
+                          className="bg-background rounded-xl"
+                        />
+                        {vehicleImages.length > 0 && (
+                          <p className="text-xs text-muted-foreground">Selected {vehicleImages.length} file(s)</p>
+                        )}
                       </div>
                       <div className="space-y-1.5 md:col-span-2">
                         <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Description</Label>

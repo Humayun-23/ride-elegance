@@ -18,6 +18,7 @@ export default function AdminShop() {
   const [shops, setShops] = useState<any[]>([]);
   const [selected, setSelected] = useState<any>(null);
   const [saving, setSaving] = useState(false);
+  const [shopImage, setShopImage] = useState<File | null>(null);
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
@@ -32,8 +33,17 @@ export default function AdminShop() {
     setSaving(true);
     try {
       const updated = await api.updateShop(String(selected.id), selected);
-      setShops((p) => p.map((s) => (s.id === updated.id ? updated : s)));
-      setSelected(updated);
+      let updatedWithImage = updated;
+      if (shopImage) {
+        try {
+          updatedWithImage = await api.uploadShopImage(String(updated.id), shopImage);
+        } catch (err: any) {
+          toast({ title: "Shop updated, image upload failed", description: err.message, variant: "destructive" });
+        }
+      }
+      setShops((p) => p.map((s) => (s.id === updatedWithImage.id ? updatedWithImage : s)));
+      setSelected(updatedWithImage);
+      setShopImage(null);
       toast({ title: "Shop updated" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -116,6 +126,14 @@ export default function AdminShop() {
                 <div className="space-y-1.5 md:col-span-2">
                   <Label>Description</Label>
                   <Textarea value={selected.description || ""} onChange={(e) => set("description", e.target.value)} />
+                </div>
+                <div className="space-y-1.5 md:col-span-2">
+                  <Label>Shop Photo (1 image)</Label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setShopImage(e.target.files?.[0] || null)}
+                  />
                 </div>
               </div>
               <div className="flex gap-2">

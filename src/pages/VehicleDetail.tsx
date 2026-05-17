@@ -22,6 +22,7 @@ export default function VehicleDetail() {
   const [vehicle, setVehicle] = useState<any>(null);
   const [availability, setAvailability] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [activeImage, setActiveImage] = useState(0);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [loading, setLoading] = useState(true);
@@ -40,6 +41,7 @@ export default function VehicleDetail() {
       setVehicle(bike);
       setAvailability(avail);
       setReviews(Array.isArray(revs) ? revs : []);
+      setActiveImage(0);
     }).finally(() => setLoading(false));
   }, [id]);
 
@@ -68,6 +70,11 @@ export default function VehicleDetail() {
   );
   if (!vehicle) return <div className="min-h-screen pt-24 flex items-center justify-center text-muted-foreground">Vehicle not found</div>;
 
+  const images = Array.isArray(vehicle.image)
+    ? vehicle.image.map((img: any) => img.image_url).filter(Boolean)
+    : [];
+  const heroImage = images[activeImage] || vehicle.image_url || "";
+
   return (
     <div className="min-h-screen pt-24 pb-16">
       <div className="container px-4 max-w-6xl">
@@ -77,14 +84,37 @@ export default function VehicleDetail() {
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="grid lg:grid-cols-2 gap-8">
           {/* Image */}
-          <div className="rounded-2xl border border-border/50 bg-card/60 overflow-hidden aspect-[4/3]">
-            {vehicle.image_url ? (
-              <img src={vehicle.image_url} alt={vehicle.name} className="h-full w-full object-cover" />
-            ) : (
-              <div className="flex h-full items-center justify-center bg-gradient-to-br from-secondary to-background">
-                <span className="text-8xl opacity-20">
-                  {TYPE_EMOJI[vehicle.bike_type || ""] || "🚗"}
-                </span>
+          <div className="space-y-3">
+            <div className="rounded-2xl border border-border/50 bg-card/60 overflow-hidden aspect-[4/3] relative">
+              {heroImage ? (
+                <img src={heroImage} alt={vehicle.name} className="h-full w-full object-cover" />
+              ) : (
+                <div className="flex h-full items-center justify-center bg-gradient-to-br from-secondary to-background">
+                  <span className="text-8xl opacity-20">
+                    {TYPE_EMOJI[vehicle.bike_type || ""] || "🚗"}
+                  </span>
+                </div>
+              )}
+              {images.length > 1 && (
+                <div className="absolute bottom-3 right-3 rounded-full bg-background/80 px-2.5 py-1 text-[10px] font-display uppercase tracking-wider text-foreground border border-border/50 backdrop-blur">
+                  {activeImage + 1} / {images.length}
+                </div>
+              )}
+            </div>
+
+            {images.length > 1 && (
+              <div className="grid grid-cols-5 gap-2">
+                {images.map((img: string, i: number) => (
+                  <button
+                    key={img}
+                    onClick={() => setActiveImage(i)}
+                    className={`rounded-xl overflow-hidden border ${i === activeImage ? "border-primary" : "border-border/50"} bg-card/60 aspect-[4/3] hover:border-primary/50 transition-colors`}
+                    aria-label={`View image ${i + 1}`}
+                    type="button"
+                  >
+                    <img src={img} alt={`${vehicle.name} ${i + 1}`} className="h-full w-full object-cover" />
+                  </button>
+                ))}
               </div>
             )}
           </div>

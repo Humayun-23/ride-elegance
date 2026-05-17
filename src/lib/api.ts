@@ -7,9 +7,12 @@ function getToken(): string | null {
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
     ...((options.headers as Record<string, string>) || {}),
   };
+  const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
+  if (!isFormData && !("Content-Type" in headers)) {
+    headers["Content-Type"] = "application/json";
+  }
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
@@ -77,6 +80,11 @@ export const api = {
   getShop: (id: string) => request<any>(`/shops/${id}`),
   updateShop: (id: string, data: any) => request<any>(`/shops/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteShop: (id: string) => request<any>(`/shops/${id}`, { method: "DELETE" }),
+  uploadShopImage: (shopId: string, file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return request<any>(`/shops/${shopId}/image`, { method: "POST", body: form });
+  },
 
   // Bookings
   createBooking: (data: { bike_id: number; start_time: string; end_time: string }) =>
@@ -120,6 +128,11 @@ export const api = {
   deleteBike: (id: string) => request<any>(`/bikes/${id}`, { method: "DELETE" }),
   getBikesByShop: (shopId: string, params?: { skip?: number; limit?: number }) =>
     request<any[]>(`/bikes/shop/${shopId}${params ? "?" + new URLSearchParams(params as any) : ""}`),
+  uploadBikeImages: (bikeId: string, files: File[]) => {
+    const form = new FormData();
+    files.forEach((file) => form.append("files", file));
+    return request<any>(`/bikes/${bikeId}/images`, { method: "POST", body: form });
+  },
 
   // Inventory
   createInventory: (data: { bike_id: number; shop_id: number; total_quantity: number }) =>
