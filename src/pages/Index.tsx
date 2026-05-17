@@ -296,7 +296,7 @@ export default function Index() {
                   variant="outline"
                   size="lg"
                   className="font-display gap-2 rounded-xl px-8"
-                  onClick={() => navigate("/search")}
+                  onClick={() => navigate("/search-vehicles")}
                 >
                   Browse Vehicles
                 </Button>
