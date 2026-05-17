@@ -24,7 +24,7 @@ export default function Navbar() {
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold">
           <Car className="h-6 w-6 text-primary" />
-          <span className="text-gradient">RIDEX</span>
+          <span className="text-gradient">GoPanda</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-1">

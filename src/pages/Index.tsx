@@ -163,7 +163,7 @@ export default function Index() {
           >
             <p className="text-xs font-display uppercase tracking-[0.3em] text-muted-foreground">Why choose us</p>
             <h2 className="font-display text-3xl md:text-5xl font-bold">
-              Why <span className="text-gradient">RIDEX</span>?
+              Why <span className="text-gradient">GoPanda</span>?
             </h2>
           </motion.div>
           <div className="grid md:grid-cols-3 gap-6">
@@ -232,14 +232,14 @@ export default function Index() {
       <footer className="border-t border-border py-10">
         <div className="container px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <span className="font-display font-bold text-foreground text-lg">
-            <span className="text-gradient">RIDEX</span>
+            <span className="text-gradient">GoPanda</span>
           </span>
           <div className="flex items-center gap-6">
             <a href="/search" className="hover:text-foreground transition-colors">Explore</a>
             <a href="/shops" className="hover:text-foreground transition-colors">Shops</a>
             <a href="/register" className="hover:text-foreground transition-colors">Sign Up</a>
           </div>
-          <span>© {new Date().getFullYear()} RIDEX. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} GoPanda. All rights reserved.</span>
         </div>
       </footer>
     </div>
