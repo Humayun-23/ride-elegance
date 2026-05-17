@@ -61,7 +61,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (data: { firstname: string; lastname: string; email: string; password: string; phone_number: string; user_type: "customer" | "shop_owner" }) => {
     await api.register(data);
-    await login(data.email, data.password);
   };
 
   const logout = () => {

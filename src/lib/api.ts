@@ -52,6 +52,10 @@ export const api = {
     phone_number: string;
     user_type: "customer" | "shop_owner";
   }) => request<any>("/users/", { method: "POST", body: JSON.stringify(data) }),
+  verifyEmail: (token: string) =>
+    request<{ message: string }>("/users/verify-email", { method: "POST", body: JSON.stringify({ token }) }),
+  resendVerification: (email: string) =>
+    request<{ message: string }>("/users/verify-email/resend", { method: "POST", body: JSON.stringify({ email }) }),
   passwordResetRequest: (data: { email: string }) =>
     request<{ message: string }>("/password-reset/request", { method: "POST", body: JSON.stringify(data) }),
   passwordResetConfirm: (data: { token: string; new_password: string }) =>

@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerifyEmail from "./pages/VerifyEmail";
 import ForgotPassword from "./pages/ForgotPassword";
 import SearchVehicles from "./pages/SearchVehicles";
 import VehicleDetail from "./pages/VehicleDetail";
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/password-reset/:token" element={<PasswordReset />} />
             <Route path="/search-vehicles" element={<SearchVehicles />} />

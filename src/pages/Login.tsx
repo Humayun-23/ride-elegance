@@ -25,6 +25,11 @@ export default function Login() {
       await login(email, password);
       navigate("/");
     } catch (err: any) {
+      if (String(err.message || "").toLowerCase().includes("email not verified")) {
+        toast({ title: "Verify your email", description: "Check your inbox to activate your account." });
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+        return;
+      }
       toast({ title: "Login failed", description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
