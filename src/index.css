@@ -95,7 +95,7 @@
   }
 
   .glass {
-    background: hsl(0 0% 8% / 0.6);
+    background: hsl(0 0% 100% / 0.7);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
