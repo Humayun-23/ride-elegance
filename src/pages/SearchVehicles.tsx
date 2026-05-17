@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api } from "@/lib/api";
 import VehicleCard from "@/components/VehicleCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Search, SlidersHorizontal, Bike, Car } from "lucide-react";
+import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import { motion } from "framer-motion";
 
 const TYPES = [
@@ -15,12 +14,23 @@ const TYPES = [
   { value: "car", label: "Car", icon: "🚗" },
 ];
 
+const SORTS = [
+  { value: "default", label: "Default" },
+  { value: "price_asc", label: "Price ↑" },
+  { value: "price_desc", label: "Price ↓" },
+  { value: "rating", label: "Rating" },
+];
+
+const PAGE_SIZE = 12;
+
 export default function SearchVehicles() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const [activeType, setActiveType] = useState(searchParams.get("type") || "all");
+  const [sort, setSort] = useState("default");
+  const [page, setPage] = useState(0);
 
   const fetchVehicles = async () => {
     setLoading(true);
@@ -34,6 +44,7 @@ export default function SearchVehicles() {
         data = await api.searchVehicles(params);
       }
       setVehicles(Array.isArray(data) ? data : []);
+      setPage(0);
     } catch {
       setVehicles([]);
     } finally {
@@ -41,9 +52,7 @@ export default function SearchVehicles() {
     }
   };
 
-  useEffect(() => {
-    fetchVehicles();
-  }, [activeType]);
+  useEffect(() => { fetchVehicles(); }, [activeType]);
 
   const handleSearch = () => {
     setSearchParams(query ? { q: query } : {});
@@ -51,10 +60,20 @@ export default function SearchVehicles() {
     fetchVehicles();
   };
 
+  const sorted = useMemo(() => {
+    const arr = [...vehicles];
+    if (sort === "price_asc") arr.sort((a, b) => (a.price_per_hour || 0) - (b.price_per_hour || 0));
+    else if (sort === "price_desc") arr.sort((a, b) => (b.price_per_hour || 0) - (a.price_per_hour || 0));
+    else if (sort === "rating") arr.sort((a, b) => (b.avg_rating || b.rating || 0) - (a.avg_rating || a.rating || 0));
+    return arr;
+  }, [vehicles, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const pageItems = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
   return (
     <div className="min-h-screen pt-24 pb-16">
       <div className="container px-4 space-y-8">
-        {/* Header */}
         <div className="space-y-6">
           <div>
             <p className="text-xs font-display uppercase tracking-[0.3em] text-muted-foreground mb-2">Explore</p>
@@ -63,7 +82,6 @@ export default function SearchVehicles() {
             </h1>
           </div>
 
-          {/* Search bar */}
           <div className="flex gap-2 max-w-2xl">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -80,7 +98,6 @@ export default function SearchVehicles() {
             </Button>
           </div>
 
-          {/* Type filters */}
           <div className="flex gap-2 flex-wrap">
             {TYPES.map((t) => (
               <button
@@ -102,14 +119,24 @@ export default function SearchVehicles() {
           </div>
         </div>
 
-        {/* Results count */}
         {!loading && vehicles.length > 0 && (
-          <p className="text-sm text-muted-foreground">
-            Showing <span className="text-foreground font-display font-bold">{vehicles.length}</span> vehicles
-          </p>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <p className="text-sm text-muted-foreground">
+              Showing <span className="text-foreground font-display font-bold">{pageItems.length}</span> of <span className="text-foreground font-display font-bold">{sorted.length}</span>
+            </p>
+            <div className="flex items-center gap-2">
+              <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+              <select
+                value={sort}
+                onChange={(e) => { setSort(e.target.value); setPage(0); }}
+                className="bg-card border border-border rounded-lg px-3 py-1.5 text-sm font-display"
+              >
+                {SORTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
+            </div>
+          </div>
         )}
 
-        {/* Content */}
         {loading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {[...Array(6)].map((_, i) => (
@@ -117,34 +144,39 @@ export default function SearchVehicles() {
             ))}
           </div>
         ) : vehicles.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-24 space-y-6"
-          >
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-24 space-y-6">
             <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
               <Search className="h-10 w-10 text-primary/50" />
             </div>
             <div className="space-y-2">
               <h2 className="font-display text-xl font-bold">No vehicles found</h2>
-              <p className="text-muted-foreground text-sm max-w-md mx-auto">
-                Try adjusting your search or browse a different category.
-              </p>
+              <p className="text-muted-foreground text-sm max-w-md mx-auto">Try adjusting your search or browse a different category.</p>
             </div>
           </motion.div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {vehicles.map((v, i) => (
-              <motion.div
-                key={v.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.04 }}
-              >
-                <VehicleCard vehicle={v} />
-              </motion.div>
-            ))}
-          </div>
+          <>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {pageItems.map((v, i) => (
+                <motion.div key={v.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+                  <VehicleCard vehicle={v} />
+                </motion.div>
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 pt-6">
+                <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))} className="font-display gap-1">
+                  <ChevronLeft className="h-4 w-4" /> Prev
+                </Button>
+                <span className="text-sm font-display text-muted-foreground">
+                  Page <span className="text-foreground font-bold">{page + 1}</span> / {totalPages}
+                </span>
+                <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))} className="font-display gap-1">
+                  Next <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
