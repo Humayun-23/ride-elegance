@@ -27,6 +27,8 @@ export default function AdminDashboard() {
   const [shops, setShops] = useState<any[]>([]);
   const [shopBikes, setShopBikes] = useState<Record<string, any[]>>({});
   const [activeTab, setActiveTab] = useState("shops");
+  const [allBookings, setAllBookings] = useState<any[]>([]);
+  const [allReviews, setAllReviews] = useState<any[]>([]);
 
   // Shop form
   const [shopName, setShopName] = useState("");
@@ -61,7 +63,15 @@ export default function AdminDashboard() {
       navigate("/login");
       return;
     }
-    api.getShops().then(setShops).catch(() => {});
+    api.getShops().then(async (s) => {
+      setShops(s);
+      const bikeLists = await Promise.all((s || []).map((sh: any) => api.getBikesByShop(String(sh.id)).catch(() => [])));
+      const bikesMap: Record<string, any[]> = {};
+      (s || []).forEach((sh: any, i: number) => { bikesMap[sh.id] = bikeLists[i] || []; });
+      setShopBikes(bikesMap);
+    }).catch(() => {});
+    api.listBookings({ limit: 100 }).then((b) => setAllBookings(Array.isArray(b) ? b : [])).catch(() => {});
+    api.listReviews({ limit: 100 }).then((r) => setAllReviews(Array.isArray(r) ? r : [])).catch(() => {});
   }, [user]);
 
   const loadBikesForShop = async (shopId: string) => {
