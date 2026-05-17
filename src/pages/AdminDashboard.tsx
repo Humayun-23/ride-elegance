@@ -285,6 +285,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-card border border-border">
             <TabsTrigger value="shops" className="font-display gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Store className="h-4 w-4" /> Shops
