@@ -29,9 +29,16 @@ const STATS = [
 export default function Index() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [featuredShops, setFeaturedShops] = useState<any[]>([]);
+  const [popularBikes, setPopularBikes] = useState<any[]>([]);
+
+  useEffect(() => {
+    api.getShops({ limit: 6 }).then((s) => setFeaturedShops(Array.isArray(s) ? s.slice(0, 6) : [])).catch(() => {});
+    api.searchVehicles({ is_available: "true", limit: "6" }).then((b) => setPopularBikes(Array.isArray(b) ? b.slice(0, 6) : [])).catch(() => {});
+  }, []);
 
   const handleSearch = () => {
-    navigate(`/search${query ? `?q=${encodeURIComponent(query)}` : ""}`);
+    navigate(`/search-vehicles${query ? `?q=${encodeURIComponent(query)}` : ""}`);
   };
 
   return (
