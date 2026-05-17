@@ -169,12 +169,43 @@ export default function AdminDashboard() {
 
   const selectClasses = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground";
 
+  const totalBikes = Object.values(shopBikes).reduce((a, l) => a + l.length, 0);
+  const activeBookings = allBookings.filter((b) => ["pending", "confirmed"].includes(b.status)).length;
+  const revenue = allBookings.filter((b) => ["completed", "returned"].includes(b.status)).reduce((a, b) => a + (Number(b.total_price) || 0), 0);
+  const avgRating = allReviews.length ? (allReviews.reduce((a, r) => a + (r.rating || 0), 0) / allReviews.length).toFixed(1) : "—";
+  const recentBookings = [...allBookings].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()).slice(0, 5);
+  const recentReviews = [...allReviews].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()).slice(0, 5);
+
+  const metrics = [
+    { label: "Total Vehicles", value: totalBikes, icon: Bike },
+    { label: "Active Bookings", value: activeBookings, icon: Calendar },
+    { label: "Revenue (₹)", value: revenue, icon: TrendingUp },
+    { label: "Avg Rating", value: avgRating, icon: Star },
+  ];
+
   return (
     <div className="min-h-screen pt-24 pb-16">
       <div className="container px-4 space-y-8">
         <h1 className="font-display text-3xl md:text-4xl font-bold">
           Shop Owner <span className="text-gradient">Dashboard</span>
         </h1>
+
+        {/* Metrics */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {metrics.map((m) => (
+            <Card key={m.label} className="border-border/50 bg-card/60 backdrop-blur">
+              <CardContent className="p-5 flex items-center gap-3">
+                <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <m.icon className="h-5 w-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-display text-2xl font-bold truncate">{m.value}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{m.label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
         {/* Quick nav */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
