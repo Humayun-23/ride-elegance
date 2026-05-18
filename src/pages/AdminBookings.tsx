@@ -11,7 +11,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Calendar, ArrowLeft, CheckCircle2, XCircle, Flag, RotateCcw } from "lucide-react";
 
-const FILTERS = ["all", "pending", "confirmed", "paid", "completed", "refunded", "cancelled"] as const;
+const FILTERS = ["all", "pending", "confirmed", "paid", "completed", "returned", "refunded", "cancelled"] as const;
 
 const STATUS_COLOR: Record<string, string> = {
   pending: "bg-amber-500/10 text-amber-400 border-amber-500/30",
