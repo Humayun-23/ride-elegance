@@ -4,8 +4,6 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -27,7 +25,6 @@ export default function Payment() {
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "upi">("card");
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -75,18 +72,71 @@ export default function Payment() {
     return rem > 0 ? `${days} days ${rem} hours` : `${days} days`;
   };
 
+  const loadRazorpay = () =>
+    new Promise<boolean>((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+
   const handlePayment = async () => {
+    if (!bookingId || !booking) return;
     setProcessing(true);
-    // TODO: Integrate actual payment gateway here
-    // Simulate processing delay for now
-    setTimeout(() => {
+    try {
+      const loaded = await loadRazorpay();
+      if (!loaded || !window.Razorpay) {
+        throw new Error("Unable to load payment gateway");
+      }
+
+      const order = await api.createPaymentOrder({ booking_id: Number(bookingId) });
+      const razorpay = new window.Razorpay({
+        key: order.key_id,
+        amount: order.amount,
+        currency: order.currency,
+        name: "RideWheel",
+        description: `Booking #${booking.id}`,
+        order_id: order.order_id,
+        prefill: {
+          name: user ? `${user.firstname || ""} ${user.lastname || ""}`.trim() : undefined,
+          email: user?.email,
+          contact: user?.phone_number,
+        },
+        notes: {
+          booking_id: String(booking.id),
+        },
+        theme: {
+          color: "#0f766e",
+        },
+        handler: async (response: any) => {
+          await api.verifyPayment({
+            order_id: response.razorpay_order_id,
+            payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          });
+          toast({ title: "Payment successful", description: "Your booking is now paid." });
+          navigate("/bookings");
+        },
+        modal: {
+          ondismiss: () => {
+            setProcessing(false);
+          },
+        },
+      });
+      razorpay.open();
+    } catch (err: any) {
       setProcessing(false);
       toast({
-        title: "Payment integration pending",
-        description: "Payment gateway will be connected soon. Your booking is confirmed.",
+        title: "Payment failed",
+        description: err.message || "Unable to start payment",
+        variant: "destructive",
       });
-      navigate("/bookings");
-    }, 2000);
+    }
   };
 
   if (loading) {
@@ -105,9 +155,7 @@ export default function Payment() {
     );
   }
 
-  const subtotal = booking.total_price || 0;
-  const tax = Math.round(subtotal * 0.18);
-  const total = subtotal + tax;
+  const total = booking.total_price || 0;
 
   return (
     <div className="min-h-screen pt-24 pb-16">
@@ -131,91 +179,30 @@ export default function Payment() {
         </div>
 
         <div className="grid lg:grid-cols-5 gap-8">
-          {/* Payment Form */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:col-span-3 space-y-6"
-          >
-            {/* Payment Method Toggle */}
-            <Card className="border-border/50 bg-card/80 backdrop-blur">
-              <CardContent className="p-6 space-y-5">
-                <h2 className="font-display font-bold text-lg flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-primary" />
-                  Payment Method
-                </h2>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {(["card", "upi"] as const).map((method) => (
-                    <button
-                      key={method}
-                      onClick={() => setPaymentMethod(method)}
-                      className={`p-4 rounded-lg border-2 transition-all text-center font-display text-sm uppercase tracking-wider ${
-                        paymentMethod === method
-                          ? "border-primary bg-primary/5 text-primary"
-                          : "border-border bg-secondary/50 text-muted-foreground hover:border-muted-foreground/30"
-                      }`}
-                    >
-                      {method === "card" ? "💳 Card" : "📱 UPI"}
-                    </button>
-                  ))}
-                </div>
-
-                <Separator />
-
-                {paymentMethod === "card" ? (
-                  <div className="space-y-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">
-                        Card Number
-                      </Label>
-                      <Input
-                        placeholder="4242 4242 4242 4242"
-                        className="bg-background font-mono"
-                        maxLength={19}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">
-                          Expiry
-                        </Label>
-                        <Input placeholder="MM/YY" className="bg-background font-mono" maxLength={5} />
+            {/* Payment Gateway */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="lg:col-span-3 space-y-6"
+            >
+              <Card className="border-border/50 bg-card/80 backdrop-blur">
+                <CardContent className="p-6 space-y-5">
+                  <h2 className="font-display font-bold text-lg flex items-center gap-2">
+                    <CreditCard className="h-5 w-5 text-primary" />
+                    Razorpay Checkout
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Complete payment securely with card, UPI, wallet, or netbanking. Payment details are handled by Razorpay.
+                  </p>
+                  <div className="grid sm:grid-cols-3 gap-3">
+                    {["Card", "UPI", "Netbanking"].map((method) => (
+                      <div key={method} className="rounded-lg border border-border bg-secondary/40 p-4 text-center text-sm font-display">
+                        {method}
                       </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">
-                          CVV
-                        </Label>
-                        <Input
-                          placeholder="•••"
-                          type="password"
-                          className="bg-background font-mono"
-                          maxLength={4}
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">
-                        Name on Card
-                      </Label>
-                      <Input placeholder="John Doe" className="bg-background" />
-                    </div>
+                    ))}
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">
-                        UPI ID
-                      </Label>
-                      <Input placeholder="yourname@upi" className="bg-background" />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      You'll receive a payment request on your UPI app after clicking Pay.
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
             {/* Security Notice */}
             <div className="flex items-center gap-3 text-xs text-muted-foreground px-1">
@@ -230,7 +217,7 @@ export default function Payment() {
               size="lg"
               className="w-full font-display gap-2 text-base glow"
               onClick={handlePayment}
-              disabled={processing}
+              disabled={processing || booking.status !== "confirmed"}
             >
               {processing ? (
                 <>
@@ -240,7 +227,7 @@ export default function Payment() {
               ) : (
                 <>
                   <Shield className="h-4 w-4" />
-                  Pay ₹{total}
+                  {booking.status === "paid" ? "Paid" : `Pay ₹${total}`}
                 </>
               )}
             </Button>
@@ -296,15 +283,6 @@ export default function Payment() {
 
                 {/* Price breakdown */}
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Subtotal</span>
-                    <span className="font-display font-bold">₹{subtotal}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">GST (18%)</span>
-                    <span className="font-display font-bold">₹{tax}</span>
-                  </div>
-                  <Separator />
                   <div className="flex justify-between text-base">
                     <span className="font-display font-bold">Total</span>
                     <span className="font-display font-bold text-primary text-xl">₹{total}</span>

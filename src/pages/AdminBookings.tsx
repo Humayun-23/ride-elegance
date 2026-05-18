@@ -11,14 +11,17 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Calendar, ArrowLeft, CheckCircle2, XCircle, Flag, RotateCcw } from "lucide-react";
 
-const FILTERS = ["all", "pending", "confirmed", "completed", "returned", "rejected", "cancelled"] as const;
+const FILTERS = ["all", "pending", "confirmed", "paid", "completed", "refunded", "cancelled"] as const;
 
 const STATUS_COLOR: Record<string, string> = {
   pending: "bg-amber-500/10 text-amber-400 border-amber-500/30",
   confirmed: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+  paid: "bg-sky-500/10 text-sky-400 border-sky-500/30",
   completed: "bg-primary/10 text-primary border-primary/30",
   returned: "bg-sky-500/10 text-sky-400 border-sky-500/30",
   rejected: "bg-destructive/10 text-destructive border-destructive/30",
+  refund_pending: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+  refunded: "bg-muted text-muted-foreground border-border",
   cancelled: "bg-muted text-muted-foreground border-border",
 };
 
@@ -118,7 +121,7 @@ export default function AdminBookings() {
                           <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" disabled={busyId === b.id} onClick={() => act(b.id, "reject")}><XCircle className="h-4 w-4" /></Button>
                         </>
                       )}
-                      {b.status === "confirmed" && (
+                      {["confirmed", "paid"].includes(b.status) && (
                         <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" disabled={busyId === b.id} onClick={() => act(b.id, "complete")}><Flag className="h-4 w-4" /></Button>
                       )}
                       {b.status === "completed" && (

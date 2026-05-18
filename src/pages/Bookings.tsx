@@ -35,6 +35,11 @@ const STATUS_CONFIG: Record<string, { color: string; icon: React.ReactNode; labe
     icon: <CheckCircle2 className="h-3.5 w-3.5" />,
     label: "Confirmed",
   },
+  paid: {
+    color: "bg-sky-500/10 text-sky-400 border-sky-500/30",
+    icon: <CreditCard className="h-3.5 w-3.5" />,
+    label: "Paid",
+  },
   completed: {
     color: "bg-primary/10 text-primary border-primary/30",
     icon: <CheckCircle2 className="h-3.5 w-3.5" />,
@@ -55,9 +60,19 @@ const STATUS_CONFIG: Record<string, { color: string; icon: React.ReactNode; labe
     icon: <XCircle className="h-3.5 w-3.5" />,
     label: "Cancelled",
   },
+  refund_pending: {
+    color: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+    icon: <RotateCcw className="h-3.5 w-3.5" />,
+    label: "Refund Pending",
+  },
+  refunded: {
+    color: "bg-muted text-muted-foreground border-border",
+    icon: <RotateCcw className="h-3.5 w-3.5" />,
+    label: "Refunded",
+  },
 };
 
-const FILTER_TABS = ["all", "pending", "confirmed", "completed", "returned"] as const;
+const FILTER_TABS = ["all", "pending", "confirmed", "paid", "completed", "refunded"] as const;
 
 export default function Bookings() {
   const [bookings, setBookings] = useState<any[]>([]);
@@ -124,8 +139,8 @@ export default function Bookings() {
 
   const stats = {
     total: bookings.length,
-    active: bookings.filter((b) => ["pending", "confirmed"].includes(b.status)).length,
-    completed: bookings.filter((b) => ["completed", "returned"].includes(b.status)).length,
+    active: bookings.filter((b) => ["pending", "confirmed", "paid"].includes(b.status)).length,
+    completed: bookings.filter((b) => ["completed", "returned", "refunded"].includes(b.status)).length,
   };
 
   return (
@@ -254,6 +269,8 @@ export default function Bookings() {
                             className={`w-full md:w-1.5 h-1.5 md:h-auto rounded-t-lg md:rounded-l-lg md:rounded-tr-none ${
                               b.status === "confirmed"
                                 ? "bg-emerald-500"
+                                : b.status === "paid"
+                                ? "bg-sky-500"
                                 : b.status === "pending"
                                 ? "bg-amber-500"
                                 : b.status === "completed"

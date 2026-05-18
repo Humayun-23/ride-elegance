@@ -16,13 +16,16 @@ import {
   CheckCircle2, XCircle, RotateCcw, Star, Send, Pencil, Save,
 } from "lucide-react";
 
-const STATUS_STEPS = ["pending", "confirmed", "completed", "returned"] as const;
+const STATUS_STEPS = ["pending", "confirmed", "paid", "completed"] as const;
 
 const STATUS_COLOR: Record<string, string> = {
   pending: "bg-amber-500/10 text-amber-400 border-amber-500/30",
   confirmed: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+  paid: "bg-sky-500/10 text-sky-400 border-sky-500/30",
   completed: "bg-primary/10 text-primary border-primary/30",
   returned: "bg-sky-500/10 text-sky-400 border-sky-500/30",
+  refund_pending: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+  refunded: "bg-muted text-muted-foreground border-border",
   rejected: "bg-destructive/10 text-destructive border-destructive/30",
   cancelled: "bg-muted text-muted-foreground border-border",
 };
@@ -40,6 +43,7 @@ export default function BookingDetails() {
   const [endTime, setEndTime] = useState("");
   const [saving, setSaving] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [refunding, setRefunding] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
@@ -84,6 +88,22 @@ export default function BookingDetails() {
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally { setCancelling(false); }
+  };
+
+  const requestRefund = async () => {
+    if (!id) return;
+    setRefunding(true);
+    try {
+      const payment = await api.getPaymentForBooking(id);
+      const refunded = await api.refundPayment({
+        order_id: payment.order_id,
+        reason: "customer_requested",
+      });
+      setBooking((prev: any) => prev ? { ...prev, status: refunded.status === "refunded" ? "refunded" : "refund_pending" } : prev);
+      toast({ title: "Refund initiated" });
+    } catch (err: any) {
+      toast({ title: "Refund failed", description: err.message, variant: "destructive" });
+    } finally { setRefunding(false); }
   };
 
   const submitReview = async () => {
@@ -211,6 +231,11 @@ export default function BookingDetails() {
                 {canCancel && !editing && (
                   <Button variant="outline" onClick={cancelBooking} disabled={cancelling} className="font-display gap-2 text-destructive border-destructive/30 hover:bg-destructive/10">
                     <Trash2 className="h-4 w-4" /> {cancelling ? "Cancelling…" : "Cancel booking"}
+                  </Button>
+                )}
+                {booking.status === "paid" && !editing && (
+                  <Button variant="outline" onClick={requestRefund} disabled={refunding} className="font-display gap-2 text-destructive border-destructive/30 hover:bg-destructive/10">
+                    <RotateCcw className="h-4 w-4" /> {refunding ? "Refunding…" : "Cancel and refund"}
                   </Button>
                 )}
                 {bike && (

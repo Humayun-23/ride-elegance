@@ -104,6 +104,18 @@ export const api = {
   completeBooking: (id: string) => request<any>(`/bookings/${id}/complete`, { method: "POST" }),
   returnBooking: (id: string) => request<any>(`/bookings/${id}/return`, { method: "POST" }),
 
+  // Payments
+  createPaymentOrder: (data: { booking_id: number }) =>
+    request<{ order_id: string; amount: number; currency: string; key_id: string }>("/payments/", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  verifyPayment: (data: { order_id: string; payment_id: string; razorpay_signature: string }) =>
+    request<{ message: string }>("/payments/verify", { method: "POST", body: JSON.stringify(data) }),
+  getPaymentForBooking: (bookingId: string) => request<any>(`/payments/booking/${bookingId}`),
+  refundPayment: (data: { order_id: string; amount?: number; reason?: string }) =>
+    request<any>("/payments/refund", { method: "POST", body: JSON.stringify(data) }),
+
   // Bikes/Vehicles
   createBike: (data: {
     shop_id: number;
