@@ -347,6 +347,11 @@ export default function Bookings() {
                                     </Button>
                                   )}
                                   {b.status === "pending" && (
+                                    <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/30 font-display text-[10px] uppercase tracking-wider">
+                                      Awaiting approval
+                                    </Badge>
+                                  )}
+                                  {b.status === "pending" && (
                                     <Button
                                       variant="outline"
                                       size="sm"
