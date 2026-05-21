@@ -34,30 +34,23 @@ export default function VehicleDetail() {
 
   useEffect(() => {
     if (!id) return;
+    const controller = new AbortController();
     let active = true;
     setLoading(true);
     const load = async () => {
       try {
-        const bikeRes = await api.get(`/bikes/${id}`);
+        const res = await api.get(`/bikes/${id}/full-details`, {
+          signal: controller.signal
+        });
         if (!active) return;
-        const bike = bikeRes.data;
-        setVehicle(bike);
+        
+        setVehicle(res.data.vehicle);
         setActiveImage(0);
-        const [availRes, reviewsRes, shopRes] = await Promise.all([
-          api.get(`/inventory/available/${id}`).catch(() => ({ data: null })),
-          bike?.shop_id
-            ? api.get(`/reviews/${bike.shop_id}`).catch(() => ({ data: [] }))
-            : Promise.resolve({ data: [] }),
-          bike?.shop_id
-            ? api.get(`/shops/${bike.shop_id}`).catch(() => ({ data: null }))
-            : Promise.resolve({ data: null }),
-        ]);
-        if (!active) return;
-        setAvailability(availRes?.data ?? null);
-        setReviews(Array.isArray(reviewsRes?.data) ? reviewsRes.data : []);
-        setShop(shopRes?.data ?? null);
-      } catch {
-        if (!active) return;
+        setAvailability(res.data.availability ?? null);
+        setShop(res.data.shop ?? null);
+        setReviews(Array.isArray(res.data.reviews) ? res.data.reviews : []);
+      } catch (err: any) {
+        if (!active || err.name === 'CanceledError' || err.message === 'canceled') return;
         setVehicle(null);
         setAvailability(null);
         setReviews([]);
@@ -69,6 +62,7 @@ export default function VehicleDetail() {
     load();
     return () => {
       active = false;
+      controller.abort();
     };
   }, [id]);
 
@@ -237,12 +231,12 @@ ${rejectLink}`;
             <Card className="border-border/50 bg-card/80 backdrop-blur">
               <CardContent className="p-6 space-y-5">
                 <div className="flex items-baseline gap-6">
-                  {vehicle.price_per_hour != null && (
+                  {/*vehicle.price_per_hour != null && (
                     <div>
                       <span className="text-primary font-display text-3xl font-bold">₹{vehicle.price_per_hour}</span>
                       <span className="text-muted-foreground text-sm">/hour</span>
                     </div>
-                  )}
+                  )*/}
                   {vehicle.price_per_day != null && (
                     <div>
                       <span className="text-foreground font-display text-xl font-bold">₹{vehicle.price_per_day}</span>

@@ -7,11 +7,11 @@ import { AuthProvider } from './contexts/AuthContext';
 import Index from './pages/Index';
 import SearchVehicles from './pages/SearchVehicles';
 import Login from './pages/Login';
+import VehicleDetail from './pages/VehicleDetail';
 
 // Lazy load the pages
 const Shops = lazy(() => import('./pages/Shops'));
 const ShopDetail = lazy(() => import('./pages/ShopDetail'));
-const VehicleDetail = lazy(() => import('./pages/VehicleDetail'));
 const Bookings = lazy(() => import('./pages/Bookings'));
 const BookingDetails = lazy(() => import('./pages/BookingDetails'));
 const Payment = lazy(() => import('./pages/Payment'));

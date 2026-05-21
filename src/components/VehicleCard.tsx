@@ -10,7 +10,7 @@ interface VehicleCardProps {
     model?: string;
     bike_type?: string;
     engine_cc?: number;
-    price_per_hour?: number;
+    //price_per_hour?: number;
     price_per_day?: number;
     image_url?: string;
     rating?: number;
@@ -105,12 +105,12 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
 
           {/* Price */}
           <div className="pt-3 border-t border-border/50 flex items-baseline gap-3">
-            {vehicle.price_per_hour != null && (
+            {/* {vehicle.price_per_hour != null && (
               <span>
                 <span className="text-primary font-display font-bold text-lg">₹{vehicle.price_per_hour}</span>
                 <span className="text-muted-foreground text-[10px] ml-0.5">/hr</span>
               </span>
-            )}
+            )*/}
             {vehicle.price_per_day != null && (
               <span>
                 <span className="text-foreground font-display font-bold text-sm">₹{vehicle.price_per_day}</span>
