@@ -235,7 +235,7 @@ ${rejectLink}`;
                     <div>
                       <span className="text-primary font-display text-3xl font-bold">₹{vehicle.price_per_hour}</span>
                       <span className="text-muted-foreground text-sm">/hour</span>
-                    </div>
+                    </div> 
                   )*/}
                   {vehicle.price_per_day != null && (
                     <div>
