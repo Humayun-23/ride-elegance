@@ -22,7 +22,7 @@ export default function ForgotPassword() {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.passwordResetRequest({ email });
+      await api.post("/password-reset/request", { email });
       toast({ title: "Check your email for a reset token" });
       setStep("confirm");
     } catch (err: any) {
@@ -44,7 +44,7 @@ export default function ForgotPassword() {
     }
     setLoading(true);
     try {
-      await api.passwordResetConfirm({ token, new_password: newPassword });
+      await api.post("/password-reset/confirm", { token, new_password: newPassword });
       setDone(true);
       toast({ title: "Password reset successful!" });
     } catch (err: any) {

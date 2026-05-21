@@ -27,18 +27,31 @@ export default function Profile() {
     setFirstname(user.firstname || "");
     setLastname(user.lastname || "");
     setPhone(user.phone_number || "");
-    api.getUserBookings({ limit: 50 }).then((b) => setBookings(Array.isArray(b) ? b : [])).catch(() => {});
-    api.listReviews({ limit: 100 }).then((r) => {
-      const mine = Array.isArray(r) ? r.filter((x: any) => x.user_id === user.id) : [];
-      setReviews(mine);
-    }).catch(() => {});
+    api.get("/bookings/user/", { params: { limit: 50 } })
+      .then((res) => setBookings(Array.isArray(res.data) ? res.data : []))
+      .catch(() => {});
+    const loadReviews = async () => {
+      try {
+        const shopsRes = await api.get("/shops/");
+        const shopList = Array.isArray(shopsRes.data) ? shopsRes.data : [];
+        const reviewLists = await Promise.all(
+          shopList.map((s: any) => api.get(`/reviews/${s.id}`).then((res) => res.data).catch(() => []))
+        );
+        const allReviews = reviewLists.flat();
+        const mine = allReviews.filter((x: any) => (x.customer_id ?? x.user_id) === user.id);
+        setReviews(mine);
+      } catch {
+        setReviews([]);
+      }
+    };
+    loadReviews();
   }, [user]);
 
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
     try {
-      await api.updateUser(user.id, { firstname, lastname, phone_number: phone });
+      await api.put(`/users/${user.id}`, { firstname, lastname, phone_number: phone });
       toast({ title: "Profile updated successfully" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -173,7 +186,7 @@ export default function Profile() {
                   {reviews.slice(0, 5).map((r) => (
                     <div key={r.id} className="p-3 rounded-lg border border-border/40 space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">Bike #{r.bike_id}</span>
+                        <span className="text-xs text-muted-foreground">Shop #{r.shop_id ?? r.bike_id}</span>
                         <div className="flex items-center gap-0.5">
                           {[...Array(5)].map((_, j) => (
                             <Star key={j} className={`h-3 w-3 ${j < (r.rating || 0) ? "text-primary fill-primary" : "text-muted-foreground/20"}`} />

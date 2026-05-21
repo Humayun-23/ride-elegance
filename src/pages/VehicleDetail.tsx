@@ -33,16 +33,37 @@ export default function VehicleDetail() {
 
   useEffect(() => {
     if (!id) return;
-    Promise.all([
-      api.getBike(id),
-      api.getAvailableInventory(id).catch(() => null),
-      api.getBikeReviews(id).catch(() => []),
-    ]).then(([bike, avail, revs]) => {
-      setVehicle(bike);
-      setAvailability(avail);
-      setReviews(Array.isArray(revs) ? revs : []);
-      setActiveImage(0);
-    }).finally(() => setLoading(false));
+    let active = true;
+    setLoading(true);
+    const load = async () => {
+      try {
+        const bikeRes = await api.get(`/bikes/${id}`);
+        if (!active) return;
+        const bike = bikeRes.data;
+        setVehicle(bike);
+        setActiveImage(0);
+        const [availRes, reviewsRes] = await Promise.all([
+          api.get(`/inventory/available/${id}`).catch(() => ({ data: null })),
+          bike?.shop_id
+            ? api.get(`/reviews/${bike.shop_id}`).catch(() => ({ data: [] }))
+            : Promise.resolve({ data: [] }),
+        ]);
+        if (!active) return;
+        setAvailability(availRes?.data ?? null);
+        setReviews(Array.isArray(reviewsRes?.data) ? reviewsRes.data : []);
+      } catch {
+        if (!active) return;
+        setVehicle(null);
+        setAvailability(null);
+        setReviews([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      active = false;
+    };
   }, [id]);
 
   const handleBook = async () => {
@@ -50,7 +71,7 @@ export default function VehicleDetail() {
     if (!startTime || !endTime) { toast({ title: "Select dates", variant: "destructive" }); return; }
     setBooking(true);
     try {
-      await api.createBooking({ bike_id: Number(id), start_time: startTime, end_time: endTime });
+      await api.post("/bookings/", { bike_id: Number(id), start_time: startTime, end_time: endTime });
       toast({ title: "Booking created!", description: "Check your bookings for status." });
       navigate("/bookings");
     } catch (err: any) {
@@ -235,7 +256,7 @@ export default function VehicleDetail() {
                 <Card key={r.id || i} className="border-border/30 bg-card/40">
                   <CardContent className="p-5 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-display font-medium">{r.user_name || `User #${r.user_id}`}</span>
+                      <span className="text-sm font-display font-medium">{r.user_name || r.customer_name || `User #${r.customer_id || r.user_id}`}</span>
                       <div className="flex items-center gap-0.5">
                         {[...Array(5)].map((_, j) => (
                           <Star key={j} className={`h-3 w-3 ${j < (r.rating || 0) ? "text-primary fill-primary" : "text-muted-foreground/20"}`} />

@@ -34,7 +34,7 @@ export default function PasswordReset() {
     }
     setLoading(true);
     try {
-      await api.passwordResetConfirm({ token, new_password: password });
+      await api.post("/password-reset/confirm", { token, new_password: password });
       setDone(true);
       toast({ title: "Password updated" });
       setTimeout(() => navigate("/login"), 1500);

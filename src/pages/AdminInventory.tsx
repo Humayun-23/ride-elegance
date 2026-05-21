@@ -39,7 +39,8 @@ export default function AdminInventory() {
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
-    api.getShops().then((s) => {
+    api.get("/shops/").then((res) => {
+      const s = res.data;
       setShops(s);
       if (s[0]) setShopId(String(s[0].id));
     });
@@ -47,7 +48,7 @@ export default function AdminInventory() {
 
   useEffect(() => {
     if (!shopId) return;
-    api.getBikesByShop(shopId).then(setBikes).catch(() => setBikes([]));
+    api.get(`/bikes/shop/${shopId}`).then((res) => setBikes(res.data)).catch(() => setBikes([]));
   }, [shopId]);
 
   const openAdd = () => {
@@ -80,10 +81,14 @@ export default function AdminInventory() {
       if (form.engine_cc) payload.engine_cc = Number(form.engine_cc);
       if (form.description) payload.description = form.description;
       if (editing) {
-        const updated = await api.updateBike(String(editing.id), payload);
+        const updated = (await api.put(`/bikes/${editing.id}`, payload)).data;
         if (bikeImages.length > 0) {
           try {
-            await api.uploadBikeImages(String(editing.id), bikeImages);
+            const formData = new FormData();
+            bikeImages.forEach((file) => formData.append("files", file));
+            await api.post(`/bikes/${editing.id}/images`, formData, {
+              headers: { "Content-Type": "multipart/form-data" },
+            });
           } catch (err: any) {
             toast({ title: "Vehicle updated, image upload failed", description: err.message, variant: "destructive" });
           }
@@ -92,11 +97,15 @@ export default function AdminInventory() {
         toast({ title: "Vehicle updated" });
       } else {
         payload.shop_id = Number(shopId);
-        const created = await api.createBike(payload);
+        const created = (await api.post("/bikes/", payload)).data;
         let createdWithImages = created;
         if (bikeImages.length > 0) {
           try {
-            createdWithImages = await api.uploadBikeImages(String(created.id), bikeImages);
+            const formData = new FormData();
+            bikeImages.forEach((file) => formData.append("files", file));
+            createdWithImages = (await api.post(`/bikes/${created.id}/images`, formData, {
+              headers: { "Content-Type": "multipart/form-data" },
+            })).data;
           } catch (err: any) {
             toast({ title: "Vehicle added, image upload failed", description: err.message, variant: "destructive" });
           }
@@ -113,7 +122,7 @@ export default function AdminInventory() {
   const remove = async (b: any) => {
     if (!confirm(`Delete ${b.name}?`)) return;
     try {
-      await api.deleteBike(String(b.id));
+      await api.delete(`/bikes/${b.id}`);
       setBikes((p) => p.filter((x) => x.id !== b.id));
       toast({ title: "Deleted" });
     } catch (err: any) {

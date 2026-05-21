@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Zap, Shield, Clock, ArrowRight, MapPin, Star, ChevronRight } from "lucide-react";
-import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { useState } from "react";
 import VehicleCard from "@/components/VehicleCard";
+import { useShops } from "@/hooks/useShops";
+import { useSearchVehicles } from "@/hooks/useVehicles";
 
 const VEHICLE_TYPES = [
   { label: "Scooty", icon: "🛵", value: "scooty", desc: "Quick city rides" },
@@ -29,13 +30,12 @@ const STATS = [
 export default function Index() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const [featuredShops, setFeaturedShops] = useState<any[]>([]);
-  const [popularBikes, setPopularBikes] = useState<any[]>([]);
 
-  useEffect(() => {
-    api.getShops({ limit: 6 }).then((s) => setFeaturedShops(Array.isArray(s) ? s.slice(0, 6) : [])).catch(() => {});
-    api.searchVehicles({ is_available: "true", limit: "6" }).then((b) => setPopularBikes(Array.isArray(b) ? b.slice(0, 6) : [])).catch(() => {});
-  }, []);
+  const { data: shopsData } = useShops({ limit: 6 });
+  const { data: vehiclesData } = useSearchVehicles({ is_available: "true", limit: 6 });
+
+  const featuredShops = Array.isArray(shopsData) ? shopsData.slice(0, 6) : [];
+  const popularBikes = Array.isArray(vehiclesData) ? vehiclesData.slice(0, 6) : [];
 
   const handleSearch = () => {
     navigate(`/search-vehicles${query ? `?q=${encodeURIComponent(query)}` : ""}`);

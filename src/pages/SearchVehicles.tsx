@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { api } from "@/lib/api";
+import { useSearchVehicles } from "@/hooks/useVehicles";
 import VehicleCard from "@/components/VehicleCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,39 +25,33 @@ const PAGE_SIZE = 12;
 
 export default function SearchVehicles() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [vehicles, setVehicles] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState(searchParams.get("q") || "");
-  const [activeType, setActiveType] = useState(searchParams.get("type") || "all");
+  const activeType = searchParams.get("type") || "all";
   const [sort, setSort] = useState("default");
   const [page, setPage] = useState(0);
 
-  const fetchVehicles = async () => {
-    setLoading(true);
-    try {
-      let data: any[];
-      if (activeType && activeType !== "all") {
-        data = await api.searchVehiclesByType(activeType, { is_available: "true" });
-      } else {
-        const params: Record<string, string> = { is_available: "true" };
-        if (query) params.vehicle_type = query;
-        data = await api.searchVehicles(params);
-      }
-      setVehicles(Array.isArray(data) ? data : []);
-      setPage(0);
-    } catch {
-      setVehicles([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Setup API parameters driven by the URL state
+  const params: Record<string, string> = { is_available: "true" };
+  if (activeType && activeType !== "all") params.vehicle_type = activeType;
+  if (searchParams.get("q")) params.q = searchParams.get("q") as string;
 
-  useEffect(() => { fetchVehicles(); }, [activeType]);
+  // Fetch using the globally cached hook!
+  const { data, isLoading: loading } = useSearchVehicles(params);
+  const vehicles = Array.isArray(data) ? data : [];
 
   const handleSearch = () => {
-    setSearchParams(query ? { q: query } : {});
-    setActiveType("all");
-    fetchVehicles();
+    const newParams: Record<string, string> = {};
+    if (query) newParams.q = query;
+    setSearchParams(newParams);
+    setPage(0);
+  };
+
+  const handleTypeChange = (type: string) => {
+    const newParams: Record<string, string> = {};
+    if (searchParams.get("q")) newParams.q = searchParams.get("q") as string;
+    if (type !== "all") newParams.type = type;
+    setSearchParams(newParams);
+    setPage(0);
   };
 
   const sorted = useMemo(() => {
@@ -102,10 +96,7 @@ export default function SearchVehicles() {
             {TYPES.map((t) => (
               <button
                 key={t.value}
-                onClick={() => {
-                  setActiveType(t.value);
-                  setSearchParams(t.value !== "all" ? { type: t.value } : {});
-                }}
+                onClick={() => handleTypeChange(t.value)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-display transition-all ${
                   activeType === t.value
                     ? "bg-primary text-primary-foreground glow"

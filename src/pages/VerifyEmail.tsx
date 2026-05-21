@@ -28,12 +28,13 @@ export default function VerifyEmail() {
   useEffect(() => {
     if (!canVerify) return;
     setStatus("verifying");
-    api.verifyEmail(token)
+    api.post("/users/verify-email", { token })
       .then((res) => {
+        const data = res.data || {};
         setStatus("verified");
-        setMessage(res.message || "Email verified successfully.");
-        if (res.access_token) {
-          setAuthToken(res.access_token);
+        setMessage(data.message || "Email verified successfully.");
+        if (data.access_token) {
+          setAuthToken(data.access_token);
           setTimeout(() => navigate("/", { replace: true }), 900);
         }
       })
@@ -59,9 +60,9 @@ export default function VerifyEmail() {
     }
     setResending(true);
     try {
-      const res = await api.resendVerification(email);
+      const res = await api.post("/users/verify-email/resend", { email });
       setResendCooldown(30);
-      toast({ title: "Verification email sent", description: res.message });
+      toast({ title: "Verification email sent", description: res.data?.message });
     } catch (err: any) {
       toast({ title: "Resend failed", description: err.message, variant: "destructive" });
     } finally {

@@ -89,8 +89,8 @@ export default function Bookings() {
       return;
     }
     api
-      .getUserBookings()
-      .then(setBookings)
+      .get("/bookings/user/", { params: { limit: 50 } })
+      .then((res) => setBookings(Array.isArray(res.data) ? res.data : []))
       .catch(() => setBookings([]))
       .finally(() => setLoading(false));
   }, [user]);
@@ -98,7 +98,7 @@ export default function Bookings() {
   const cancelBooking = async (id: string) => {
     setCancellingId(id);
     try {
-      await api.deleteBooking(id);
+      await api.delete(`/bookings/${id}`);
       setBookings((prev) => prev.filter((b) => b.id !== id));
       toast({ title: "Booking cancelled successfully" });
     } catch (err: any) {

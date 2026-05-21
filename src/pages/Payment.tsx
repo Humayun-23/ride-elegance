@@ -36,8 +36,8 @@ export default function Payment() {
     }
     if (!bookingId) return;
     api
-      .getBooking(bookingId)
-      .then(setBooking)
+      .get(`/bookings/${bookingId}`)
+      .then((res) => setBooking(res.data))
       .catch(() => {
         toast({ title: "Booking not found", variant: "destructive" });
         navigate("/bookings");
@@ -94,7 +94,7 @@ export default function Payment() {
         throw new Error("Unable to load payment gateway");
       }
 
-      const order = await api.createPaymentOrder({ booking_id: Number(bookingId) });
+      const order = (await api.post("/payments/", { booking_id: Number(bookingId) })).data;
       const razorpay = new window.Razorpay({
         key: order.key_id,
         amount: order.amount,
@@ -114,7 +114,7 @@ export default function Payment() {
           color: "#0f766e",
         },
         handler: async (response: any) => {
-          await api.verifyPayment({
+          await api.post("/payments/verify", {
             order_id: response.razorpay_order_id,
             payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,

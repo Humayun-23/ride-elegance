@@ -51,12 +51,13 @@ export default function BookingDetails() {
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
     if (!id) return;
-    api.getBooking(id).then(async (b) => {
+    api.get(`/bookings/${id}`).then(async (res) => {
+      const b = res.data;
       setBooking(b);
       setStartTime(b.start_time?.slice(0, 16) || "");
       setEndTime(b.end_time?.slice(0, 16) || "");
       if (b.bike_id) {
-        try { setBike(await api.getBike(String(b.bike_id))); } catch {}
+        try { setBike((await api.get(`/bikes/${b.bike_id}`)).data); } catch {}
       }
     }).catch(() => {}).finally(() => setLoading(false));
   }, [id, user]);
@@ -69,7 +70,7 @@ export default function BookingDetails() {
     if (!id) return;
     setSaving(true);
     try {
-      const updated = await api.updateBooking(id, { start_time: startTime, end_time: endTime });
+      const updated = (await api.put(`/bookings/${id}`, { start_time: startTime, end_time: endTime })).data;
       setBooking(updated);
       setEditing(false);
       toast({ title: "Booking updated" });
@@ -82,7 +83,7 @@ export default function BookingDetails() {
     if (!id) return;
     setCancelling(true);
     try {
-      await api.deleteBooking(id);
+      await api.delete(`/bookings/${id}`);
       toast({ title: "Booking cancelled" });
       navigate("/bookings");
     } catch (err: any) {
@@ -94,11 +95,11 @@ export default function BookingDetails() {
     if (!id) return;
     setRefunding(true);
     try {
-      const payment = await api.getPaymentForBooking(id);
-      const refunded = await api.refundPayment({
+      const payment = (await api.get(`/payments/booking/${id}`)).data;
+      const refunded = (await api.post("/payments/refund", {
         order_id: payment.order_id,
         reason: "customer_requested",
-      });
+      })).data;
       setBooking((prev: any) => prev ? { ...prev, status: refunded.status === "refunded" ? "refunded" : "refund_pending" } : prev);
       toast({ title: "Refund initiated" });
     } catch (err: any) {
@@ -112,9 +113,13 @@ export default function BookingDetails() {
       toast({ title: "Comment must be 1–500 characters", variant: "destructive" });
       return;
     }
+    if (!bike?.shop_id) {
+      toast({ title: "Unable to submit review", description: "Shop information is missing.", variant: "destructive" });
+      return;
+    }
     setSubmittingReview(true);
     try {
-      await api.createReview({ booking_id: Number(booking.id), rating, comment });
+      await api.post(`/reviews/${bike.shop_id}`, { rating, comment });
       toast({ title: "Review submitted" });
       setComment("");
     } catch (err: any) {

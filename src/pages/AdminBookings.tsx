@@ -35,12 +35,12 @@ export default function AdminBookings() {
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
-    api.listBookings().then(setBookings).catch(() => setBookings([]));
+    api.get("/bookings/").then((res) => setBookings(res.data)).catch(() => setBookings([]));
   }, [user]);
 
   const refresh = async (id: string) => {
     try {
-      const fresh = await api.getBooking(id);
+      const fresh = (await api.get(`/bookings/${id}`)).data;
       setBookings((p) => p.map((b) => (b.id === fresh.id ? fresh : b)));
     } catch {}
   };
@@ -48,8 +48,7 @@ export default function AdminBookings() {
   const act = async (id: string, action: "confirm" | "reject" | "complete" | "return") => {
     setBusyId(id);
     try {
-      const fn = action === "confirm" ? api.confirmBooking : action === "reject" ? api.rejectBooking : action === "return" ? api.returnBooking : api.completeBooking;
-      await fn(id);
+      await api.post(`/bookings/${id}/${action}`);
       await refresh(id);
       toast({ title: `Booking ${action}${action.endsWith("e") ? "d" : "ed"}` });
     } catch (err: any) {

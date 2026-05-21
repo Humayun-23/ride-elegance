@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const payload = JSON.parse(atob(token.split(".")[1]));
         const userId = payload.sub || payload.user_id || payload.id;
         if (userId) {
-          api.getUser(userId).then(setUser).catch(() => {
+          api.get(`/users/${userId}`).then((res) => setUser(res.data)).catch(() => {
             logout();
           });
         }
@@ -48,16 +48,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [token]);
 
   const login = async (email: string, password: string) => {
-    const res = await api.login({ username: email, password });
-    localStorage.setItem("auth_token", res.access_token);
-    setToken(res.access_token);
+    const formData = new URLSearchParams();
+    formData.append("username", email);
+    formData.append("password", password);
+    const res = await api.post("/login", formData, {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+    localStorage.setItem("auth_token", res.data.access_token);
+    setToken(res.data.access_token);
   };
 
   const adminLogin = async (email: string, password: string) => {
-    const res = await api.adminLogin({ username: email, password });
-    localStorage.setItem("auth_token", res.access_token);
+    const formData = new URLSearchParams();
+    formData.append("username", email);
+    formData.append("password", password);
+    const res = await api.post("/admin/login", formData, {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    });
+    localStorage.setItem("auth_token", res.data.access_token);
     localStorage.setItem("is_admin", "true");
-    setToken(res.access_token);
+    setToken(res.data.access_token);
   };
 
   const setAuthToken = useCallback((accessToken: string) => {
@@ -66,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = async (data: { firstname: string; lastname: string; email: string; password: string; phone_number: string; user_type: "customer" | "shop_owner" }) => {
-    await api.register(data);
+    await api.post("/users/", data);
   };
 
   const logout = () => {

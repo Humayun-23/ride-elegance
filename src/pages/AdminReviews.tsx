@@ -15,14 +15,34 @@ export default function AdminReviews() {
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
-    api.listReviews({ limit: 100 }).then((r) => setReviews(Array.isArray(r) ? r : [])).catch(() => setReviews([])).finally(() => setLoading(false));
+    let active = true;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const shopsRes = await api.get("/shops/");
+        const shopList = Array.isArray(shopsRes.data) ? shopsRes.data : [];
+        const reviewLists = await Promise.all(
+          shopList.map((s: any) => api.get(`/reviews/${s.id}`).then((res) => res.data).catch(() => []))
+        );
+        if (!active) return;
+        setReviews(reviewLists.flat());
+      } catch {
+        if (active) setReviews([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      active = false;
+    };
   }, [user]);
 
   const avg = reviews.length ? (reviews.reduce((a, r) => a + (r.rating || 0), 0) / reviews.length).toFixed(1) : "—";
-  const byBike: Record<string, any[]> = {};
+  const byShop: Record<string, any[]> = {};
   reviews.forEach((r) => {
-    const k = String(r.bike_id || "unknown");
-    (byBike[k] = byBike[k] || []).push(r);
+    const k = String(r.shop_id || "unknown");
+    (byShop[k] = byShop[k] || []).push(r);
   });
 
   return (
@@ -53,12 +73,12 @@ export default function AdminReviews() {
           </Card>
         ) : (
           <div className="space-y-6">
-            {Object.entries(byBike).map(([bikeId, list]) => {
+            {Object.entries(byShop).map(([shopId, list]) => {
               const bikeAvg = (list.reduce((a, r) => a + (r.rating || 0), 0) / list.length).toFixed(1);
               return (
-                <div key={bikeId} className="space-y-3">
+                <div key={shopId} className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <Badge variant="outline" className="font-display cursor-pointer" onClick={() => navigate(`/bikes/${bikeId}`)}>Bike #{bikeId}</Badge>
+                    <Badge variant="outline" className="font-display cursor-pointer" onClick={() => navigate(`/shops/${shopId}`)}>Shop #{shopId}</Badge>
                     <span className="text-sm text-muted-foreground flex items-center gap-1">
                       <Star className="h-3.5 w-3.5 text-primary fill-primary" /> {bikeAvg} · {list.length} reviews
                     </span>
@@ -68,7 +88,7 @@ export default function AdminReviews() {
                       <Card key={r.id} className="border-border/30 bg-card/40">
                         <CardContent className="p-4 space-y-1">
                           <div className="flex items-center justify-between">
-                            <span className="text-sm font-display font-medium">{r.user_name || `User #${r.user_id}`}</span>
+                            <span className="text-sm font-display font-medium">{r.user_name || r.customer_name || `User #${r.customer_id || r.user_id}`}</span>
                             <div className="flex items-center gap-0.5">
                               {[...Array(5)].map((_, j) => (
                                 <Star key={j} className={`h-3 w-3 ${j < (r.rating || 0) ? "text-primary fill-primary" : "text-muted-foreground/20"}`} />

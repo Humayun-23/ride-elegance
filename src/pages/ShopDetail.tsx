@@ -47,8 +47,8 @@ export default function ShopDetail() {
   useEffect(() => {
     if (!id) return;
     Promise.all([
-      api.getShop(id),
-      api.getBikesByShop(id).catch(() => []),
+      api.get(`/shops/${id}`).then((res) => res.data),
+      api.get(`/bikes/shop/${id}`).then((res) => res.data).catch(() => []),
     ]).then(([s, b]) => {
       setShop(s);
       setBikes(Array.isArray(b) ? b : []);
@@ -62,7 +62,7 @@ export default function ShopDetail() {
     }
     setAddingVehicle(true);
     try {
-      const newBike = await api.createBike({
+      const newBike = (await api.post("/bikes/", {
         shop_id: Number(id),
         name: vehicleForm.name,
         model: vehicleForm.model,
@@ -73,11 +73,15 @@ export default function ShopDetail() {
         price_per_day: Number(vehicleForm.price_per_day),
         condition: vehicleForm.condition,
         is_available: true,
-      });
+      })).data;
       let created = newBike;
       if (vehicleImages.length > 0) {
         try {
-          created = await api.uploadBikeImages(String(newBike.id), vehicleImages);
+          const formData = new FormData();
+          vehicleImages.forEach((file) => formData.append("files", file));
+          created = (await api.post(`/bikes/${newBike.id}/images`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          })).data;
         } catch (err: any) {
           toast({ title: "Vehicle added, image upload failed", description: err.message, variant: "destructive" });
         }
@@ -98,7 +102,7 @@ export default function ShopDetail() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await api.deleteBike(String(deleteTarget.id));
+      await api.delete(`/bikes/${deleteTarget.id}`);
       setBikes((prev) => prev.filter((b) => b.id !== deleteTarget.id));
       toast({ title: "Vehicle deleted" });
       setDeleteTarget(null);

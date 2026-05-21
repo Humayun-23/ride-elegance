@@ -13,7 +13,7 @@ export default function Shops() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    api.getShops().then(setShops).catch(() => setShops([])).finally(() => setLoading(false));
+    api.get("/shops/").then((res) => setShops(res.data)).catch(() => setShops([])).finally(() => setLoading(false));
   }, []);
 
   const filtered = shops.filter(

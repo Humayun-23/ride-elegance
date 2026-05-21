@@ -22,7 +22,8 @@ export default function AdminShop() {
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
-    api.getShops().then((s) => {
+    api.get("/shops/").then((res) => {
+      const s = res.data;
       setShops(s);
       if (s[0]) setSelected(s[0]);
     }).catch(() => {});
@@ -32,11 +33,15 @@ export default function AdminShop() {
     if (!selected) return;
     setSaving(true);
     try {
-      const updated = await api.updateShop(String(selected.id), selected);
+      const updated = (await api.put(`/shops/${selected.id}`, selected)).data;
       let updatedWithImage = updated;
       if (shopImage) {
         try {
-          updatedWithImage = await api.uploadShopImage(String(updated.id), shopImage);
+          const formData = new FormData();
+          formData.append("file", shopImage);
+          updatedWithImage = (await api.post(`/shops/${updated.id}/image`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          })).data;
         } catch (err: any) {
           toast({ title: "Shop updated, image upload failed", description: err.message, variant: "destructive" });
         }
@@ -53,7 +58,7 @@ export default function AdminShop() {
   const remove = async () => {
     if (!selected || !confirm("Delete this shop?")) return;
     try {
-      await api.deleteShop(String(selected.id));
+      await api.delete(`/shops/${selected.id}`);
       setShops((p) => p.filter((s) => s.id !== selected.id));
       setSelected(null);
       toast({ title: "Shop deleted" });

@@ -65,20 +65,28 @@ export default function AdminDashboard() {
       navigate("/login");
       return;
     }
-    api.getShops().then(async (s) => {
+    api.get("/shops/").then(async (res) => {
+      const s = res.data;
       setShops(s);
-      const bikeLists = await Promise.all((s || []).map((sh: any) => api.getBikesByShop(String(sh.id)).catch(() => [])));
+      const bikeLists = await Promise.all(
+        (s || []).map((sh: any) => api.get(`/bikes/shop/${sh.id}`).then((r) => r.data).catch(() => []))
+      );
       const bikesMap: Record<string, any[]> = {};
       (s || []).forEach((sh: any, i: number) => { bikesMap[sh.id] = bikeLists[i] || []; });
       setShopBikes(bikesMap);
+      const reviewLists = await Promise.all(
+        (s || []).map((sh: any) => api.get(`/reviews/${sh.id}`).then((r) => r.data).catch(() => []))
+      );
+      setAllReviews(reviewLists.flat());
     }).catch(() => {});
-    api.listBookings({ limit: 100 }).then((b) => setAllBookings(Array.isArray(b) ? b : [])).catch(() => {});
-    api.listReviews({ limit: 100 }).then((r) => setAllReviews(Array.isArray(r) ? r : [])).catch(() => {});
+    api.get("/bookings/", { params: { limit: 100 } })
+      .then((res) => setAllBookings(Array.isArray(res.data) ? res.data : []))
+      .catch(() => {});
   }, [user]);
 
   const loadBikesForShop = async (shopId: string) => {
     try {
-      const bikes = await api.getBikesByShop(shopId);
+      const bikes = (await api.get(`/bikes/shop/${shopId}`)).data;
       setShopBikes((prev) => ({ ...prev, [shopId]: bikes }));
     } catch {}
   };
@@ -107,11 +115,15 @@ export default function AdminDashboard() {
       if (shopOpeningTime) payload.opening_time = shopOpeningTime;
       if (shopClosingTime) payload.closing_time = shopClosingTime;
 
-      const shop = await api.createShop(payload);
+      const shop = (await api.post("/shops/", payload)).data;
       let created = shop;
       if (shopImage) {
         try {
-          created = await api.uploadShopImage(String(shop.id), shopImage);
+          const formData = new FormData();
+          formData.append("file", shopImage);
+          created = (await api.post(`/shops/${shop.id}/image`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          })).data;
         } catch (err: any) {
           toast({ title: "Shop created, image upload failed", description: err.message, variant: "destructive" });
         }
@@ -145,10 +157,14 @@ export default function AdminDashboard() {
       if (bikeEngineCC) payload.engine_cc = Number(bikeEngineCC);
       if (bikeDesc) payload.description = bikeDesc;
 
-      const created = await api.createBike(payload);
+      const created = (await api.post("/bikes/", payload)).data;
       if (bikeImages.length > 0) {
         try {
-          await api.uploadBikeImages(String(created.id), bikeImages);
+          const formData = new FormData();
+          bikeImages.forEach((file) => formData.append("files", file));
+          await api.post(`/bikes/${created.id}/images`, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
         } catch (err: any) {
           toast({ title: "Vehicle created, image upload failed", description: err.message, variant: "destructive" });
         }
@@ -162,7 +178,7 @@ export default function AdminDashboard() {
 
   const createInventory = async () => {
     try {
-      await api.createInventory({
+      await api.post("/inventory/", {
         bike_id: Number(invBikeId),
         shop_id: Number(invShopId),
         total_quantity: Number(invQuantity),
@@ -176,8 +192,7 @@ export default function AdminDashboard() {
 
   const handleBookingAction = async (id: string, action: "confirm" | "reject" | "complete" | "return") => {
     try {
-      const fn = action === "confirm" ? api.confirmBooking : action === "reject" ? api.rejectBooking : action === "return" ? api.returnBooking : api.completeBooking;
-      await fn(id);
+      await api.post(`/bookings/${id}/${action}`);
       toast({ title: `Booking ${action}ed` });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -392,7 +407,7 @@ export default function AdminDashboard() {
                     <Button size="sm" variant="outline" className="font-display" onClick={() => navigate(`/shops/${shop.id}`)}>View</Button>
                     <Button size="sm" variant="outline" className="font-display" onClick={() => loadBikesForShop(shop.id)}>Load Vehicles</Button>
                     <Button size="sm" variant="outline" className="font-display text-destructive border-destructive/30" onClick={async () => {
-                      await api.deleteShop(shop.id);
+                      await api.delete(`/shops/${shop.id}`);
                       setShops((p) => p.filter((s) => s.id !== shop.id));
                       toast({ title: "Shop deleted" });
                     }}>Delete</Button>
