@@ -161,44 +161,6 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Features */}
-      <section className="py-24 md:py-32">
-        <div className="container px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16 space-y-4"
-          >
-            <p className="text-xs font-display uppercase tracking-[0.3em] text-muted-foreground">Why choose us</p>
-            <h2 className="font-display text-3xl md:text-5xl font-bold">
-              Why <span className="text-gradient">GoPanda</span>?
-            </h2>
-          </motion.div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {FEATURES.map((f, i) => (
-              <motion.div
-                key={f.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-                className="group rounded-2xl border border-border bg-card/50 p-8 md:p-10 space-y-5 hover:border-primary/20 hover:bg-card transition-all relative overflow-hidden"
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/10 transition-colors" />
-                <div className="relative">
-                  <div className="inline-flex rounded-xl bg-primary/10 p-3.5 ring-1 ring-primary/20">
-                    <f.icon className="h-6 w-6 text-primary" />
-                  </div>
-                </div>
-                <h3 className="font-display text-xl font-bold relative">{f.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed relative">{f.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Featured Shops */}
       {featuredShops.length > 0 && (
         <section className="py-20 border-t border-border bg-card/30">
@@ -267,6 +229,44 @@ export default function Index() {
           </div>
         </section>
       )}
+
+      {/* Features */}
+      <section className="py-24 md:py-32">
+        <div className="container px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16 space-y-4"
+          >
+            <p className="text-xs font-display uppercase tracking-[0.3em] text-muted-foreground">Why choose us</p>
+            <h2 className="font-display text-3xl md:text-5xl font-bold">
+              Why <span className="text-gradient">GoPanda</span>?
+            </h2>
+          </motion.div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {FEATURES.map((f, i) => (
+              <motion.div
+                key={f.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+                className="group rounded-2xl border border-border bg-card/50 p-8 md:p-10 space-y-5 hover:border-primary/20 hover:bg-card transition-all relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/10 transition-colors" />
+                <div className="relative">
+                  <div className="inline-flex rounded-xl bg-primary/10 p-3.5 ring-1 ring-primary/20">
+                    <f.icon className="h-6 w-6 text-primary" />
+                  </div>
+                </div>
+                <h3 className="font-display text-xl font-bold relative">{f.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed relative">{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section className="py-24">
         <div className="container px-4">

@@ -3,9 +3,12 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import { AuthProvider } from './contexts/AuthContext';
 
+// Eagerly load high-traffic pages for instant rendering
+import Index from './pages/Index';
+import SearchVehicles from './pages/SearchVehicles';
+import Login from './pages/Login';
+
 // Lazy load the pages
-const Index = lazy(() => import('./pages/Index'));
-const SearchVehicles = lazy(() => import('./pages/SearchVehicles'));
 const Shops = lazy(() => import('./pages/Shops'));
 const ShopDetail = lazy(() => import('./pages/ShopDetail'));
 const VehicleDetail = lazy(() => import('./pages/VehicleDetail'));
@@ -13,7 +16,6 @@ const Bookings = lazy(() => import('./pages/Bookings'));
 const BookingDetails = lazy(() => import('./pages/BookingDetails'));
 const Payment = lazy(() => import('./pages/Payment'));
 const Profile = lazy(() => import('./pages/Profile'));
-const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const PasswordReset = lazy(() => import('./pages/PasswordReset'));

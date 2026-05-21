@@ -72,9 +72,9 @@ export default function VehicleDetail() {
     };
   }, [id]);
 
-  const handleWhatsAppRedirect = (booking: any, vehicleName: string, shopPhone: string, customerName: string) => {
+  const handleWhatsAppRedirect = (booking: any, vehicleName: string, shopPhone: string, customerName: string, waWindow: Window | null) => {
     // Use your real backend URL for the magic links
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || "https://rentwheels.duckdns.org/api/v1";
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || "https://gopanda.in/api/v1";
     
     const confirmLink = `${apiUrl}/bookings/${booking.id}/magic-action?action=confirm&token=${booking.magic_token}`;
     const rejectLink = `${apiUrl}/bookings/${booking.id}/magic-action?action=reject&token=${booking.magic_token}`;
@@ -101,12 +101,20 @@ ${rejectLink}`;
     const cleanPhone = shopPhone.replace(/[^\w\s]/gi, '').replace(/\s+/g, '');
     const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
     
-    window.open(whatsappUrl, '_blank');
+    if (waWindow) {
+      waWindow.location.href = whatsappUrl;
+    } else {
+      window.location.href = whatsappUrl;
+    }
   };
 
   const handleBook = async () => {
     if (!user) { navigate("/login"); return; }
     if (!startTime || !endTime) { toast({ title: "Select dates", variant: "destructive" }); return; }
+
+    // Safari Popup Blocker Workaround: Open window synchronously *before* the await
+    const waWindow = window.open('', '_blank');
+
     setBooking(true);
     try {
       const response = await api.post("/bookings/", { bike_id: Number(id), start_time: startTime, end_time: endTime });
@@ -114,11 +122,18 @@ ${rejectLink}`;
       toast({ title: "Booking created!", description: "Check your bookings for status." });
       
       if (shop?.phone_number) {
-        handleWhatsAppRedirect(newBooking, vehicle.name, shop.phone_number, user.firstname || "Customer");
+        handleWhatsAppRedirect(newBooking, vehicle.name, shop.phone_number, user.firstname || "Customer", waWindow);
+      } else if (waWindow) {
+        waWindow.close();
       }
 
-      navigate("/bookings");
+      if (waWindow) {
+        navigate("/bookings");
+      } else {
+        setTimeout(() => navigate("/bookings"), 500);
+      }
     } catch (err: any) {
+      if (waWindow) waWindow.close();
       toast({ title: "Booking failed", description: err.message, variant: "destructive" });
     } finally {
       setBooking(false);
@@ -177,7 +192,7 @@ ${rejectLink}`;
                     aria-label={`View image ${i + 1}`}
                     type="button"
                   >
-                    <img src={img} alt={`${vehicle.name} ${i + 1}`} className="h-full w-full object-cover" />
+                    <img src={img} alt={`${vehicle.name} ${i + 1}`} loading="lazy" className="h-full w-full object-cover" />
                   </button>
                 ))}
               </div>
