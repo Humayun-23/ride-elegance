@@ -21,6 +21,7 @@ export default function VehicleDetail() {
   const { id } = useParams<{ id: string }>();
   const [vehicle, setVehicle] = useState<any>(null);
   const [availability, setAvailability] = useState<any>(null);
+  const [shop, setShop] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [activeImage, setActiveImage] = useState(0);
   const [startTime, setStartTime] = useState("");
@@ -42,20 +43,25 @@ export default function VehicleDetail() {
         const bike = bikeRes.data;
         setVehicle(bike);
         setActiveImage(0);
-        const [availRes, reviewsRes] = await Promise.all([
+        const [availRes, reviewsRes, shopRes] = await Promise.all([
           api.get(`/inventory/available/${id}`).catch(() => ({ data: null })),
           bike?.shop_id
             ? api.get(`/reviews/${bike.shop_id}`).catch(() => ({ data: [] }))
             : Promise.resolve({ data: [] }),
+          bike?.shop_id
+            ? api.get(`/shops/${bike.shop_id}`).catch(() => ({ data: null }))
+            : Promise.resolve({ data: null }),
         ]);
         if (!active) return;
         setAvailability(availRes?.data ?? null);
         setReviews(Array.isArray(reviewsRes?.data) ? reviewsRes.data : []);
+        setShop(shopRes?.data ?? null);
       } catch {
         if (!active) return;
         setVehicle(null);
         setAvailability(null);
         setReviews([]);
+        setShop(null);
       } finally {
         if (active) setLoading(false);
       }
@@ -66,13 +72,51 @@ export default function VehicleDetail() {
     };
   }, [id]);
 
+  const handleWhatsAppRedirect = (booking: any, vehicleName: string, shopPhone: string, customerName: string) => {
+    // Use your real backend URL for the magic links
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || "https://rentwheels.duckdns.org/api/v1";
+    
+    const confirmLink = `${apiUrl}/bookings/${booking.id}/magic-action?action=confirm&token=${booking.magic_token}`;
+    const rejectLink = `${apiUrl}/bookings/${booking.id}/magic-action?action=reject&token=${booking.magic_token}`;
+    
+    const fromDate = new Date(booking.start_time).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    const toDate = new Date(booking.end_time).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+
+    const message = `🚨 *New Booking Request on RideWheel!* 🚨
+    
+*Vehicle:* ${vehicleName}
+*Customer:* ${customerName}
+*From:* ${fromDate}
+*To:* ${toDate}
+
+Please tap a link below to instantly Accept or Reject this booking:
+
+✅ *TAP TO ACCEPT:*
+${confirmLink}
+
+❌ *TAP TO REJECT:*
+${rejectLink}`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const cleanPhone = shopPhone.replace(/[^\w\s]/gi, '').replace(/\s+/g, '');
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank');
+  };
+
   const handleBook = async () => {
     if (!user) { navigate("/login"); return; }
     if (!startTime || !endTime) { toast({ title: "Select dates", variant: "destructive" }); return; }
     setBooking(true);
     try {
-      await api.post("/bookings/", { bike_id: Number(id), start_time: startTime, end_time: endTime });
+      const response = await api.post("/bookings/", { bike_id: Number(id), start_time: startTime, end_time: endTime });
+      const newBooking = response.data;
       toast({ title: "Booking created!", description: "Check your bookings for status." });
+      
+      if (shop?.phone_number) {
+        handleWhatsAppRedirect(newBooking, vehicle.name, shop.phone_number, user.firstname || "Customer");
+      }
+
       navigate("/bookings");
     } catch (err: any) {
       toast({ title: "Booking failed", description: err.message, variant: "destructive" });
