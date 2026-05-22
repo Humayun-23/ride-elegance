@@ -29,6 +29,8 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("shops");
   const [allBookings, setAllBookings] = useState<any[]>([]);
   const [allReviews, setAllReviews] = useState<any[]>([]);
+  const [dashboardMetrics, setDashboardMetrics] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   // Shop form
   const [shopName, setShopName] = useState("");
@@ -68,23 +70,23 @@ export default function AdminDashboard() {
       navigate("/login");
       return;
     }
-    api.get("/shops/me").then(async (res) => {
-      const s = res.data;
-      setShops(s);
-      const bikeLists = await Promise.all(
-        (s || []).map((sh: any) => api.get(`/bikes/shop/${sh.id}`).then((r) => r.data).catch(() => []))
-      );
-      const bikesMap: Record<string, any[]> = {};
-      (s || []).forEach((sh: any, i: number) => { bikesMap[sh.id] = bikeLists[i] || []; });
-      setShopBikes(bikesMap);
-      const reviewLists = await Promise.all(
-        (s || []).map((sh: any) => api.get(`/reviews/${sh.id}`).then((r) => r.data).catch(() => []))
-      );
-      setAllReviews(reviewLists.flat());
-    }).catch(() => {});
-    api.get("/bookings/", { params: { limit: 100 } })
-      .then((res) => setAllBookings(Array.isArray(res.data) ? res.data : []))
-      .catch(() => {});
+    const isAdmin = localStorage.getItem("is_admin") === "true" || user.user_type === "admin";
+    
+    Promise.all([
+      api.get(isAdmin ? "/shops/" : "/shops/me").catch(() => ({ data: [] })),
+      api.get("/shops/dashboard-metrics").catch(() => ({ data: null })),
+      api.get("/bookings/", { params: { limit: 100 } }).catch(() => ({ data: [] }))
+    ]).then(([shopsRes, metricsRes, bookingsRes]) => {
+      setShops(shopsRes.data || []);
+      
+      if (metricsRes.data) {
+        setDashboardMetrics(metricsRes.data);
+        setAllReviews(metricsRes.data.recent_reviews || []);
+      }
+      
+      setAllBookings(Array.isArray(bookingsRes.data) ? bookingsRes.data : []);
+      setLoading(false);
+    });
   }, [user]);
 
   const loadBikesForShop = async (shopId: string) => {
@@ -213,18 +215,18 @@ export default function AdminDashboard() {
 
   const selectClasses = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground";
 
-  const totalBikes = Object.values(shopBikes).reduce((a, l) => a + l.length, 0);
-  const activeBookings = allBookings.filter((b) => ["pending", "confirmed"].includes(b.status)).length;
-  const revenue = allBookings.filter((b) => ["completed", "returned"].includes(b.status)).reduce((a, b) => a + (Number(b.total_price) || 0), 0);
-  const avgRating = allReviews.length ? (allReviews.reduce((a, r) => a + (r.rating || 0), 0) / allReviews.length).toFixed(1) : "—";
+  const totalBikes = dashboardMetrics?.total_bikes ?? Object.values(shopBikes).reduce((a, l) => a + l.length, 0);
+  const activeBookings = dashboardMetrics?.active_bookings ?? allBookings.filter((b) => ["pending", "confirmed"].includes(b.status)).length;
+  const revenue = dashboardMetrics?.revenue ?? allBookings.filter((b) => ["completed", "returned"].includes(b.status)).reduce((a, b) => a + (Number(b.total_price) || 0), 0);
+  const avgRating = dashboardMetrics?.avg_rating || (allReviews.length ? (allReviews.reduce((a, r) => a + (r.rating || 0), 0) / allReviews.length).toFixed(1) : "—");
   const recentBookings = [...allBookings].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()).slice(0, 5);
-  const recentReviews = [...allReviews].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()).slice(0, 5);
+  const recentReviews = dashboardMetrics?.recent_reviews || [...allReviews].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()).slice(0, 5);
 
   const metrics = [
-    { label: "Total Vehicles", value: totalBikes, icon: Bike },
-    { label: "Active Bookings", value: activeBookings, icon: Calendar },
-    { label: "Revenue (₹)", value: revenue, icon: TrendingUp },
-    { label: "Avg Rating", value: avgRating, icon: Star },
+    { label: "Total Vehicles", value: loading ? "..." : totalBikes, icon: Bike },
+    { label: "Active Bookings", value: loading ? "..." : activeBookings, icon: Calendar },
+    { label: "Revenue (₹)", value: loading ? "..." : revenue, icon: TrendingUp },
+    { label: "Avg Rating", value: loading ? "..." : avgRating, icon: Star },
   ];
 
   return (
@@ -312,7 +314,7 @@ export default function AdminDashboard() {
                     {recentReviews.map((r) => (
                       <div key={r.id} className="p-2.5 rounded-lg hover:bg-secondary/50 transition-colors space-y-1">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-display">Bike #{r.bike_id}</span>
+                          <span className="text-xs font-display">Shop #{r.shop_id}</span>
                           <div className="flex">
                             {[...Array(5)].map((_, j) => (
                               <Star key={j} className={`h-3 w-3 ${j < (r.rating || 0) ? "text-primary fill-primary" : "text-muted-foreground/20"}`} />
@@ -407,41 +409,47 @@ export default function AdminDashboard() {
               </DialogContent>
             </Dialog>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              {shops.map((shop) => (
-                <motion.div key={shop.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                  className="rounded-lg border border-border bg-card p-5 space-y-2">
-                  <h3 className="font-display font-bold text-lg">{shop.name}</h3>
-                  <p className="text-sm text-muted-foreground">{shop.address}, {shop.city}</p>
-                  {shop.phone_number && <p className="text-xs text-muted-foreground">📞 {shop.phone_number}</p>}
-                  {(shop.opening_time || shop.closing_time) && (
-                    <p className="text-xs text-muted-foreground">🕐 {shop.opening_time || "?"} – {shop.closing_time || "?"}</p>
-                  )}
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" className="font-display" onClick={() => navigate(`/shops/${shop.id}`)}>View</Button>
-                    <Button size="sm" variant="outline" className="font-display" onClick={() => loadBikesForShop(shop.id)}>Load Vehicles</Button>
-                    <Button size="sm" variant="outline" className="font-display text-destructive border-destructive/30" onClick={async () => {
-                      await api.delete(`/shops/${shop.id}`);
-                      setShops((p) => p.filter((s) => s.id !== shop.id));
-                      toast({ title: "Shop deleted" });
-                    }}>Delete</Button>
-                  </div>
-                  {shopBikes[shop.id] && (
-                    <div className="mt-3 space-y-2">
-                      {shopBikes[shop.id].map((bike: any) => (
-                        <div key={bike.id} className="text-sm text-muted-foreground flex justify-between items-center border-t border-border pt-2">
-                          <span>{bike.name} {bike.model && `· ${bike.model}`} ({bike.bike_type}) {bike.engine_cc ? `— ${bike.engine_cc}cc` : ""}</span>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="capitalize text-xs">{bike.condition || "good"}</Badge>
-                            <span className="text-primary font-display">₹{bike.price_per_hour}/hr</span>
-                          </div>
-                        </div>
-                      ))}
+            {loading ? (
+              <div className="text-muted-foreground animate-pulse py-12 text-center border-2 border-dashed border-border/50 rounded-xl">Loading your shops...</div>
+            ) : shops.length === 0 ? (
+              <div className="text-muted-foreground py-12 text-center border-2 border-dashed border-border/50 rounded-xl">No shops found. Click "Add Shop" to get started!</div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-4">
+                {shops.map((shop) => (
+                  <motion.div key={shop.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className="rounded-lg border border-border bg-card p-5 space-y-2">
+                    <h3 className="font-display font-bold text-lg">{shop.name}</h3>
+                    <p className="text-sm text-muted-foreground">{shop.address}, {shop.city}</p>
+                    {shop.phone_number && <p className="text-xs text-muted-foreground">📞 {shop.phone_number}</p>}
+                    {(shop.opening_time || shop.closing_time) && (
+                      <p className="text-xs text-muted-foreground">🕐 {shop.opening_time || "?"} – {shop.closing_time || "?"}</p>
+                    )}
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" className="font-display" onClick={() => navigate(`/shops/${shop.id}`)}>View</Button>
+                      <Button size="sm" variant="outline" className="font-display" onClick={() => loadBikesForShop(shop.id)}>Load Vehicles</Button>
+                      <Button size="sm" variant="outline" className="font-display text-destructive border-destructive/30" onClick={async () => {
+                        await api.delete(`/shops/${shop.id}`);
+                        setShops((p) => p.filter((s) => s.id !== shop.id));
+                        toast({ title: "Shop deleted" });
+                      }}>Delete</Button>
                     </div>
-                  )}
-                </motion.div>
-              ))}
-            </div>
+                    {shopBikes[shop.id] && (
+                      <div className="mt-3 space-y-2">
+                        {shopBikes[shop.id].map((bike: any) => (
+                          <div key={bike.id} className="text-sm text-muted-foreground flex justify-between items-center border-t border-border pt-2">
+                            <span>{bike.name} {bike.model && `· ${bike.model}`} ({bike.bike_type}) {bike.engine_cc ? `— ${bike.engine_cc}cc` : ""}</span>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="capitalize text-xs">{bike.condition || "good"}</Badge>
+                              <span className="text-primary font-display">₹{bike.price_per_hour}/hr</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* Vehicles Tab */}

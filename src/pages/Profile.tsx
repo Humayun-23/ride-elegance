@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { User, Mail, Phone, LogOut, Save, Calendar, Star, ChevronRight } from "lucide-react";
+import { stripIndianPrefix } from "@/lib/phone";
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -111,7 +112,15 @@ export default function Profile() {
                 <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                   <Phone className="h-3 w-3" /> Phone
                 </Label>
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="bg-background rounded-xl" />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">+91</span>
+                  <Input
+                    value={stripIndianPrefix(phone)}
+                    onChange={(e) => setPhone(stripIndianPrefix(e.target.value))}
+                    className="bg-background rounded-xl pl-12"
+                    inputMode="tel"
+                  />
+                </div>
               </div>
               <Button className="w-full font-display rounded-xl glow gap-2" onClick={handleSave} disabled={saving}>
                 {saving ? (

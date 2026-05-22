@@ -25,6 +25,10 @@ interface VehicleCardProps {
   };
 }
 
+// Global cache to prevent API spam when rendering dozens of vehicle cards
+const shopNameCache: Record<string, string> = {};
+const pendingRequests: Record<string, Promise<string>> = {};
+
 const TYPE_EMOJI: Record<string, string> = {
   scooty: "🛵",
   bike: "🏍️",
@@ -40,11 +44,19 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
 
   useEffect(() => {
     if (!shopName && vehicle.shop_id) {
-      api.get(`/shops/${vehicle.shop_id}`)
-        .then((res) => {
-          if (res.data && res.data.name) setShopName(res.data.name);
-        })
-        .catch(() => {});
+      const id = String(vehicle.shop_id);
+      if (shopNameCache[id]) {
+        setShopName(shopNameCache[id]);
+      } else {
+        if (!pendingRequests[id]) {
+          pendingRequests[id] = api.get(`/shops/${id}`).then((res) => {
+            const name = res.data?.name || "Partner Shop";
+            shopNameCache[id] = name;
+            return name;
+          }).catch(() => "Partner Shop");
+        }
+        pendingRequests[id].then(setShopName);
+      }
     }
   }, [vehicle.shop_id, shopName]);
 

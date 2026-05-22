@@ -37,19 +37,23 @@ export default function AdminInventory() {
   const [bikeImages, setBikeImages] = useState<File[]>([]);
   const [open, setOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
-    api.get("/shops/me").then((res) => {
+    const isAdmin = localStorage.getItem("is_admin") === "true" || user.user_type === "admin";
+    api.get(isAdmin ? "/shops/" : "/shops/me").then((res) => {
       const s = res.data;
       setShops(s);
       if (s[0]) setShopId(String(s[0].id));
-    });
+    }).finally(() => setLoading(false));
   }, [user]);
 
   useEffect(() => {
     if (!shopId) return;
-    api.get(`/bikes/shop/${shopId}`).then((res) => setBikes(res.data)).catch(() => setBikes([]));
+    setLoading(true);
+    api.get(`/bikes/shop/${shopId}`).then((res) => setBikes(res.data)).catch(() => setBikes([]))
+      .finally(() => setLoading(false));
   }, [shopId]);
 
   const openAdd = () => {
@@ -224,7 +228,9 @@ export default function AdminInventory() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {bikes.length === 0 ? (
+                {loading ? (
+                  <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-10 animate-pulse">Loading inventory...</TableCell></TableRow>
+                ) : bikes.length === 0 ? (
                   <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-10">No vehicles</TableCell></TableRow>
                 ) : bikes.map((b) => (
                   <TableRow key={b.id}>

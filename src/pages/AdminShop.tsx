@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Store, Save, ArrowLeft, Trash2 } from "lucide-react";
+import { stripIndianPrefix } from "@/lib/phone";
 
 export default function AdminShop() {
   const navigate = useNavigate();
@@ -19,14 +20,17 @@ export default function AdminShop() {
   const [selected, setSelected] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [shopImage, setShopImage] = useState<File | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
-    api.get("/shops/me").then((res) => {
+    const isAdmin = localStorage.getItem("is_admin") === "true" || user.user_type === "admin";
+    api.get(isAdmin ? "/shops/" : "/shops/me").then((res) => {
       const s = res.data;
       setShops(s);
       if (s[0]) setSelected(s[0]);
-    }).catch(() => {});
+    }).catch(() => {})
+      .finally(() => setLoading(false));
   }, [user]);
 
   const save = async () => {
@@ -90,7 +94,9 @@ export default function AdminShop() {
           </div>
         )}
 
-        {!selected ? (
+        {loading ? (
+          <p className="text-muted-foreground animate-pulse py-8 text-center border-2 border-dashed border-border/50 rounded-xl">Loading shop details...</p>
+        ) : !selected ? (
           <p className="text-muted-foreground">No shops. Create one from the dashboard.</p>
         ) : (
           <Card className="border-border/50 bg-card/80">
@@ -102,7 +108,15 @@ export default function AdminShop() {
                 </div>
                 <div className="space-y-1.5">
                   <Label>Phone</Label>
-                  <Input value={selected.phone_number || ""} onChange={(e) => set("phone_number", e.target.value)} />
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">+91</span>
+                    <Input
+                      value={stripIndianPrefix(selected.phone_number || "")}
+                      onChange={(e) => set("phone_number", stripIndianPrefix(e.target.value))}
+                      className="pl-12"
+                      inputMode="tel"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-1.5 md:col-span-2">
                   <Label>Address</Label>

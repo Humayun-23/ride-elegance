@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { MapPin, Star, ChevronRight, Phone, Clock, Store, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { formatIndianPhone } from "@/lib/phone";
 
 export default function Shops() {
   const [shops, setShops] = useState<any[]>([]);
@@ -108,7 +109,7 @@ export default function Shops() {
                         {shop.phone_number && (
                           <p className="flex items-center gap-2">
                             <Phone className="h-3.5 w-3.5 shrink-0" />
-                            {shop.phone_number}
+                            {formatIndianPhone(shop.phone_number)}
                           </p>
                         )}
                         {(shop.opening_time || shop.closing_time) && (

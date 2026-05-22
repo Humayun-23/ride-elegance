@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { formatIndianPhone } from "@/lib/phone";
 
 export default function ShopDetail() {
   const { id } = useParams<{ id: string }>();
@@ -166,7 +167,7 @@ export default function ShopDetail() {
                     )}
                     {shop.phone_number && (
                       <span className="flex items-center gap-1.5">
-                        <Phone className="h-3.5 w-3.5 text-primary/60" />{shop.phone_number}
+                        <Phone className="h-3.5 w-3.5 text-primary/60" />{formatIndianPhone(shop.phone_number)}
                       </span>
                     )}
                     {(shop.opening_time || shop.closing_time) && (

@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Car, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { stripIndianPrefix } from "@/lib/phone";
 
 export default function Register() {
   const [firstname, setFirstname] = useState("");
@@ -109,7 +110,20 @@ export default function Register() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="phone" className="text-xs font-display uppercase tracking-wider text-muted-foreground">Phone Number</Label>
-                <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} required minLength={10} maxLength={20} placeholder="+91 98765 43210" className="bg-background rounded-xl" />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">+91</span>
+                  <Input
+                    id="phone"
+                    value={phone}
+                    onChange={(e) => setPhone(stripIndianPrefix(e.target.value))}
+                    required
+                    minLength={10}
+                    maxLength={20}
+                    placeholder="98765 43210"
+                    className="bg-background rounded-xl pl-12"
+                    inputMode="tel"
+                  />
+                </div>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="password" className="text-xs font-display uppercase tracking-wider text-muted-foreground">Password</Label>
