@@ -96,6 +96,7 @@ export default function AdminBookings() {
                   <TableHead>End</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Price</TableHead>
+                  <TableHead>UTR</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -113,12 +114,10 @@ export default function AdminBookings() {
                       <Badge variant="outline" className={`${STATUS_COLOR[b.status]} capitalize`}>{b.status}</Badge>
                     </TableCell>
                     <TableCell>{b.total_price != null ? `₹${b.total_price}` : "—"}</TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground">{b.utr_number || "—"}</TableCell>
                     <TableCell className="text-right space-x-1" onClick={(e) => e.stopPropagation()}>
-                      {b.status === "pending" && (
-                        <>
-                          <Button size="icon" variant="ghost" className="h-8 w-8 text-emerald-400" disabled={busyId === b.id} onClick={() => act(b.id, "confirm")}><CheckCircle2 className="h-4 w-4" /></Button>
-                          <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" disabled={busyId === b.id} onClick={() => act(b.id, "reject")}><XCircle className="h-4 w-4" /></Button>
-                        </>
+                      {["pending", "confirmed"].includes(b.status) && (
+                        <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" title="Reject / Flag Fake Payment" disabled={busyId === b.id} onClick={() => act(b.id, "reject")}><XCircle className="h-4 w-4" /></Button>
                       )}
                       {["confirmed", "paid"].includes(b.status) && (
                         <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" disabled={busyId === b.id} onClick={() => act(b.id, "complete")}><Flag className="h-4 w-4" /></Button>

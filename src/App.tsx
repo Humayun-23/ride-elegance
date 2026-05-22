@@ -14,7 +14,6 @@ const Shops = lazy(() => import('./pages/Shops'));
 const ShopDetail = lazy(() => import('./pages/ShopDetail'));
 const Bookings = lazy(() => import('./pages/Bookings'));
 const BookingDetails = lazy(() => import('./pages/BookingDetails'));
-const Payment = lazy(() => import('./pages/Payment'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Register = lazy(() => import('./pages/Register'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
@@ -47,7 +46,6 @@ function App() {
             <Route path="/bikes/:id" element={<VehicleDetail />} />
             <Route path="/bookings" element={<Bookings />} />
             <Route path="/bookings/:id" element={<BookingDetails />} />
-            <Route path="/payment" element={<Payment />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

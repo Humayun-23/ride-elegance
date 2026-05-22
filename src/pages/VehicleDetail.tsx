@@ -26,6 +26,7 @@ export default function VehicleDetail() {
   const [activeImage, setActiveImage] = useState(0);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [utrNumber, setUtrNumber] = useState("");
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
   const { user } = useAuth();
@@ -83,6 +84,11 @@ export default function VehicleDetail() {
 *From:* ${fromDate}
 *To:* ${toDate}
 
+💰 *Payment Details:*
+Token Received: *₹299* 
+Customer UTR Number: *${booking.utr_number}*
+Balance to Collect at Shop: *₹${Math.max(0, (booking.total_price || 0) - 299)}*
+
 Please tap a link below to instantly Accept or Reject this booking:
 
 ✅ *TAP TO ACCEPT:*
@@ -105,13 +111,14 @@ ${rejectLink}`;
   const handleBook = async () => {
     if (!user) { navigate("/login"); return; }
     if (!startTime || !endTime) { toast({ title: "Select dates", variant: "destructive" }); return; }
+    if (utrNumber.length !== 12) { toast({ title: "Please enter your 12-digit UTR number", variant: "destructive" }); return; }
 
     // Safari Popup Blocker Workaround: Open window synchronously *before* the await
     const waWindow = window.open('', '_blank');
 
     setBooking(true);
     try {
-      const response = await api.post("/bookings/", { bike_id: Number(id), start_time: startTime, end_time: endTime });
+      const response = await api.post("/bookings/", { bike_id: Number(id), start_time: startTime, end_time: endTime, utr_number: utrNumber });
       const newBooking = response.data;
       toast({ title: "Booking created!", description: "Check your bookings for status." });
       
@@ -271,11 +278,33 @@ ${rejectLink}`;
                   </div>
                 </div>
 
+                {/* Direct UPI Payment Section */}
+                {startTime && endTime && (
+                  <div className="bg-secondary/30 border border-border/50 rounded-xl p-4 space-y-4 mt-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Shield className="h-3 w-3"/> Step 1: Pay Token Advance</Label>
+                      <p className="text-[11px] text-muted-foreground">Secure your booking by paying a ₹299 token directly to the shop owner.</p>
+                    </div>
+                    <div className="flex items-center justify-between bg-background p-3 rounded-lg border border-border">
+                      <span className="font-display font-bold text-lg text-primary">₹299.00</span>
+                      <Button asChild size="sm" className="font-display glow">
+                        <a href={`upi://pay?pa=${shop?.upi_id || "default@upi"}&pn=${encodeURIComponent(shop?.name || "Shop Owner")}&am=299.00&cu=INR&tn=${encodeURIComponent("RideWheel Token Advance")}`} target="_blank" rel="noreferrer">
+                          Pay via UPI App
+                        </a>
+                      </Button>
+                    </div>
+                    <div className="space-y-2 pt-2">
+                      <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Step 2: Enter 12-Digit UTR</Label>
+                      <Input placeholder="e.g. 321456789012" value={utrNumber} onChange={(e) => setUtrNumber(e.target.value)} maxLength={12} className="bg-background font-mono text-sm tracking-widest" />
+                    </div>
+                  </div>
+                )}
+
                 <Button
                   className="w-full font-display gap-2 rounded-xl glow"
                   size="lg"
                   onClick={handleBook}
-                  disabled={booking || vehicle.is_available === false}
+                  disabled={booking || vehicle.is_available === false || utrNumber.length !== 12}
                 >
                   <Calendar className="h-4 w-4" />
                   {booking ? "Booking..." : vehicle.is_available === false ? "Unavailable" : "Book Now"}

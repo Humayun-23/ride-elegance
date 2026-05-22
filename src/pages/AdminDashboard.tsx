@@ -43,6 +43,7 @@ export default function AdminDashboard() {
   const [shopOpeningTime, setShopOpeningTime] = useState("");
   const [shopClosingTime, setShopClosingTime] = useState("");
   const [shopImage, setShopImage] = useState<File | null>(null);
+  const [shopUpiId, setShopUpiId] = useState("");
   const [isCreatingShop, setIsCreatingShop] = useState(false);
 
   // Vehicle form
@@ -99,7 +100,7 @@ export default function AdminDashboard() {
   const resetShopForm = () => {
     setShopName(""); setShopPhone(""); setShopAddress(""); setShopCity("");
     setShopState(""); setShopZipCode(""); setShopDesc("");
-    setShopOpeningTime(""); setShopClosingTime(""); setShopImage(null);
+    setShopOpeningTime(""); setShopClosingTime(""); setShopUpiId(""); setShopImage(null);
   };
 
   const createShop = async () => {
@@ -120,6 +121,7 @@ export default function AdminDashboard() {
       if (shopZipCode) payload.zip_code = shopZipCode;
       if (shopOpeningTime) payload.opening_time = shopOpeningTime;
       if (shopClosingTime) payload.closing_time = shopClosingTime;
+      if (shopUpiId) payload.upi_id = shopUpiId;
 
       const shop = (await api.post("/shops/", payload)).data;
       let created = shop;
@@ -388,6 +390,10 @@ export default function AdminDashboard() {
                       <Label>Closing Time</Label>
                       <Input type="time" value={shopClosingTime} onChange={(e) => setShopClosingTime(e.target.value)} className="bg-background" />
                     </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>UPI ID (For ₹299 direct token)</Label>
+                    <Input value={shopUpiId} onChange={(e) => setShopUpiId(e.target.value)} placeholder="e.g., shopname@ybl" className="bg-background" />
                   </div>
                   <div className="space-y-2">
                     <Label>Description</Label>

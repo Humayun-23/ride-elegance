@@ -143,6 +143,10 @@ export default function AdminShop() {
                   <Input type="time" value={selected.closing_time || ""} onChange={(e) => set("closing_time", e.target.value)} />
                 </div>
                 <div className="space-y-1.5 md:col-span-2">
+                  <Label>UPI ID (For ₹299 direct token)</Label>
+                  <Input value={selected.upi_id || ""} onChange={(e) => set("upi_id", e.target.value)} placeholder="e.g., owner@upi" />
+                </div>
+                <div className="space-y-1.5 md:col-span-2">
                   <Label>Description</Label>
                   <Textarea value={selected.description || ""} onChange={(e) => set("description", e.target.value)} />
                 </div>

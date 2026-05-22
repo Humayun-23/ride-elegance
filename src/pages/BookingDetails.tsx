@@ -207,19 +207,28 @@ export default function BookingDetails() {
               </div>
 
               {booking.total_price != null && (
-                <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5 border border-primary/10">
-                  <span className="text-sm text-muted-foreground">Total</span>
-                  <span className="font-display text-2xl font-bold text-primary">₹{booking.total_price}</span>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5 border border-primary/10">
+                    <span className="text-sm text-muted-foreground">Total Rental Cost</span>
+                    <span className="font-display text-xl font-bold text-foreground">₹{booking.total_price}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-4 rounded-xl border border-border/50 bg-card/60">
+                      <p className="text-[10px] text-muted-foreground font-display uppercase tracking-wider mb-1">Token Paid via UPI</p>
+                      <p className="font-display text-lg font-bold text-emerald-500">₹{booking.token_amount || 299}</p>
+                      {booking.utr_number && <p className="text-[10px] text-muted-foreground mt-1 font-mono">UTR: {booking.utr_number}</p>}
+                    </div>
+                    <div className="p-4 rounded-xl border border-border/50 bg-card/60">
+                      <p className="text-[10px] text-muted-foreground font-display uppercase tracking-wider mb-1">Balance at Shop</p>
+                      <p className="font-display text-lg font-bold text-primary">₹{Math.max(0, (booking.total_price || 0) - (booking.token_amount || 299))}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">To be paid on pickup</p>
+                    </div>
+                  </div>
                 </div>
               )}
 
               {/* Actions */}
               <div className="flex flex-wrap gap-2">
-                {booking.status === "confirmed" && (
-                  <Button onClick={() => navigate(`/payment/${booking.id}`)} className="font-display gap-2 glow">
-                    <CreditCard className="h-4 w-4" /> Pay now
-                  </Button>
-                )}
                 {canEdit && !editing && (
                   <Button variant="outline" onClick={() => setEditing(true)} className="font-display gap-2">
                     <Pencil className="h-4 w-4" /> Edit dates
