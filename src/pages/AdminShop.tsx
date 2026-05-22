@@ -22,7 +22,7 @@ export default function AdminShop() {
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
-    api.get("/shops/").then((res) => {
+    api.get("/shops/me").then((res) => {
       const s = res.data;
       setShops(s);
       if (s[0]) setSelected(s[0]);

@@ -75,11 +75,11 @@ export default function Shops() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.06 }}
               >
-                <Link to={`/shops/${shop.id}`} className="group block">
-                  <Card className="border-border/50 bg-card/60 backdrop-blur hover:border-primary/20 hover:bg-card transition-all h-full overflow-hidden">
+                <Link to={`/shops/${shop.id}`} className="group block h-full">
+                  <Card className="border-border/50 bg-card/60 backdrop-blur hover:border-primary/20 hover:bg-card transition-all h-full overflow-hidden flex flex-col">
                     {/* Top accent bar */}
-                    <div className="h-1 w-full bg-gradient-to-r from-primary/60 via-primary/30 to-transparent" />
-                    <CardContent className="p-6 space-y-4">
+                    <div className="h-1 w-full bg-gradient-to-r from-primary/60 via-primary/30 to-transparent shrink-0" />
+                    <CardContent className="p-6 space-y-4 flex-1 flex flex-col">
                       <div className="flex justify-between items-start">
                         <div className="space-y-1">
                           <h3 className="font-display text-lg font-bold group-hover:text-primary transition-colors">
@@ -120,24 +120,35 @@ export default function Shops() {
                       </div>
 
                       {shop.description && (
-                        <p className="text-xs text-muted-foreground/70 line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-muted-foreground/70 line-clamp-2 leading-relaxed flex-1">
                           {shop.description}
                         </p>
                       )}
 
-                      {shop.rating && (
-                        <div className="flex items-center gap-1.5 pt-1">
-                          <div className="flex">
-                            {[...Array(5)].map((_, j) => (
-                              <Star
-                                key={j}
-                                className={`h-3 w-3 ${j < Math.round(shop.rating) ? "text-primary fill-primary" : "text-muted-foreground/20"}`}
-                              />
-                            ))}
+                      <div className="mt-auto pt-2">
+                        {shop.rating ? (
+                          <div className="flex items-center gap-1.5 pt-1">
+                            <div className="flex">
+                              {[...Array(5)].map((_, j) => (
+                                <Star
+                                  key={j}
+                                  className={`h-3 w-3 ${j < Math.round(shop.rating) ? "text-primary fill-primary" : "text-muted-foreground/20"}`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-xs text-muted-foreground font-display">{shop.rating}</span>
                           </div>
-                          <span className="text-xs text-muted-foreground font-display">{shop.rating}</span>
-                        </div>
-                      )}
+                        ) : (
+                          <div className="flex items-center gap-1.5 pt-1">
+                            <div className="flex">
+                              {[...Array(5)].map((_, j) => (
+                                <Star key={j} className="h-3 w-3 text-muted-foreground/20" />
+                              ))}
+                            </div>
+                            <span className="text-xs text-muted-foreground font-display">New</span>
+                          </div>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 </Link>

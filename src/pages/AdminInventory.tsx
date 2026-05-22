@@ -36,10 +36,11 @@ export default function AdminInventory() {
   });
   const [bikeImages, setBikeImages] = useState<File[]>([]);
   const [open, setOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
-    api.get("/shops/").then((res) => {
+    api.get("/shops/me").then((res) => {
       const s = res.data;
       setShops(s);
       if (s[0]) setShopId(String(s[0].id));
@@ -71,6 +72,7 @@ export default function AdminInventory() {
   };
 
   const submit = async () => {
+    setIsSaving(true);
     try {
       const payload: any = {
         name: form.name, model: form.model, bike_type: form.bike_type,
@@ -116,6 +118,8 @@ export default function AdminInventory() {
       setOpen(false);
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -195,7 +199,9 @@ export default function AdminInventory() {
                       )}
                     </div>
                   </div>
-                  <Button className="w-full font-display" onClick={submit}>{editing ? "Save changes" : "Add"}</Button>
+                <Button className="w-full font-display" onClick={submit} disabled={isSaving}>
+                  {isSaving ? "Saving..." : (editing ? "Save changes" : "Add")}
+                </Button>
                 </div>
               </DialogContent>
             </Dialog>

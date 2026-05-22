@@ -1,7 +1,9 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { MapPin, Star, Gauge, Fuel } from "lucide-react";
+import { MapPin, Star, Gauge, Fuel, Store } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { api } from "@/lib/api";
 
 interface VehicleCardProps {
   vehicle: {
@@ -16,6 +18,7 @@ interface VehicleCardProps {
     rating?: number;
     location?: string;
     shop_name?: string;
+    shop_id?: number | string;
     condition?: string;
     is_available?: boolean;
     description?: string;
@@ -33,6 +36,18 @@ const TYPE_EMOJI: Record<string, string> = {
 };
 
 export default function VehicleCard({ vehicle }: VehicleCardProps) {
+  const [shopName, setShopName] = useState<string>(vehicle.shop_name || "");
+
+  useEffect(() => {
+    if (!shopName && vehicle.shop_id) {
+      api.get(`/shops/${vehicle.shop_id}`)
+        .then((res) => {
+          if (res.data && res.data.name) setShopName(res.data.name);
+        })
+        .catch(() => {});
+    }
+  }, [vehicle.shop_id, shopName]);
+
   return (
     <Link to={`/bikes/${vehicle.id}`} className="group block h-full">
       <div className="overflow-hidden rounded-2xl border border-border/50 bg-card/60 backdrop-blur transition-all group-hover:border-primary/20 group-hover:bg-card group-hover:shadow-[0_8px_30px_hsl(45_100%_51%/0.08)] h-full flex flex-col">
@@ -91,20 +106,16 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
                 {vehicle.condition}
               </span>
             )}
-            {vehicle.shop_name && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-md">
-                <MapPin className="h-3 w-3" />{vehicle.shop_name}
-              </span>
-            )}
-            {vehicle.rating && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-primary bg-primary/10 px-2 py-0.5 rounded-md">
-                <Star className="h-3 w-3 fill-current" />{vehicle.rating}
-              </span>
-            )}
+            <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-md">
+              <Store className="h-3 w-3" />{shopName || "Partner Shop"}
+            </span>
+            <span className="inline-flex items-center gap-1 text-[11px] text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+              <Star className="h-3 w-3 fill-current" />{vehicle.rating || "New"}
+            </span>
           </div>
 
           {/* Price */}
-          <div className="pt-3 border-t border-border/50 flex items-baseline gap-3">
+          <div className="pt-3 border-t border-border/50 flex items-baseline gap-3 mt-auto">
             {/* {vehicle.price_per_hour != null && (
               <span>
                 <span className="text-primary font-display font-bold text-lg">₹{vehicle.price_per_hour}</span>

@@ -41,6 +41,7 @@ export default function AdminDashboard() {
   const [shopOpeningTime, setShopOpeningTime] = useState("");
   const [shopClosingTime, setShopClosingTime] = useState("");
   const [shopImage, setShopImage] = useState<File | null>(null);
+  const [isCreatingShop, setIsCreatingShop] = useState(false);
 
   // Vehicle form
   const [bikeName, setBikeName] = useState("");
@@ -54,18 +55,20 @@ export default function AdminDashboard() {
   const [bikeAvailable, setBikeAvailable] = useState(true);
   const [bikeShopId, setBikeShopId] = useState("");
   const [bikeImages, setBikeImages] = useState<File[]>([]);
+  const [isCreatingVehicle, setIsCreatingVehicle] = useState(false);
 
   // Inventory form
   const [invBikeId, setInvBikeId] = useState("");
   const [invShopId, setInvShopId] = useState("");
   const [invQuantity, setInvQuantity] = useState("");
+  const [isCreatingInventory, setIsCreatingInventory] = useState(false);
 
   useEffect(() => {
     if (!user || (user.user_type !== "shop_owner" && !localStorage.getItem("is_admin"))) {
       navigate("/login");
       return;
     }
-    api.get("/shops/").then(async (res) => {
+    api.get("/shops/me").then(async (res) => {
       const s = res.data;
       setShops(s);
       const bikeLists = await Promise.all(
@@ -102,6 +105,7 @@ export default function AdminDashboard() {
       toast({ title: "Phone must be 10-20 characters", variant: "destructive" });
       return;
     }
+    setIsCreatingShop(true);
     try {
       const payload: any = {
         name: shopName,
@@ -133,6 +137,8 @@ export default function AdminDashboard() {
       toast({ title: "Shop created!" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setIsCreatingShop(false);
     }
   };
 
@@ -143,6 +149,7 @@ export default function AdminDashboard() {
   };
 
   const createVehicle = async () => {
+    setIsCreatingVehicle(true);
     try {
       const payload: any = {
         name: bikeName,
@@ -173,10 +180,13 @@ export default function AdminDashboard() {
       toast({ title: "Vehicle added!" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setIsCreatingVehicle(false);
     }
   };
 
   const createInventory = async () => {
+    setIsCreatingInventory(true);
     try {
       await api.post("/inventory/", {
         bike_id: Number(invBikeId),
@@ -187,6 +197,8 @@ export default function AdminDashboard() {
       toast({ title: "Inventory created!" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setIsCreatingInventory(false);
     }
   };
 
@@ -388,7 +400,9 @@ export default function AdminDashboard() {
                       className="bg-background"
                     />
                   </div>
-                  <Button className="w-full font-display" onClick={createShop}>Create Shop</Button>
+              <Button className="w-full font-display" onClick={createShop} disabled={isCreatingShop}>
+                {isCreatingShop ? "Creating..." : "Create Shop"}
+              </Button>
                 </div>
               </DialogContent>
             </Dialog>
@@ -518,7 +532,9 @@ export default function AdminDashboard() {
                       {shops.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                     </select>
                   </div>
-                  <Button className="w-full font-display" onClick={createVehicle}>Add Vehicle</Button>
+              <Button className="w-full font-display" onClick={createVehicle} disabled={isCreatingVehicle}>
+                {isCreatingVehicle ? "Adding..." : "Add Vehicle"}
+              </Button>
                 </div>
               </DialogContent>
             </Dialog>
@@ -548,7 +564,9 @@ export default function AdminDashboard() {
                     <Label>Total Quantity <span className="text-destructive">*</span></Label>
                     <Input type="number" value={invQuantity} onChange={(e) => setInvQuantity(e.target.value)} className="bg-background" />
                   </div>
-                  <Button className="w-full font-display" onClick={createInventory}>Create</Button>
+              <Button className="w-full font-display" onClick={createInventory} disabled={isCreatingInventory}>
+                {isCreatingInventory ? "Creating..." : "Create"}
+              </Button>
                 </div>
               </DialogContent>
             </Dialog>
