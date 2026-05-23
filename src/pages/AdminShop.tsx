@@ -76,7 +76,7 @@ export default function AdminShop() {
   return (
     <div className="min-h-screen pt-24 pb-16">
       <div className="container px-4 max-w-5xl space-y-8">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="gap-2 text-muted-foreground -ml-2">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/owner/dashboard")} className="gap-2 text-muted-foreground -ml-2">
           <ArrowLeft className="h-4 w-4" /> Dashboard
         </Button>
         <div className="flex items-center gap-3">

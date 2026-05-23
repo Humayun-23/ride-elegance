@@ -44,7 +44,7 @@ export default function Register() {
     setLoading(true);
     try {
       await register({ firstname, lastname, email, password, phone_number: phone, user_type: userType });
-      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`, { state: { justRegistered: true } });
     } catch (err: any) {
       toast({ title: "Registration failed", description: err.message, variant: "destructive" });
     } finally {

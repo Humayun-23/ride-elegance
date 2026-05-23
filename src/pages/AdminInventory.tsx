@@ -40,8 +40,11 @@ export default function AdminInventory() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) { navigate("/login"); return; }
-    const isAdmin = localStorage.getItem("is_admin") === "true" || user.user_type === "admin";
+    if (!user || (user.user_type !== "shop_owner" && user.user_type !== "admin")) { 
+      navigate("/login"); 
+      return; 
+    }
+    const isAdmin = user.user_type === "admin";
     api.get(isAdmin ? "/shops/" : "/shops/me").then((res) => {
       const s = res.data;
       setShops(s);
@@ -141,7 +144,7 @@ export default function AdminInventory() {
   return (
     <div className="min-h-screen pt-24 pb-16">
       <div className="container px-4 max-w-6xl space-y-8">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/admin")} className="gap-2 text-muted-foreground -ml-2">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/owner/dashboard")} className="gap-2 text-muted-foreground -ml-2">
           <ArrowLeft className="h-4 w-4" /> Dashboard
         </Button>
         <div className="flex items-center justify-between flex-wrap gap-4">

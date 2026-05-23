@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Zap, Shield, Clock, ArrowRight, MapPin, Star, ChevronRight, ShieldCheck, Wallet, Car, Store } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import VehicleCard from "@/components/VehicleCard";
 import { useShops } from "@/hooks/useShops";
 import { useSearchVehicles } from "@/hooks/useVehicles";
@@ -35,8 +35,13 @@ export default function Index() {
   const { data: shopsData } = useShops({ limit: 6 });
   const { data: vehiclesData } = useSearchVehicles({ is_available: "true", limit: 6 });
 
-  const featuredShops = Array.isArray(shopsData) ? shopsData.slice(0, 6) : [];
-  const popularBikes = Array.isArray(vehiclesData) ? vehiclesData.slice(0, 6) : [];
+  const featuredShops = useMemo(() => {
+    return Array.isArray(shopsData) ? shopsData.slice(0, 6) : [];
+  }, [shopsData]);
+
+  const popularBikes = useMemo(() => {
+    return Array.isArray(vehiclesData) ? vehiclesData.slice(0, 6) : [];
+  }, [vehiclesData]);
 
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();

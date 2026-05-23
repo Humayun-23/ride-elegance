@@ -43,7 +43,7 @@ export default function ShopDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const isAdmin = localStorage.getItem("is_admin") === "true" || user?.user_type === "admin";
+  const isAdmin = user?.user_type === "admin";
   const isOwner = isAdmin || (user?.user_type === "shop_owner" && shop?.owner_id === user?.id);
 
   useEffect(() => {

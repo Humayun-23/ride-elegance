@@ -161,10 +161,10 @@ export default function AdminDashboard() {
         {/* Quick nav */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { label: "Shop", to: "/admin/shop", icon: Store, desc: "Edit shop details" },
-            { label: "Inventory", to: "/admin/inventory", icon: Package, desc: "Manage vehicles" },
-            { label: "Bookings", to: "/admin/bookings", icon: Bike, desc: "Confirm / complete" },
-            { label: "Reviews", to: "/admin/reviews", icon: Plus, desc: "Customer feedback" },
+            { label: "Shop", to: "/owner/shop", icon: Store, desc: "Edit shop details" },
+            { label: "Inventory", to: "/owner/inventory", icon: Package, desc: "Manage vehicles" },
+            { label: "Bookings", to: "/owner/bookings", icon: Bike, desc: "Confirm / complete" },
+            { label: "Reviews", to: "/owner/reviews", icon: Plus, desc: "Customer feedback" },
           ].map((n) => (
             <button
               key={n.to}

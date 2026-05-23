@@ -30,10 +30,14 @@ export default function SearchVehicles() {
   const [sort, setSort] = useState("default");
   const [page, setPage] = useState(0);
 
-  // Setup API parameters driven by the URL state
-  const params: Record<string, string> = { is_available: "true" };
-  if (activeType && activeType !== "all") params.vehicle_type = activeType;
-  if (searchParams.get("q")) params.q = searchParams.get("q") as string;
+  // Setup API parameters driven by the URL state (memoized to keep reference stable)
+  const params = useMemo(() => {
+    const p: Record<string, string> = { is_available: "true" };
+    if (activeType && activeType !== "all") p.vehicle_type = activeType;
+    const searchQ = searchParams.get("q");
+    if (searchQ) p.q = searchQ;
+    return p;
+  }, [activeType, searchParams]);
 
   // Fetch using the globally cached hook!
   const { data, isLoading: loading } = useSearchVehicles(params);

@@ -52,12 +52,16 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/password-reset" element={<PasswordReset />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/bookings" element={<AdminBookings />} />
-            <Route path="/admin/inventory" element={<AdminInventory />} />
-            <Route path="/admin/reviews" element={<AdminReviews />} />
-            <Route path="/admin/shop" element={<AdminShop />} />
+            
+            {/* Owner Routes */}
+            <Route path="/owner/dashboard" element={<AdminDashboard />} />
+            <Route path="/owner/shop" element={<AdminShop />} />
+            <Route path="/owner/inventory" element={<AdminInventory />} />
+            <Route path="/owner/bookings" element={<AdminBookings />} />
+            <Route path="/owner/reviews" element={<AdminReviews />} />
+
+            {/* User Specific Routes */}
+            <Route path="/users/bookings" element={<Bookings />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

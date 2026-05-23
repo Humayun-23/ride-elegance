@@ -98,7 +98,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     const accessToken = res.data.access_token;
     localStorage.setItem("auth_token", accessToken);
-    localStorage.setItem("is_admin", "true");
     
     const payload = JSON.parse(atob(accessToken.split(".")[1]));
     const userId = payload.sub || payload.user_id || payload.id;
@@ -133,7 +132,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem("auth_token");
-    localStorage.removeItem("is_admin");
     localStorage.removeItem("user_data");
     setToken(null);
     setUser(null);

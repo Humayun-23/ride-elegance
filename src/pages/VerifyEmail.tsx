@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { setAuthToken } = useAuth();
   const { toast } = useToast();
@@ -21,7 +22,7 @@ export default function VerifyEmail() {
   const [status, setStatus] = useState<"idle" | "verifying" | "verified" | "error">("idle");
   const [message, setMessage] = useState<string>("");
   const [resending, setResending] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendCooldown, setResendCooldown] = useState(location.state?.justRegistered ? 30 : 0);
 
   const canVerify = useMemo(() => token.length > 0, [token]);
 
@@ -45,12 +46,11 @@ export default function VerifyEmail() {
   }, [canVerify, navigate, setAuthToken, token]);
 
   useEffect(() => {
-    if (resendCooldown <= 0) return;
     const timer = window.setInterval(() => {
-      setResendCooldown((seconds) => Math.max(seconds - 1, 0));
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
     return () => window.clearInterval(timer);
-  }, [resendCooldown]);
+  }, []);
 
   const resend = async () => {
     if (resendCooldown > 0) return;

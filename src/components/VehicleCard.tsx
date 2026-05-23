@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { MapPin, Star, Gauge, Fuel, Store } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 
 interface VehicleCardProps {
   vehicle: {
@@ -30,10 +31,6 @@ interface VehicleCardProps {
   compact?: boolean;
 }
 
-// Global cache to prevent API spam when rendering dozens of vehicle cards
-const shopNameCache: Record<string, string> = {};
-const pendingRequests: Record<string, Promise<string>> = {};
-
 const TYPE_EMOJI: Record<string, string> = {
   scooty: "🛵",
   bike: "🏍️",
@@ -53,31 +50,24 @@ export default function VehicleCard({
   footerText,
   compact = false,
 }: VehicleCardProps) {
-  const [shopName, setShopName] = useState<string>(vehicle.shop_name || "");
-
   const imageAspectClass = compact ? "aspect-[16/8]" : "aspect-[16/10]";
   const contentPaddingClass = compact ? "px-3 py-2" : "p-4";
   const contentSpacingClass = compact ? "space-y-1.5" : "space-y-3";
   const titleSizeClass = compact ? "text-sm" : "text-base";
   const footerPaddingClass = compact ? "pt-2" : "pt-3";
 
-  useEffect(() => {
-    if (!shopName && vehicle.shop_id) {
-      const id = String(vehicle.shop_id);
-      if (shopNameCache[id]) {
-        setShopName(shopNameCache[id]);
-      } else {
-        if (!pendingRequests[id]) {
-          pendingRequests[id] = api.get(`/shops/${id}`).then((res) => {
-            const name = res.data?.name || "Partner Shop";
-            shopNameCache[id] = name;
-            return name;
-          }).catch(() => "Partner Shop");
-        }
-        pendingRequests[id].then(setShopName);
-      }
-    }
-  }, [vehicle.shop_id, shopName]);
+  // Use React Query for caching and deduping shop requests
+  const { data: fetchedShopName } = useQuery({
+    queryKey: ["shop", vehicle.shop_id],
+    queryFn: async () => {
+      const res = await api.get(`/shops/${vehicle.shop_id}`);
+      return res.data?.name || "Partner Shop";
+    },
+    enabled: !vehicle.shop_name && !!vehicle.shop_id,
+    staleTime: 1000 * 60 * 5, // 5 minutes cache
+  });
+
+  const displayShopName = vehicle.shop_name || fetchedShopName || "Partner Shop";
 
   return (
     <Link to={href ?? `/bikes/${vehicle.id}`} className="group block h-full">
@@ -88,6 +78,8 @@ export default function VehicleCard({
             <img
               src={vehicle.image_url}
               alt={vehicle.name}
+              loading="lazy"
+              decoding="async"
               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
           ) : (
@@ -138,7 +130,7 @@ export default function VehicleCard({
               </span>
             )}
             <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-md">
-              <Store className="h-3 w-3" />{shopName || "Partner Shop"}
+              <Store className="h-3 w-3" />{displayShopName}
             </span>
             <span className="inline-flex items-center gap-1 text-[11px] text-primary bg-primary/10 px-2 py-0.5 rounded-md">
               <Star className="h-3 w-3 fill-current" />{vehicle.rating || "New"}
