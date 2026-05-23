@@ -95,7 +95,7 @@ export default function Index() {
                 <MapPin className="text-slate-400 h-5 w-5" />
                 <Input 
                   type="text" 
-                  placeholder="Where are you going? (e.g. Goa)" 
+                  placeholder="Where are you going? (e.g. Guwahati)" 
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   className="border-0 bg-transparent shadow-none focus-visible:ring-0 p-0 text-base placeholder:text-slate-400"
