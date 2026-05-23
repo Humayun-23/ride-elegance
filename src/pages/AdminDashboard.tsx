@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Plus, Store, Bike, Package, Calendar, TrendingUp, Star, Activity } from "lucide-react";
@@ -25,12 +24,13 @@ export default function AdminDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [shops, setShops] = useState<any[]>([]);
-  const [shopBikes, setShopBikes] = useState<Record<string, any[]>>({});
-  const [activeTab, setActiveTab] = useState("shops");
   const [allBookings, setAllBookings] = useState<any[]>([]);
   const [allReviews, setAllReviews] = useState<any[]>([]);
   const [dashboardMetrics, setDashboardMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // Modal states
+  const [isShopModalOpen, setIsShopModalOpen] = useState(false);
 
   // Shop form
   const [shopName, setShopName] = useState("");
@@ -45,26 +45,6 @@ export default function AdminDashboard() {
   const [shopImage, setShopImage] = useState<File | null>(null);
   const [shopUpiId, setShopUpiId] = useState("");
   const [isCreatingShop, setIsCreatingShop] = useState(false);
-
-  // Vehicle form
-  const [bikeName, setBikeName] = useState("");
-  const [bikeModel, setBikeModel] = useState("");
-  const [bikeType, setBikeType] = useState("bike");
-  const [bikeEngineCC, setBikeEngineCC] = useState("");
-  const [bikeDesc, setBikeDesc] = useState("");
-  const [bikePriceHour, setBikePriceHour] = useState("");
-  const [bikePriceDay, setBikePriceDay] = useState("");
-  const [bikeCondition, setBikeCondition] = useState("good");
-  const [bikeAvailable, setBikeAvailable] = useState(true);
-  const [bikeShopId, setBikeShopId] = useState("");
-  const [bikeImages, setBikeImages] = useState<File[]>([]);
-  const [isCreatingVehicle, setIsCreatingVehicle] = useState(false);
-
-  // Inventory form
-  const [invBikeId, setInvBikeId] = useState("");
-  const [invShopId, setInvShopId] = useState("");
-  const [invQuantity, setInvQuantity] = useState("");
-  const [isCreatingInventory, setIsCreatingInventory] = useState(false);
 
   useEffect(() => {
     if (!user || (user.user_type !== "shop_owner" && !localStorage.getItem("is_admin"))) {
@@ -89,13 +69,6 @@ export default function AdminDashboard() {
       setLoading(false);
     });
   }, [user]);
-
-  const loadBikesForShop = async (shopId: string) => {
-    try {
-      const bikes = (await api.get(`/bikes/shop/${shopId}`)).data;
-      setShopBikes((prev) => ({ ...prev, [shopId]: bikes }));
-    } catch {}
-  };
 
   const resetShopForm = () => {
     setShopName(""); setShopPhone(""); setShopAddress(""); setShopCity("");
@@ -139,6 +112,7 @@ export default function AdminDashboard() {
       setShops((p) => [...p, created]);
       resetShopForm();
       toast({ title: "Shop created!" });
+      setIsShopModalOpen(false);
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
@@ -146,78 +120,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const resetVehicleForm = () => {
-    setBikeName(""); setBikeModel(""); setBikeType("bike"); setBikeEngineCC("");
-    setBikeDesc(""); setBikePriceHour(""); setBikePriceDay("");
-    setBikeCondition("good"); setBikeAvailable(true); setBikeShopId(""); setBikeImages([]);
-  };
-
-  const createVehicle = async () => {
-    setIsCreatingVehicle(true);
-    try {
-      const payload: any = {
-        name: bikeName,
-        model: bikeModel,
-        bike_type: bikeType,
-        price_per_hour: Number(bikePriceHour),
-        price_per_day: Number(bikePriceDay),
-        shop_id: Number(bikeShopId),
-        condition: bikeCondition,
-        is_available: bikeAvailable,
-      };
-      if (bikeEngineCC) payload.engine_cc = Number(bikeEngineCC);
-      if (bikeDesc) payload.description = bikeDesc;
-
-      const created = (await api.post("/bikes/", payload)).data;
-      if (bikeImages.length > 0) {
-        try {
-          const formData = new FormData();
-          bikeImages.forEach((file) => formData.append("files", file));
-          await api.post(`/bikes/${created.id}/images`, formData, {
-            headers: { "Content-Type": "multipart/form-data" },
-          });
-        } catch (err: any) {
-          toast({ title: "Vehicle created, image upload failed", description: err.message, variant: "destructive" });
-        }
-      }
-      resetVehicleForm();
-      toast({ title: "Vehicle added!" });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    } finally {
-      setIsCreatingVehicle(false);
-    }
-  };
-
-  const createInventory = async () => {
-    setIsCreatingInventory(true);
-    try {
-      await api.post("/inventory/", {
-        bike_id: Number(invBikeId),
-        shop_id: Number(invShopId),
-        total_quantity: Number(invQuantity),
-      });
-      setInvBikeId(""); setInvShopId(""); setInvQuantity("");
-      toast({ title: "Inventory created!" });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    } finally {
-      setIsCreatingInventory(false);
-    }
-  };
-
-  const handleBookingAction = async (id: string, action: "confirm" | "reject" | "complete" | "return") => {
-    try {
-      await api.post(`/bookings/${id}/${action}`);
-      toast({ title: `Booking ${action}ed` });
-    } catch (err: any) {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
-    }
-  };
-
-  const selectClasses = "w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground";
-
-  const totalBikes = dashboardMetrics?.total_bikes ?? Object.values(shopBikes).reduce((a, l) => a + l.length, 0);
+  const totalBikes = dashboardMetrics?.total_bikes ?? 0;
   const activeBookings = dashboardMetrics?.active_bookings ?? allBookings.filter((b) => ["pending", "confirmed"].includes(b.status)).length;
   const revenue = dashboardMetrics?.revenue ?? allBookings.filter((b) => ["completed", "returned"].includes(b.status)).reduce((a, b) => a + (Number(b.total_price) || 0), 0);
   const avgRating = dashboardMetrics?.avg_rating || (allReviews.length ? (allReviews.reduce((a, r) => a + (r.rating || 0), 0) / allReviews.length).toFixed(1) : "—");
@@ -333,22 +236,11 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-card border border-border">
-            <TabsTrigger value="shops" className="font-display gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Store className="h-4 w-4" /> Shops
-            </TabsTrigger>
-            <TabsTrigger value="vehicles" className="font-display gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Bike className="h-4 w-4" /> Vehicles
-            </TabsTrigger>
-            <TabsTrigger value="inventory" className="font-display gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Package className="h-4 w-4" /> Inventory
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Shops Tab */}
-          <TabsContent value="shops" className="space-y-6 mt-6">
-            <Dialog>
+        {/* My Shops Section */}
+        <div className="space-y-6 mt-12">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <h2 className="font-display text-2xl font-bold flex items-center gap-2"><Store className="h-6 w-6 text-primary" /> My Shops</h2>
+            <Dialog open={isShopModalOpen} onOpenChange={setIsShopModalOpen}>
               <DialogTrigger asChild>
                 <Button className="font-display gap-2"><Plus className="h-4 w-4" /> Add Shop</Button>
               </DialogTrigger>
@@ -392,7 +284,7 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>UPI ID (For ₹299 direct token)</Label>
+                    <Label>UPI ID (For direct token payments)</Label>
                     <Input value={shopUpiId} onChange={(e) => setShopUpiId(e.target.value)} placeholder="e.g., shopname@ybl" className="bg-background" />
                   </div>
                   <div className="space-y-2">
@@ -414,8 +306,9 @@ export default function AdminDashboard() {
                 </div>
               </DialogContent>
             </Dialog>
+          </div>
 
-            {loading ? (
+          {loading ? (
               <div className="text-muted-foreground animate-pulse py-12 text-center border-2 border-dashed border-border/50 rounded-xl">Loading your shops...</div>
             ) : shops.length === 0 ? (
               <div className="text-muted-foreground py-12 text-center border-2 border-dashed border-border/50 rounded-xl">No shops found. Click "Add Shop" to get started!</div>
@@ -432,172 +325,17 @@ export default function AdminDashboard() {
                     )}
                     <div className="flex gap-2">
                       <Button size="sm" variant="outline" className="font-display" onClick={() => navigate(`/shops/${shop.id}`)}>View</Button>
-                      <Button size="sm" variant="outline" className="font-display" onClick={() => loadBikesForShop(shop.id)}>Load Vehicles</Button>
                       <Button size="sm" variant="outline" className="font-display text-destructive border-destructive/30" onClick={async () => {
                         await api.delete(`/shops/${shop.id}`);
                         setShops((p) => p.filter((s) => s.id !== shop.id));
                         toast({ title: "Shop deleted" });
                       }}>Delete</Button>
                     </div>
-                    {shopBikes[shop.id] && (
-                      <div className="mt-3 space-y-2">
-                        {shopBikes[shop.id].map((bike: any) => (
-                          <div key={bike.id} className="text-sm text-muted-foreground flex justify-between items-center border-t border-border pt-2">
-                            <span>{bike.name} {bike.model && `· ${bike.model}`} ({bike.bike_type}) {bike.engine_cc ? `— ${bike.engine_cc}cc` : ""}</span>
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="capitalize text-xs">{bike.condition || "good"}</Badge>
-                              <span className="text-primary font-display">₹{bike.price_per_hour}/hr</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </motion.div>
                 ))}
               </div>
             )}
-          </TabsContent>
-
-          {/* Vehicles Tab */}
-          <TabsContent value="vehicles" className="space-y-6 mt-6">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="font-display gap-2"><Plus className="h-4 w-4" /> Add Vehicle</Button>
-              </DialogTrigger>
-              <DialogContent className="bg-card border-border max-h-[85vh] overflow-y-auto">
-                <DialogHeader><DialogTitle className="font-display">Add New Vehicle</DialogTitle></DialogHeader>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label>Name <span className="text-destructive">*</span></Label>
-                      <Input value={bikeName} onChange={(e) => setBikeName(e.target.value)} className="bg-background" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Model <span className="text-destructive">*</span></Label>
-                      <Input value={bikeModel} onChange={(e) => setBikeModel(e.target.value)} className="bg-background" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label>Type <span className="text-destructive">*</span></Label>
-                      <select value={bikeType} onChange={(e) => setBikeType(e.target.value)} className={selectClasses}>
-                        <option value="scooty">Scooty</option>
-                        <option value="bike">Bike</option>
-                        <option value="car">Car</option>
-                        <option value="mountain">Mountain</option>
-                        <option value="road">Road</option>
-                        <option value="hybrid">Hybrid</option>
-                        <option value="electric">Electric</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Engine CC</Label>
-                      <Input type="number" value={bikeEngineCC} onChange={(e) => setBikeEngineCC(e.target.value)} placeholder="Optional" className="bg-background" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label>Price/Hour (₹) <span className="text-destructive">*</span></Label>
-                      <Input type="number" value={bikePriceHour} onChange={(e) => setBikePriceHour(e.target.value)} className="bg-background" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Price/Day (₹) <span className="text-destructive">*</span></Label>
-                      <Input type="number" value={bikePriceDay} onChange={(e) => setBikePriceDay(e.target.value)} className="bg-background" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label>Condition</Label>
-                      <select value={bikeCondition} onChange={(e) => setBikeCondition(e.target.value)} className={selectClasses}>
-                        <option value="excellent">Excellent</option>
-                        <option value="good">Good</option>
-                        <option value="fair">Fair</option>
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Available</Label>
-                      <select value={bikeAvailable ? "true" : "false"} onChange={(e) => setBikeAvailable(e.target.value === "true")} className={selectClasses}>
-                        <option value="true">Yes</option>
-                        <option value="false">No</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Description</Label>
-                    <Textarea value={bikeDesc} onChange={(e) => setBikeDesc(e.target.value)} className="bg-background" placeholder="Optional" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Vehicle Photos (max 3)</Label>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={(e) => setBikeImages(Array.from(e.target.files || []).slice(0, 3))}
-                      className="bg-background"
-                    />
-                    {bikeImages.length > 0 && (
-                      <p className="text-xs text-muted-foreground">Selected {bikeImages.length} file(s)</p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Shop <span className="text-destructive">*</span></Label>
-                    <select value={bikeShopId} onChange={(e) => setBikeShopId(e.target.value)} className={selectClasses}>
-                      <option value="">Select shop</option>
-                      {shops.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                    </select>
-                  </div>
-              <Button className="w-full font-display" onClick={createVehicle} disabled={isCreatingVehicle}>
-                {isCreatingVehicle ? "Adding..." : "Add Vehicle"}
-              </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </TabsContent>
-
-          {/* Inventory Tab */}
-          <TabsContent value="inventory" className="space-y-6 mt-6">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="font-display gap-2"><Plus className="h-4 w-4" /> Add Inventory</Button>
-              </DialogTrigger>
-              <DialogContent className="bg-card border-border">
-                <DialogHeader><DialogTitle className="font-display">Create Inventory</DialogTitle></DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Bike ID <span className="text-destructive">*</span></Label>
-                    <Input type="number" value={invBikeId} onChange={(e) => setInvBikeId(e.target.value)} className="bg-background" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Shop <span className="text-destructive">*</span></Label>
-                    <select value={invShopId} onChange={(e) => setInvShopId(e.target.value)} className={selectClasses}>
-                      <option value="">Select shop</option>
-                      {shops.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Total Quantity <span className="text-destructive">*</span></Label>
-                    <Input type="number" value={invQuantity} onChange={(e) => setInvQuantity(e.target.value)} className="bg-background" />
-                  </div>
-              <Button className="w-full font-display" onClick={createInventory} disabled={isCreatingInventory}>
-                {isCreatingInventory ? "Creating..." : "Create"}
-              </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              {shops.map((shop) => (
-                <div key={shop.id} className="rounded-lg border border-border bg-card p-4">
-                  <h3 className="font-display font-bold">{shop.name}</h3>
-                  <p className="text-xs text-muted-foreground">{shop.address}, {shop.city}</p>
-                  <Button size="sm" variant="outline" className="mt-2 font-display" onClick={() => navigate(`/shops/${shop.id}`)}>
-                    View Inventory
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+        </div>
       </div>
     </div>
   );

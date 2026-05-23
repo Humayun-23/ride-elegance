@@ -23,6 +23,11 @@ interface VehicleCardProps {
     is_available?: boolean;
     description?: string;
   };
+  href?: string;
+  hideTypeBadge?: boolean;
+  hidePrice?: boolean;
+  footerText?: string;
+  compact?: boolean;
 }
 
 // Global cache to prevent API spam when rendering dozens of vehicle cards
@@ -37,10 +42,24 @@ const TYPE_EMOJI: Record<string, string> = {
   road: "🚴",
   hybrid: "⚡",
   electric: "🔋",
+  shop: "🏪",
 };
 
-export default function VehicleCard({ vehicle }: VehicleCardProps) {
+export default function VehicleCard({
+  vehicle,
+  href,
+  hideTypeBadge = false,
+  hidePrice = false,
+  footerText,
+  compact = false,
+}: VehicleCardProps) {
   const [shopName, setShopName] = useState<string>(vehicle.shop_name || "");
+
+  const imageAspectClass = compact ? "aspect-[16/8]" : "aspect-[16/10]";
+  const contentPaddingClass = compact ? "px-3 py-2" : "p-4";
+  const contentSpacingClass = compact ? "space-y-1.5" : "space-y-3";
+  const titleSizeClass = compact ? "text-sm" : "text-base";
+  const footerPaddingClass = compact ? "pt-2" : "pt-3";
 
   useEffect(() => {
     if (!shopName && vehicle.shop_id) {
@@ -61,10 +80,10 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
   }, [vehicle.shop_id, shopName]);
 
   return (
-    <Link to={`/bikes/${vehicle.id}`} className="group block h-full">
+    <Link to={href ?? `/bikes/${vehicle.id}`} className="group block h-full">
       <div className="overflow-hidden rounded-2xl border border-border/50 bg-card/60 backdrop-blur transition-all group-hover:border-primary/20 group-hover:bg-card group-hover:shadow-[0_8px_30px_hsl(45_100%_51%/0.08)] h-full flex flex-col">
         {/* Image */}
-        <div className="aspect-[16/10] bg-secondary relative overflow-hidden">
+        <div className={`${imageAspectClass} bg-secondary relative overflow-hidden`}>
           {vehicle.image_url ? (
             <img
               src={vehicle.image_url}
@@ -82,7 +101,7 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           
           {/* Type badge */}
-          {vehicle.bike_type && (
+          {!hideTypeBadge && vehicle.bike_type && (
             <Badge className="absolute top-3 left-3 bg-background/80 backdrop-blur text-foreground font-display text-[10px] uppercase tracking-wider border border-border/50">
               {TYPE_EMOJI[vehicle.bike_type] || ""} {vehicle.bike_type}
             </Badge>
@@ -97,9 +116,9 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-3 flex-1 flex flex-col">
+        <div className={`${contentPaddingClass} ${contentSpacingClass} flex-1 flex flex-col`}>
           <div className="flex-1">
-            <h3 className="font-display font-bold text-foreground text-base leading-tight group-hover:text-primary transition-colors">
+            <h3 className={`font-display font-bold text-foreground ${titleSizeClass} leading-tight group-hover:text-primary transition-colors`}>
               {vehicle.name}
             </h3>
             {vehicle.model && (
@@ -127,23 +146,31 @@ export default function VehicleCard({ vehicle }: VehicleCardProps) {
           </div>
 
           {/* Price */}
-          <div className="pt-3 border-t border-border/50 flex items-baseline gap-3 mt-auto">
-            {/* {vehicle.price_per_hour != null && (
-              <span>
-                <span className="text-primary font-display font-bold text-lg">₹{vehicle.price_per_hour}</span>
-                <span className="text-muted-foreground text-[10px] ml-0.5">/hr</span>
-              </span>
-            )*/}
-            {vehicle.price_per_day != null && (
-              <span>
-                <span className="text-foreground font-display font-bold text-sm">₹{vehicle.price_per_day}</span>
-                <span className="text-muted-foreground text-[10px] ml-0.5">/day</span>
-              </span>
-            )}
-            {vehicle.price_per_hour == null && vehicle.price_per_day == null && (
-              <span className="text-muted-foreground font-display">Contact for price</span>
-            )}
-          </div>
+          {(footerText || !hidePrice) && (
+            <div className={`${footerPaddingClass} border-t border-border/50 flex items-baseline gap-3 mt-auto`}>
+              {footerText ? (
+                <span className="text-primary font-display text-sm">{footerText}</span>
+              ) : (
+                <>
+                  {/* {vehicle.price_per_hour != null && (
+                    <span>
+                      <span className="text-primary font-display font-bold text-lg">₹{vehicle.price_per_hour}</span>
+                      <span className="text-muted-foreground text-[10px] ml-0.5">/hr</span>
+                    </span>
+                  )*/}
+                  {vehicle.price_per_day != null && (
+                    <span>
+                      <span className="text-foreground font-display font-bold text-sm">₹{vehicle.price_per_day}</span>
+                      <span className="text-muted-foreground text-[10px] ml-0.5">/day</span>
+                    </span>
+                  )}
+                  {vehicle.price_per_hour == null && vehicle.price_per_day == null && (
+                    <span className="text-muted-foreground font-display">Contact for price</span>
+                  )}
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </Link>
