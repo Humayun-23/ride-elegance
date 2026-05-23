@@ -47,11 +47,11 @@ export default function AdminDashboard() {
   const [isCreatingShop, setIsCreatingShop] = useState(false);
 
   useEffect(() => {
-    if (!user || (user.user_type !== "shop_owner" && !localStorage.getItem("is_admin"))) {
+    if (!user || (user.user_type !== "shop_owner" && user.user_type !== "admin")) {
       navigate("/login");
       return;
     }
-    const isAdmin = localStorage.getItem("is_admin") === "true" || user.user_type === "admin";
+    const isAdmin = user.user_type === "admin";
     
     Promise.all([
       api.get(isAdmin ? "/shops/" : "/shops/me").catch(() => ({ data: [] })),

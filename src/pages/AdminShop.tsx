@@ -24,7 +24,7 @@ export default function AdminShop() {
 
   useEffect(() => {
     if (!user) { navigate("/login"); return; }
-    const isAdmin = localStorage.getItem("is_admin") === "true" || user.user_type === "admin";
+    const isAdmin = user.user_type === "admin";
     api.get(isAdmin ? "/shops/" : "/shops/me").then((res) => {
       const s = res.data;
       setShops(s);
