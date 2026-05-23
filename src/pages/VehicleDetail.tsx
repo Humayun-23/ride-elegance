@@ -67,6 +67,20 @@ export default function VehicleDetail() {
     };
   }, [id]);
 
+  const calculateTotalPrice = () => {
+    if (!startTime || !endTime || !vehicle) return 0;
+    const start = new Date(startTime).getTime();
+    const end = new Date(endTime).getTime();
+    if (end <= start) return 0;
+    const totalHours = Math.max((end - start) / (1000 * 60 * 60), 1);
+    const fullDays = Math.floor(totalHours / 24);
+    const remainingHours = totalHours - (fullDays * 24);
+    return Math.floor((fullDays * (vehicle.price_per_day || 0)) + (remainingHours * (vehicle.price_per_hour || 0)));
+  };
+
+  const totalPrice = calculateTotalPrice();
+  const tokenAmount = totalPrice > 0 ? Math.max(299, Math.floor(totalPrice * 0.10)) : 299;
+
   const handleWhatsAppRedirect = (booking: any, vehicleName: string, shopPhone: string, customerName: string, waWindow: Window | null) => {
     // Use your real backend URL for the magic links
     const apiUrl = import.meta.env.VITE_API_BASE_URL || "https://gopanda.in/api/v1";
@@ -85,9 +99,9 @@ export default function VehicleDetail() {
 *To:* ${toDate}
 
 💰 *Payment Details:*
-Token Received: *₹299* 
+Token Received: *₹${booking.token_amount || 299}* 
 Customer UTR Number: *${booking.utr_number}*
-Balance to Collect at Shop: *₹${Math.max(0, (booking.total_price || 0) - 299)}*
+Balance to Collect at Shop: *₹${Math.max(0, (booking.total_price || 0) - (booking.token_amount || 299))}*
 
 Please tap a link below to instantly Accept or Reject this booking:
 
@@ -283,12 +297,12 @@ ${rejectLink}`;
                   <div className="bg-secondary/30 border border-border/50 rounded-xl p-4 space-y-4 mt-2">
                     <div className="space-y-1">
                       <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Shield className="h-3 w-3"/> Step 1: Pay Token Advance</Label>
-                      <p className="text-[11px] text-muted-foreground">Secure your booking by paying a ₹299 token directly to the shop owner.</p>
+                      <p className="text-[11px] text-muted-foreground">Secure your booking by paying a ₹{tokenAmount} token directly to the shop owner.</p>
                     </div>
                     <div className="flex items-center justify-between bg-background p-3 rounded-lg border border-border">
-                      <span className="font-display font-bold text-lg text-primary">₹299.00</span>
+                      <span className="font-display font-bold text-lg text-primary">₹{tokenAmount}.00</span>
                       <Button asChild size="sm" className="font-display glow">
-                        <a href={`upi://pay?pa=${shop?.upi_id || "default@upi"}&pn=${encodeURIComponent(shop?.name || "Shop Owner")}&am=299.00&cu=INR&tn=${encodeURIComponent("RideWheel Token Advance")}`} target="_blank" rel="noreferrer">
+                        <a href={`upi://pay?pa=${shop?.upi_id || "default@upi"}&pn=${encodeURIComponent(shop?.name || "Shop Owner")}&am=${tokenAmount}.00&cu=INR&tn=${encodeURIComponent("RideWheel Token Advance")}`} target="_blank" rel="noreferrer">
                           Pay via UPI App
                         </a>
                       </Button>

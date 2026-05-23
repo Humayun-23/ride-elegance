@@ -80,7 +80,7 @@ export default function Index() {
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">Instantly Booked.</span>
               </h1>
               <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                Skip the middleman. Lock your ride with just a ₹299 token directly to the shop owner and pay the rest at pickup.
+                Skip the middleman. Lock your ride with a small token advance (min. ₹299) directly to the shop owner and pay the rest at pickup.
               </p>
             </motion.div>
 
@@ -143,7 +143,7 @@ export default function Index() {
 
             {[
               { icon: Search, title: "Find a Ride", desc: "Browse verified local shops and check real-time availability." },
-              { icon: Zap, title: "Pay ₹299 Token", desc: "Pay a tiny flat token directly via UPI to lock your dates instantly." },
+              { icon: Zap, title: "Pay Token Advance", desc: "Pay a small token (min. ₹299) directly via UPI to lock your dates instantly." },
               { icon: ShieldCheck, title: "Instant Confirm", desc: "Your ride is secured. The shop owner is notified instantly on WhatsApp." },
               { icon: Wallet, title: "Pay Balance & Ride", desc: "Pay the remaining amount directly at the shop when you pick up." }
             ].map((step, i) => (
