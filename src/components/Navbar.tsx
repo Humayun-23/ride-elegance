@@ -105,7 +105,7 @@ export default function Navbar() {
                     Profile
                   </Link>
                   {user.user_type === "shop_owner" && (
-                    <Link to="/admin" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>
+                    <Link to="/owner/dashboard" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>
                       Dashboard
                     </Link>
                   )}
