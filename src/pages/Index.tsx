@@ -182,7 +182,7 @@ export default function Index() {
             <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
               {popularBikes.map((v, i) => (
                 <motion.div key={v.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
-                  <VehicleCard vehicle={v} />
+                  <VehicleCard vehicle={v} priority={i < 4} />
                 </motion.div>
               ))}
             </div>
@@ -215,7 +215,7 @@ export default function Index() {
                   <button
                     type="button"
                     onClick={() => navigate(`/shops/${shop.id}`)}
-                    className="w-full text-left rounded-2xl border border-slate-200 bg-white p-5 md:p-6 shadow-[0_1px_0_rgba(0,0,0,0.04)] hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)] transition-shadow"
+                    className="w-full h-full flex flex-col text-left rounded-2xl border border-slate-200 bg-white p-5 md:p-6 shadow-[0_1px_0_rgba(0,0,0,0.04)] hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)] transition-shadow"
                   >
                     <div className="flex items-center gap-4">
                       <div className="h-14 w-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 overflow-hidden shrink-0">

@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { ArrowLeft, Gauge, Calendar, Info, MapPin, Shield, Clock, CheckCircle2, Star, MessageSquare } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const TYPE_EMOJI: Record<string, string> = {
   scooty: "🛵", bike: "🏍️", car: "🚗", mountain: "🚵",
@@ -156,10 +157,28 @@ ${rejectLink}`;
   };
 
   if (loading) return (
-    <div className="min-h-screen pt-24 flex items-center justify-center">
-      <div className="flex items-center gap-3 text-muted-foreground">
-        <div className="h-5 w-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-        Loading vehicle...
+    <div className="min-h-screen pt-24 pb-16">
+      <div className="container px-4 max-w-6xl">
+        <Skeleton className="h-8 w-24 mb-6 rounded-lg" />
+        <div className="grid lg:grid-cols-2 gap-8">
+          <div className="space-y-3">
+            <Skeleton className="w-full aspect-[4/3] rounded-2xl" />
+            <div className="grid grid-cols-5 gap-2">
+              <Skeleton className="aspect-[4/3] rounded-xl" />
+              <Skeleton className="aspect-[4/3] rounded-xl" />
+              <Skeleton className="aspect-[4/3] rounded-xl" />
+              <Skeleton className="aspect-[4/3] rounded-xl" />
+              <Skeleton className="aspect-[4/3] rounded-xl" />
+            </div>
+          </div>
+          <div className="space-y-6">
+            <Skeleton className="h-12 w-3/4 rounded-xl" />
+            <Skeleton className="h-6 w-1/2 rounded-md" />
+            <Skeleton className="h-4 w-full rounded-sm" />
+            <Skeleton className="h-4 w-5/6 rounded-sm" />
+            <Skeleton className="h-64 w-full rounded-2xl mt-6" />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -182,7 +201,7 @@ ${rejectLink}`;
           <div className="space-y-3">
             <div className="rounded-2xl border border-border/50 bg-card/60 overflow-hidden aspect-[4/3] relative">
               {heroImage ? (
-                <img src={heroImage} alt={vehicle.name} className="h-full w-full object-cover" />
+                <img src={heroImage} alt={vehicle.name} fetchpriority="high" className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full items-center justify-center bg-gradient-to-br from-secondary to-background">
                   <span className="text-8xl opacity-20">

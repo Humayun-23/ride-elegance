@@ -19,6 +19,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { formatIndianPhone } from "@/lib/phone";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ShopDetail() {
   const { id } = useParams<{ id: string }>();
@@ -116,10 +117,18 @@ export default function ShopDetail() {
   };
 
   if (loading) return (
-    <div className="min-h-screen pt-24 flex items-center justify-center">
-      <div className="flex items-center gap-3 text-muted-foreground">
-        <div className="h-5 w-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-        Loading shop...
+    <div className="min-h-screen pt-24 pb-16">
+      <div className="container px-4 max-w-6xl space-y-10">
+        <Skeleton className="h-8 w-24 rounded-lg" />
+        <Skeleton className="h-48 w-full rounded-2xl" />
+        <div className="space-y-5">
+          <Skeleton className="h-10 w-48 rounded-lg" />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <Skeleton className="h-64 rounded-2xl" />
+            <Skeleton className="h-64 rounded-2xl" />
+            <Skeleton className="h-64 rounded-2xl" />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -146,7 +155,7 @@ export default function ShopDetail() {
                   <div className="flex items-center gap-3">
                     <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20 overflow-hidden">
                       {shop.image_url ? (
-                        <img src={shop.image_url} alt={shop.name} className="h-full w-full object-cover" />
+                        <img src={shop.image_url} alt={shop.name} fetchpriority="high" className="h-full w-full object-cover" />
                       ) : (
                         <Store className="h-7 w-7 text-primary" />
                       )}

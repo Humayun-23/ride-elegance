@@ -5,6 +5,7 @@ import { MapPin, Star, Gauge, Fuel, Store } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
+import { getOptimizedImageUrl } from "@/lib/imageUtils";
 
 interface VehicleCardProps {
   vehicle: {
@@ -29,6 +30,7 @@ interface VehicleCardProps {
   hidePrice?: boolean;
   footerText?: string;
   compact?: boolean;
+  priority?: boolean;
 }
 
 const TYPE_EMOJI: Record<string, string> = {
@@ -49,6 +51,7 @@ export default function VehicleCard({
   hidePrice = false,
   footerText,
   compact = false,
+  priority = false,
 }: VehicleCardProps) {
   const imageAspectClass = compact ? "aspect-[16/8]" : "aspect-[16/10]";
   const contentPaddingClass = compact ? "px-3 py-2" : "p-4";
@@ -76,9 +79,10 @@ export default function VehicleCard({
         <div className={`${imageAspectClass} bg-secondary relative overflow-hidden`}>
           {vehicle.image_url ? (
             <img
-              src={vehicle.image_url}
+              src={getOptimizedImageUrl(vehicle.image_url)}
               alt={vehicle.name}
-              loading="lazy"
+              loading={priority ? "eager" : "lazy"}
+              fetchpriority={priority ? "high" : "auto"}
               decoding="async"
               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
             />

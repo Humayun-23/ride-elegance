@@ -8,7 +8,6 @@ interface User {
   email: string;
   phone_number?: string;
   user_type?: string;
-  is_admin?: boolean;
   [key: string]: any;
 }
 
@@ -26,19 +25,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    try {
-      const cachedUser = localStorage.getItem("user_data");
-      return cachedUser ? JSON.parse(cachedUser) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem("auth_token"));
   const [isLoading, setIsLoading] = useState(() => {
-    const hasToken = !!localStorage.getItem("auth_token");
-    const hasCachedUser = !!localStorage.getItem("user_data");
-    return hasToken && !hasCachedUser;
+    return !!localStorage.getItem("auth_token");
   });
 
   useEffect(() => {
@@ -89,26 +79,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(accessToken);
   };
 
-  const adminLogin = async (email: string, password: string) => {
-    const formData = new URLSearchParams();
-    formData.append("username", email);
-    formData.append("password", password);
-    const res = await api.post("/admin/login", formData, {
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    });
-    const accessToken = res.data.access_token;
-    localStorage.setItem("auth_token", accessToken);
-    
-    const payload = JSON.parse(atob(accessToken.split(".")[1]));
-    const userId = payload.sub || payload.user_id || payload.id;
-    const userRes = await api.get(`/users/${userId}`, {
-      headers: { Authorization: `Bearer ${accessToken}` }
-    });
-    
-    setUser(userRes.data);
-    localStorage.setItem("user_data", JSON.stringify(userRes.data));
-    setToken(accessToken);
-  };
 
   const setAuthToken = useCallback(async (accessToken: string) => {
     localStorage.setItem("auth_token", accessToken);
@@ -146,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, adminLogin, register, setAuthToken, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, setAuthToken, logout }}>
       {children}
     </AuthContext.Provider>
   );
