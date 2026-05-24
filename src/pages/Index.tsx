@@ -68,13 +68,13 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-primary/20">
+    <main className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-primary/20">
       <SEO title="GoPanda — Best Bike Rentals Near Me in Guwahati" />
       {/* 1. HERO SECTION */}
       <section className="relative pt-20 pb-20 lg:pt-32 lg:pb-28 overflow-hidden flex items-center justify-center min-h-[80vh]">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[120px] pointer-events-none" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[120px] pointer-events-none" />
-        
+
         <div className="container px-4 mx-auto relative z-10">
           <div className="max-w-4xl mx-auto text-center space-y-8">
             <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="space-y-4">
@@ -83,7 +83,7 @@ export default function Index() {
                 Zero Platform Fees. Instant Bookings.
               </div>
               <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-slate-900 font-display leading-[1.1]">
-                Your Next Ride, <br />
+                Best Bike & Car Rentals in Guwahati. <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">Instantly Booked.</span>
               </h1>
               <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
@@ -100,9 +100,9 @@ export default function Index() {
             >
               <div className="flex-1 flex items-center gap-3 bg-slate-50/50 px-4 py-3 rounded-2xl border border-slate-100 focus-within:border-primary/30 focus-within:bg-white transition-colors">
                 <MapPin className="text-slate-400 h-5 w-5" />
-                <Input 
-                  type="text" 
-                  placeholder="Where are you going? (e.g. Guwahati)" 
+                <Input
+                  type="text"
+                  placeholder="Where are you going? (e.g. Guwahati)"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   className="border-0 bg-transparent shadow-none focus-visible:ring-0 p-0 text-base placeholder:text-slate-400"
@@ -111,7 +111,7 @@ export default function Index() {
 
               <div className="flex-1 flex items-center gap-3 bg-slate-50/50 px-4 py-3 rounded-2xl border border-slate-100 focus-within:border-primary/30 focus-within:bg-white transition-colors">
                 <Car className="text-slate-400 h-5 w-5" />
-                <select 
+                <select
                   value={vehicleType}
                   onChange={(e) => setVehicleType(e.target.value)}
                   className="w-full border-0 bg-transparent focus:ring-0 text-base outline-none text-slate-700 cursor-pointer"
@@ -139,7 +139,7 @@ export default function Index() {
             <p className="text-slate-600 text-lg">Four simple steps to get you on the road. No hidden fees, no complicated paperwork.</p>
           </div>
 
-          <motion.div 
+          <motion.div
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
@@ -174,7 +174,7 @@ export default function Index() {
           <div className="container px-4 space-y-10">
             <div className="flex items-end justify-between gap-4 flex-wrap">
               <div>
-                <h2 className="font-display text-3xl md:text-4xl font-bold text-slate-900">Popular Rides</h2>
+                <h2 className="font-display text-3xl md:text-4xl font-bold text-slate-900">Popular Bike & Car Rentals Near You</h2>
                 <p className="text-slate-600 mt-2">Check out the most booked vehicles in your area.</p>
               </div>
               <Button variant="outline" className="font-display gap-1 rounded-full text-slate-700" onClick={() => navigate("/search-vehicles")}>
@@ -200,7 +200,7 @@ export default function Index() {
               <div className="space-y-2">
                 <p className="text-xs font-display uppercase tracking-[0.3em] text-slate-500">Trusted Partners</p>
                 <h2 className="font-display text-3xl md:text-4xl font-bold text-slate-900">
-                  Featured <span className="text-primary">Shops</span>
+                  Top-Rated Rental <span className="text-primary">Shops Near You</span>
                 </h2>
               </div>
               <button
@@ -222,7 +222,7 @@ export default function Index() {
                     <div className="flex items-center gap-4">
                       <div className="h-14 w-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 overflow-hidden shrink-0">
                         {shop.image_url ? (
-                          <img src={shop.image_url} alt={shop.name || "Shop"} className="h-full w-full object-cover" />
+                          <img src={shop.image_url} alt={shop.name ? `${shop.name} - Bike Rental in Guwahati` : "Bike Rental Shop in Guwahati"} className="h-full w-full object-cover" />
                         ) : (
                           <Store className="h-6 w-6" />
                         )}
@@ -314,7 +314,7 @@ export default function Index() {
           <div className="bg-primary rounded-[2.5rem] p-10 md:p-16 relative overflow-hidden text-center md:text-left">
             <div className="absolute top-[-20%] right-[-10%] w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-[-20%] left-[-10%] w-96 h-96 bg-black/10 rounded-full blur-3xl pointer-events-none" />
-            
+
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
               <div className="max-w-2xl">
                 <h2 className="text-3xl md:text-5xl font-bold font-display text-white mb-6 leading-tight">
@@ -332,12 +332,12 @@ export default function Index() {
                   </Button>
                 </div>
               </div>
-              
+
               <div className="hidden lg:block relative w-72 h-72">
-                 <div className="absolute inset-0 border-4 border-white/20 rounded-full border-dashed animate-[spin_20s_linear_infinite]" />
-                 <div className="absolute inset-4 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center">
-                    <Store className="w-24 h-24 text-white" />
-                 </div>
+                <div className="absolute inset-0 border-4 border-white/20 rounded-full border-dashed animate-[spin_20s_linear_infinite]" />
+                <div className="absolute inset-4 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center">
+                  <Store className="w-24 h-24 text-white" />
+                </div>
               </div>
             </div>
           </div>
@@ -353,10 +353,10 @@ export default function Index() {
                 <span className="text-primary">Go</span>Panda
               </div>
               <p className="text-slate-500 pr-4">
-                The easiest, fastest way to rent vehicles from local shops. Built for riders and owners alike.
+                The easiest, fastest way to find <strong>bike rentals near me</strong> and <strong>car rentals in Guwahati</strong> from verified local shops. Built for riders and owners alike.
               </p>
             </div>
-            
+
             <div className="space-y-4">
               <h4 className="font-bold text-slate-900">Explore</h4>
               <ul className="space-y-2 text-slate-500">
@@ -364,7 +364,7 @@ export default function Index() {
                 <li><button onClick={() => navigate("/shops")} className="hover:text-primary transition-colors">Browse Shops</button></li>
               </ul>
             </div>
-            
+
             <div className="space-y-4">
               <h4 className="font-bold text-slate-900">Partners</h4>
               <ul className="space-y-2 text-slate-500">
@@ -381,13 +381,13 @@ export default function Index() {
               </ul>
             </div>
           </div>
-          
+
           <div className="border-t border-slate-100 pt-8 flex flex-col md:flex-row items-center justify-between text-slate-400">
             <p>© {new Date().getFullYear()} GoPanda. All rights reserved.</p>
             <p className="mt-2 md:mt-0">Made with ❤️ in Assam for local businesses.</p>
           </div>
         </div>
       </footer>
-    </div>
+    </main>
   );
 }

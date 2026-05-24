@@ -73,8 +73,8 @@ export default function SearchVehicles() {
   return (
     <div className="min-h-screen pt-24 pb-16">
       <SEO 
-        title="Search Bike and Car Rentals in Guwahati | GoPanda" 
-        description="Find the best bike rentals near you. Search our wide range of scooties, bikes, and cars for rent in Guwahati." 
+        title="Search Bike and Car Rentals Near You | GoPanda" 
+        description="Find the best bike rentals near you. Search our wide range of scooties, bikes, and cars for rent near you." 
       />
       <div className="container px-4 space-y-8">
         <div className="space-y-6">
