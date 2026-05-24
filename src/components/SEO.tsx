@@ -50,7 +50,7 @@ export function SEO({
       {/* Standard metadata tags */}
       <title>{title}</title>
       <meta name="description" content={description} />
-      <meta name="keywords" content="bike rentals near me, car rentals near me, bike rental near me, scooty rental, vehicle rental near me" />
+      <meta name="keywords" content="bike rentals near me, car rentals near me, bike rental near me, scooty rental, vehicle rental near me, vehicle rental in guwahati" />
 
       {/* End standard metadata tags */}
       {/* Facebook tags */}
