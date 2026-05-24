@@ -7,6 +7,7 @@ import { useState, useMemo } from "react";
 import VehicleCard from "@/components/VehicleCard";
 import { useShops } from "@/hooks/useShops";
 import { useSearchVehicles } from "@/hooks/useVehicles";
+import { SEO } from "@/components/SEO";
 
 const VEHICLE_TYPES = [
   { label: "Scooty", icon: "🛵", value: "scooty", desc: "Quick city rides" },
@@ -68,6 +69,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-primary/20">
+      <SEO title="GoPanda — Best Bike Rentals Near Me in Guwahati" />
       {/* 1. HERO SECTION */}
       <section className="relative pt-20 pb-20 lg:pt-32 lg:pb-28 overflow-hidden flex items-center justify-center min-h-[80vh]">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[120px] pointer-events-none" />

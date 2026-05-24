@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import { motion } from "framer-motion";
+import { SEO } from "@/components/SEO";
 
 const TYPES = [
   { value: "all", label: "All Vehicles", icon: "🔥" },
@@ -71,6 +72,10 @@ export default function SearchVehicles() {
 
   return (
     <div className="min-h-screen pt-24 pb-16">
+      <SEO 
+        title="Search Bike and Car Rentals in Guwahati | GoPanda" 
+        description="Find the best bike rentals near you. Search our wide range of scooties, bikes, and cars for rent in Guwahati." 
+      />
       <div className="container px-4 space-y-8">
         <div className="space-y-6">
           <div>
