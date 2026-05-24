@@ -83,7 +83,7 @@ export default function Index() {
                 Zero Platform Fees. Instant Bookings.
               </div>
               <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-slate-900 font-display leading-[1.1]">
-                Best Bike & Car Rentals in Guwahati. <br />
+                Best Bike & Car Rentals Near You. <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">Instantly Booked.</span>
               </h1>
               <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
@@ -353,7 +353,7 @@ export default function Index() {
                 <span className="text-primary">Go</span>Panda
               </div>
               <p className="text-slate-500 pr-4">
-                The easiest, fastest way to find <strong>bike rentals near me</strong> and <strong>car rentals in Guwahati</strong> from verified local shops. Built for riders and owners alike.
+                The easiest, fastest way to find <strong>bike and car rentals near you</strong> from verified local shops. Built for riders and owners.
               </p>
             </div>
 
