@@ -85,7 +85,7 @@ export default function Index() {
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">Instantly Booked.</span>
               </h1>
               <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                Skip the middleman. Lock your ride with a small token advance (min. ₹299) directly to the shop owner and pay the rest at pickup.
+                Skip the hassle. Lock your ride with a small token advance (min. ₹299) directly to the shop owner and pay the rest at pickup.
               </p>
             </motion.div>
 
@@ -122,7 +122,7 @@ export default function Index() {
               </div>
 
               <Button type="submit" size="lg" className="rounded-2xl h-auto py-4 px-8 text-lg font-semibold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all hover:-translate-y-0.5">
-                Search Rides <ArrowRight className="ml-2 h-5 w-5" />
+                Search Vehicles <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </motion.form>
           </div>
@@ -258,7 +258,7 @@ export default function Index() {
         <div className="container px-4 mx-auto">
           <div className="max-w-3xl mb-16">
             <h2 className="text-3xl md:text-4xl font-bold font-display text-slate-900 mb-4">Built on Trust & Transparency</h2>
-            <p className="text-slate-600 text-lg">We designed RideWheel to be the fairest platform for both riders and local businesses.</p>
+            <p className="text-slate-600 text-lg">We designed GoPanda to be the fairest platform for both riders and local businesses.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 auto-rows-[250px]">
@@ -348,10 +348,10 @@ export default function Index() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             <div className="col-span-2 md:col-span-1 space-y-4">
               <div className="font-display font-bold text-2xl text-slate-900 tracking-tight flex items-center gap-2">
-                <span className="text-primary">Ride</span>Wheel
+                <span className="text-primary">Go</span>Panda
               </div>
               <p className="text-slate-500 pr-4">
-                The fairest, fastest way to rent vehicles from local shops. Built for riders and owners alike.
+                The easiest, fastest way to rent vehicles from local shops. Built for riders and owners alike.
               </p>
             </div>
             
@@ -381,7 +381,7 @@ export default function Index() {
           </div>
           
           <div className="border-t border-slate-100 pt-8 flex flex-col md:flex-row items-center justify-between text-slate-400">
-            <p>© {new Date().getFullYear()} RideWheel. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} GoPanda. All rights reserved.</p>
             <p className="mt-2 md:mt-0">Made with ❤️ in Assam for local businesses.</p>
           </div>
         </div>
