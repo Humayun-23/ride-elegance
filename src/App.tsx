@@ -8,6 +8,7 @@ import Index from './pages/Index';
 import SearchVehicles from './pages/SearchVehicles';
 import Login from './pages/Login';
 import VehicleDetail from './pages/VehicleDetail';
+import DynamicLanding from './pages/DynamicLanding';
 
 // Lazy load the pages
 const Shops = lazy(() => import('./pages/Shops'));
@@ -41,6 +42,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/search-vehicles" element={<SearchVehicles />} />
+            <Route path="/rent/:vehicleType/in/:city" element={<DynamicLanding />} />
+            <Route path="/rent/:vehicleType" element={<DynamicLanding />} />
             <Route path="/shops" element={<Shops />} />
             <Route path="/shops/:id" element={<ShopDetail />} />
             <Route path="/bikes/:id" element={<VehicleDetail />} />

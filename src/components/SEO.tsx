@@ -50,7 +50,7 @@ export function SEO({
       {/* Standard metadata tags */}
       <title>{title}</title>
       <meta name="description" content={description} />
-      <meta name="keywords" content="bike rentals near me, car rentals near me, bike rental near me, scooty rental, vehicle rental near me, vehicle rental in guwahati" />
+      <meta name="keywords" content="car hire in guwahati, rental cars guwahati, car rent in guwahati, guwahati car rent, self drive car rental guwahati, self driving car rental in guwahati, self drive cars in guwahati, guwahati traveller, bike rentals near me, vehicle rental in guwahati" />
 
       {/* End standard metadata tags */}
       {/* Facebook tags */}

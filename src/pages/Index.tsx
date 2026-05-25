@@ -71,7 +71,7 @@ export default function Index() {
     <main className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-primary/20">
       <SEO 
         title="GoPanda — Best Bike Rentals Near Me in Guwahati" 
-        description="Looking for the best vehicle rental in guwahati? GoPanda offers premium and affordable two-wheelers and cars near you."
+        description="Looking for the best vehicle rental in guwahati? GoPanda offers premium self drive car rental guwahati, bike rentals, and guwahati traveller services. Book your car hire in guwahati instantly!"
       />
       {/* 1. HERO SECTION */}
       <section className="relative pt-20 pb-20 lg:pt-32 lg:pb-28 overflow-hidden flex items-center justify-center min-h-[80vh]">
