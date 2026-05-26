@@ -8,6 +8,7 @@ import VehicleCard from "@/components/VehicleCard";
 import { useShops } from "@/hooks/useShops";
 import { useSearchVehicles } from "@/hooks/useVehicles";
 import { SEO } from "@/components/SEO";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const VEHICLE_TYPES = [
   { label: "Scooty", icon: "🛵", value: "scooty", desc: "Quick city rides" },
@@ -33,8 +34,8 @@ export default function Index() {
   const [query, setQuery] = useState("");
   const [vehicleType, setVehicleType] = useState("");
 
-  const { data: shopsData } = useShops({ limit: 6 });
-  const { data: vehiclesData } = useSearchVehicles({ is_available: "true", limit: 6 });
+  const { data: shopsData, isLoading: isLoadingShops } = useShops({ limit: 6 });
+  const { data: vehiclesData, isLoading: isLoadingVehicles } = useSearchVehicles({ is_available: "true", limit: 6 });
 
   const featuredShops = useMemo(() => {
     return Array.isArray(shopsData) ? shopsData.slice(0, 6) : [];
@@ -172,7 +173,7 @@ export default function Index() {
       </section>
 
       {/* Popular Vehicles */}
-      {popularBikes.length > 0 && (
+      {(popularBikes.length > 0 || isLoadingVehicles) && (
         <section className="py-24 bg-white border-t border-slate-100">
           <div className="container px-4 space-y-10">
             <div className="flex items-end justify-between gap-4 flex-wrap">
@@ -185,18 +186,32 @@ export default function Index() {
               </Button>
             </div>
             <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {popularBikes.map((v, i) => (
-                <motion.div key={v.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
-                  <VehicleCard vehicle={v} priority={i < 4} />
-                </motion.div>
-              ))}
+              {isLoadingVehicles ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={`sk-vh-${i}`} className="flex flex-col space-y-3 rounded-2xl border border-slate-100 p-4">
+                    <Skeleton className="h-[180px] w-full rounded-xl bg-slate-200/60" />
+                    <Skeleton className="h-5 w-2/3 bg-slate-200/60 mt-2" />
+                    <Skeleton className="h-4 w-1/2 bg-slate-200/60" />
+                    <div className="flex justify-between mt-4">
+                      <Skeleton className="h-8 w-1/3 bg-slate-200/60" />
+                      <Skeleton className="h-8 w-1/3 bg-slate-200/60" />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                popularBikes.map((v, i) => (
+                  <motion.div key={v.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
+                    <VehicleCard vehicle={v} priority={i < 4} />
+                  </motion.div>
+                ))
+              )}
             </div>
           </div>
         </section>
       )}
 
       {/* Popular Shops */}
-      {featuredShops.length > 0 && (
+      {(featuredShops.length > 0 || isLoadingShops) && (
         <section className="py-20 bg-[#fbf9f5] border-t border-slate-100">
           <div className="container px-4 space-y-10">
             <div className="flex items-center justify-between gap-6 flex-wrap">
@@ -215,44 +230,58 @@ export default function Index() {
               </button>
             </div>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {featuredShops.map((shop, i) => (
-                <motion.div key={shop.id ?? i} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/shops/${shop.id}`)}
-                    className="w-full h-full flex flex-col text-left rounded-2xl border border-slate-200 bg-white p-5 md:p-6 shadow-[0_1px_0_rgba(0,0,0,0.04)] hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)] transition-shadow"
-                  >
+              {isLoadingShops ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div key={`sk-sh-${i}`} className="w-full flex flex-col rounded-2xl border border-slate-200 bg-white p-5 md:p-6 shadow-sm">
                     <div className="flex items-center gap-4">
-                      <div className="h-14 w-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 overflow-hidden shrink-0">
-                        {shop.image_url ? (
-                          <img src={shop.image_url} alt={shop.name ? `${shop.name} - Bike Rental in Guwahati` : "Bike Rental Shop in Guwahati"} className="h-full w-full object-cover" />
-                        ) : (
-                          <Store className="h-6 w-6" />
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <h3 className="text-base md:text-lg font-bold text-slate-900 truncate">{shop.name || "Partner Shop"}</h3>
-                        <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600">
-                          {(shop.city || shop.address || shop.state) && (
-                            <span className="inline-flex items-center gap-1">
-                              <MapPin className="h-3.5 w-3.5" />
-                              <span className="truncate">
-                                {shop.city || shop.address}{shop.state ? `, ${shop.state}` : ""}
-                              </span>
-                            </span>
-                          )}
-                          {(shop.opening_time || shop.closing_time) && (
-                            <span className="inline-flex items-center gap-1">
-                              <Clock className="h-3.5 w-3.5" />
-                              {shop.opening_time || "?"} – {shop.closing_time || "?"}
-                            </span>
-                          )}
-                        </div>
+                      <Skeleton className="h-14 w-14 rounded-2xl bg-slate-200/60 shrink-0" />
+                      <div className="min-w-0 w-full space-y-2">
+                        <Skeleton className="h-5 w-3/4 bg-slate-200/60" />
+                        <Skeleton className="h-4 w-1/2 bg-slate-200/60" />
                       </div>
                     </div>
-                  </button>
-                </motion.div>
-              ))}
+                  </div>
+                ))
+              ) : (
+                featuredShops.map((shop, i) => (
+                  <motion.div key={shop.id ?? i} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/shops/${shop.id}`)}
+                      className="w-full h-full flex flex-col text-left rounded-2xl border border-slate-200 bg-white p-5 md:p-6 shadow-[0_1px_0_rgba(0,0,0,0.04)] hover:shadow-[0_12px_30px_rgba(0,0,0,0.08)] transition-shadow"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="h-14 w-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 overflow-hidden shrink-0">
+                          {shop.image_url ? (
+                            <img src={shop.image_url} alt={shop.name ? `${shop.name} - Bike Rental in Guwahati` : "Bike Rental Shop in Guwahati"} className="h-full w-full object-cover" />
+                          ) : (
+                            <Store className="h-6 w-6" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="text-base md:text-lg font-bold text-slate-900 truncate">{shop.name || "Partner Shop"}</h3>
+                          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600">
+                            {(shop.city || shop.address || shop.state) && (
+                              <span className="inline-flex items-center gap-1">
+                                <MapPin className="h-3.5 w-3.5" />
+                                <span className="truncate">
+                                  {shop.city || shop.address}{shop.state ? `, ${shop.state}` : ""}
+                                </span>
+                              </span>
+                            )}
+                            {(shop.opening_time || shop.closing_time) && (
+                              <span className="inline-flex items-center gap-1">
+                                <Clock className="h-3.5 w-3.5" />
+                                {shop.opening_time || "?"} – {shop.closing_time || "?"}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  </motion.div>
+                ))
+              )}
             </div>
           </div>
         </section>
