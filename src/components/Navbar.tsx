@@ -66,19 +66,26 @@ export default function Navbar() {
             </DropdownMenu>
           ) : (
             <div className="flex gap-2 ml-2">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/login")} className="rounded-xl">
-                Sign In
+              <Button variant="ghost" size="sm" onClick={() => navigate("/login")} className="rounded-xl text-green-600 hover:text-green-700 hover:bg-green-50">
+                Login
               </Button>
-              <Button size="sm" onClick={() => navigate("/register")} className="rounded-xl glow">
-                Get Started
+              <Button size="sm" onClick={() => navigate("/register")} className="rounded-xl glow bg-green-600 hover:bg-green-700 text-white">
+                Register
               </Button>
             </div>
           )}
         </div>
 
-        <button className="md:hidden text-foreground p-2" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          {!user && (
+            <Button size="sm" onClick={() => navigate("/register")} className="h-8 px-3 rounded-lg text-xs font-medium bg-green-600 hover:bg-green-700 text-white">
+              Register
+            </Button>
+          )}
+          <button className="text-foreground p-2" onClick={() => setMobileOpen(!mobileOpen)}>
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -117,12 +124,9 @@ export default function Navbar() {
                   </button>
                 </>
               ) : (
-                <div className="pt-2 space-y-2">
-                  <Button variant="outline" className="w-full rounded-xl" onClick={() => { setMobileOpen(false); navigate("/login"); }}>
-                    Sign In
-                  </Button>
-                  <Button className="w-full rounded-xl glow" onClick={() => { setMobileOpen(false); navigate("/register"); }}>
-                    Get Started
+                <div className="pt-2">
+                  <Button variant="outline" className="w-full rounded-xl border-green-600 text-green-600 hover:bg-green-50" onClick={() => { setMobileOpen(false); navigate("/login"); }}>
+                    Login
                   </Button>
                 </div>
               )}
