@@ -29,7 +29,7 @@ export default function AdminShop() {
       const s = res.data;
       setShops(s);
       if (s[0]) setSelected(s[0]);
-    }).catch(() => {})
+    }).catch(() => { })
       .finally(() => setLoading(false));
   }, [user]);
 
@@ -143,7 +143,7 @@ export default function AdminShop() {
                   <Input type="time" value={selected.closing_time || ""} onChange={(e) => set("closing_time", e.target.value)} />
                 </div>
                 <div className="space-y-1.5 md:col-span-2">
-                  <Label>UPI ID (For direct token payments)</Label>
+                  <Label>Shop UPI ID (For direct token payments)</Label>
                   <Input value={selected.upi_id || ""} onChange={(e) => set("upi_id", e.target.value)} placeholder="e.g., owner@upi" />
                 </div>
                 <div className="space-y-1.5 md:col-span-2">
@@ -151,7 +151,7 @@ export default function AdminShop() {
                   <Textarea value={selected.description || ""} onChange={(e) => set("description", e.target.value)} />
                 </div>
                 <div className="space-y-1.5 md:col-span-2">
-                  <Label>Shop Photo (1 image)</Label>
+                  <Label>Shop Logo (1 image)</Label>
                   <Input
                     type="file"
                     accept="image/*"
