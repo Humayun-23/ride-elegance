@@ -92,24 +92,24 @@ export default function VehicleDetail() {
     const fromDate = new Date(booking.start_time).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
     const toDate = new Date(booking.end_time).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
-    const message = `🚨 *New Booking Request on RideWheel!* 🚨
+    const message = `*--- NEW BOOKING REQUEST ---*
     
 *Vehicle:* ${vehicleName}
 *Customer:* ${customerName}
 *From:* ${fromDate}
 *To:* ${toDate}
 
-💰 *Payment Details:*
-Token Received: *₹${booking.token_amount || 299}* 
+*Payment Details:*
+Token Received: *Rs.${booking.token_amount || 299}* 
 Customer UTR Number: *${booking.utr_number}*
-Balance to Collect at Shop: *₹${Math.max(0, (booking.total_price || 0) - (booking.token_amount || 299))}*
+Balance to Collect at Shop: *Rs.${Math.max(0, (booking.total_price || 0) - (booking.token_amount || 299))}*
 
 Please tap a link below to instantly Accept or Reject this booking:
 
-✅ *TAP TO ACCEPT:*
+[+] *TAP TO ACCEPT:*
 ${confirmLink}
 
-❌ *TAP TO REJECT:*
+[x] *TAP TO REJECT:*
 ${rejectLink}`;
 
     const encodedMessage = encodeURIComponent(message);
