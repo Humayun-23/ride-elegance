@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import WhatsAppButton from './components/WhatsAppButton';
 import { AuthProvider } from './contexts/AuthContext';
 
 // Eagerly load high-traffic pages for instant rendering
@@ -38,6 +39,7 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Navbar />
+        <WhatsAppButton />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Index />} />

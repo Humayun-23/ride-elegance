@@ -20,11 +20,11 @@ export default function Navbar() {
   const displayName = user ? `${user.firstname || ""} ${user.lastname || ""}`.trim() || user.email : "";
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/70 backdrop-blur-xl">
-      <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold">
-          <Car className="h-6 w-6 text-primary" />
-          <span className="text-gradient">GoPanda</span>
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-md">
+      <div className="container flex h-14 items-center justify-between">
+        <Link to="/" className="flex items-center gap-1.5 font-display text-lg font-bold">
+          <Car className="h-5 w-5 text-primary" />
+          <span><span className="text-primary">Go</span><span className="text-foreground">Panda</span></span>
         </Link>
 
         <div className="hidden md:flex items-center gap-1">
@@ -66,10 +66,10 @@ export default function Navbar() {
             </DropdownMenu>
           ) : (
             <div className="flex gap-2 ml-2">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/login")} className="rounded-xl text-green-600 hover:text-green-700 hover:bg-green-50">
+              <Button variant="ghost" size="sm" onClick={() => navigate("/login")} className="rounded-xl text-primary hover:text-primary/80 hover:bg-primary/5">
                 Login
               </Button>
-              <Button size="sm" onClick={() => navigate("/register")} className="rounded-xl glow bg-green-600 hover:bg-green-700 text-white">
+              <Button size="sm" onClick={() => navigate("/register")} className="rounded-xl glow">
                 Register
               </Button>
             </div>
@@ -78,7 +78,7 @@ export default function Navbar() {
 
         <div className="flex items-center gap-2 md:hidden">
           {!user && (
-            <Button size="sm" onClick={() => navigate("/register")} className="h-8 px-3 rounded-lg text-xs font-medium bg-green-600 hover:bg-green-700 text-white">
+            <Button size="sm" onClick={() => navigate("/register")} className="h-8 px-3 rounded-lg text-xs font-medium">
               Register
             </Button>
           )}
@@ -94,7 +94,7 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl overflow-hidden"
+            className="md:hidden border-t border-border/60 bg-background/95 backdrop-blur-md overflow-hidden"
           >
             <div className="p-4 space-y-1">
               <Link to="/search-vehicles" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>
@@ -125,7 +125,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <div className="pt-2">
-                  <Button variant="outline" className="w-full rounded-xl border-green-600 text-green-600 hover:bg-green-50" onClick={() => { setMobileOpen(false); navigate("/login"); }}>
+                  <Button variant="outline" className="w-full rounded-xl border-primary text-primary hover:bg-primary/5" onClick={() => { setMobileOpen(false); navigate("/login"); }}>
                     Login
                   </Button>
                 </div>

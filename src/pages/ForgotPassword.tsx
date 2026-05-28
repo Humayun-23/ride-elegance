@@ -67,7 +67,7 @@ export default function ForgotPassword() {
         <div className="text-center space-y-3 mb-8">
           <Link to="/" className="inline-flex items-center gap-2 font-display text-2xl font-bold">
             <Car className="h-7 w-7 text-primary" />
-            <span className="text-gradient">GoPanda</span>
+            <span><span className="text-primary">Go</span><span className="text-foreground">Panda</span></span>
           </Link>
           <p className="text-muted-foreground text-sm">
             {done ? "All done!" : step === "request" ? "Reset your password" : "Enter your reset token"}

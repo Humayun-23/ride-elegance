@@ -35,21 +35,21 @@ export default function DynamicLanding() {
   const vehicles = Array.isArray(data) ? data : [];
 
   return (
-    <main className="min-h-screen pt-24 pb-16 bg-slate-50">
+    <main className="min-h-screen pt-24 pb-16 bg-background">
       <SEO 
-        title={`Best ${displayVehicle} in ${displayCity} | GoPanda`}
-        description={`Looking for the best ${formattedVehicle} in ${formattedCity}? GoPanda offers premium ${formattedVehicle} rentals near you. Book instantly with zero deposit!`}
+        title={`Rent ${displayVehicle} in ${displayCity} — from local shops | GoPanda`}
+        description={`Find ${formattedVehicle} rentals in ${formattedCity} from verified local shops. Pay a small token, pick up your ride. No middlemen, no hidden fees.`}
         keywords={`${formattedVehicle} in ${formattedCity}, rent ${formattedVehicle} ${formattedCity}, ${formattedVehicle} rental near me`}
       />
       
       <div className="container px-4 space-y-10">
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <p className="text-xs font-display uppercase tracking-[0.3em] text-primary">Instant Booking Available</p>
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
-            Rent a <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">{displayVehicle}</span> in {displayCity}
+          <p className="text-xs font-display uppercase tracking-[0.2em] text-muted-foreground">Available now</p>
+          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
+            Rent a <span className="text-primary">{displayVehicle}</span> in {displayCity}
           </h1>
-          <p className="text-lg text-slate-600">
-            Browse our top-rated selection of {formattedVehicle}s available for rent in {formattedCity}. Transparent pricing, verified local shops, and instant confirmation.
+          <p className="text-lg text-muted-foreground">
+            {formattedVehicle}s from real shops in {formattedCity}. See what's available, lock it with a token, pick it up.
           </p>
         </div>
 
@@ -58,7 +58,7 @@ export default function DynamicLanding() {
           {isLoading ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="rounded-2xl border border-slate-200 bg-white h-72 animate-pulse" />
+                <div key={i} className="rounded-2xl border border-border bg-white h-72 animate-pulse" />
               ))}
             </div>
           ) : vehicles.length === 0 ? (

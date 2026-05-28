@@ -1,7 +1,5 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { MapPin, Star, Gauge, Fuel, Store } from "lucide-react";
+import { Star, Store, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
@@ -44,6 +42,16 @@ const TYPE_EMOJI: Record<string, string> = {
   shop: "🏪",
 };
 
+const TYPE_LABEL: Record<string, string> = {
+  scooty: "Scooty",
+  bike: "Bike",
+  car: "Car",
+  mountain: "Mountain",
+  road: "Road",
+  hybrid: "Hybrid",
+  electric: "Electric",
+};
+
 export default function VehicleCard({
   vehicle,
   href,
@@ -53,12 +61,6 @@ export default function VehicleCard({
   compact = false,
   priority = false,
 }: VehicleCardProps) {
-  const imageAspectClass = compact ? "aspect-[16/8]" : "aspect-[16/10]";
-  const contentPaddingClass = compact ? "px-3 py-2" : "p-4";
-  const contentSpacingClass = compact ? "space-y-1.5" : "space-y-3";
-  const titleSizeClass = compact ? "text-sm" : "text-base";
-  const footerPaddingClass = compact ? "pt-2" : "pt-3";
-
   // Use React Query for caching and deduping shop requests
   const { data: fetchedShopName } = useQuery({
     queryKey: ["shop", vehicle.shop_id],
@@ -74,97 +76,100 @@ export default function VehicleCard({
 
   return (
     <Link to={href ?? `/bikes/${vehicle.id}`} className="group block h-full">
-      <div className="overflow-hidden rounded-2xl border border-border/50 bg-card/60 backdrop-blur transition-all group-hover:border-primary/20 group-hover:bg-card group-hover:shadow-[0_8px_30px_hsl(45_100%_51%/0.08)] h-full flex flex-col">
-        {/* Image */}
-        <div className={`${imageAspectClass} bg-secondary relative overflow-hidden`}>
+      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-200 h-full flex flex-col">
+        {/* Image — bigger, cleaner */}
+        <div className={`${compact ? "aspect-[16/9]" : "aspect-[3/2]"} bg-muted relative overflow-hidden`}>
           {vehicle.image_url ? (
             <img
               src={getOptimizedImageUrl(vehicle.image_url)}
               alt={vehicle.name}
               loading={priority ? "eager" : "lazy"}
-              fetchpriority={priority ? "high" : "auto"}
+              fetchPriority={priority ? "high" : "auto"}
               decoding="async"
-              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
-            <div className="flex h-full items-center justify-center bg-gradient-to-br from-secondary to-background">
-              <span className="text-5xl opacity-30">
+            <div className="flex h-full items-center justify-center bg-gradient-to-br from-muted to-background">
+              <span className="text-5xl opacity-25">
                 {TYPE_EMOJI[vehicle.bike_type || ""] || "🚗"}
               </span>
             </div>
           )}
-          {/* Overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          
-          {/* Type badge */}
+
+          {/* Type badge — top left */}
           {!hideTypeBadge && vehicle.bike_type && (
-            <Badge className="absolute top-3 left-3 bg-background/80 backdrop-blur text-foreground font-display text-[10px] uppercase tracking-wider border border-border/50">
-              {TYPE_EMOJI[vehicle.bike_type] || ""} {vehicle.bike_type}
+            <Badge className="absolute top-2.5 left-2.5 bg-white/90 backdrop-blur-sm text-foreground font-display text-[10px] uppercase tracking-wider border-0 shadow-sm">
+              {TYPE_EMOJI[vehicle.bike_type] || ""} {TYPE_LABEL[vehicle.bike_type] || vehicle.bike_type}
             </Badge>
           )}
 
-          {/* Availability */}
+          {/* Unavailable overlay */}
           {vehicle.is_available === false && (
-            <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center">
+            <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm flex items-center justify-center">
               <Badge variant="destructive" className="font-display text-xs">Unavailable</Badge>
+            </div>
+          )}
+
+          {/* Price overlay — bottom right of image */}
+          {!hidePrice && vehicle.price_per_day != null && (
+            <div className="absolute bottom-2.5 right-2.5 bg-white/95 backdrop-blur-sm rounded-lg px-2.5 py-1 shadow-sm">
+              <span className="text-foreground font-display font-bold text-sm">₹{vehicle.price_per_day}</span>
+              <span className="text-muted-foreground text-[10px] ml-0.5">/day</span>
             </div>
           )}
         </div>
 
-        {/* Content */}
-        <div className={`${contentPaddingClass} ${contentSpacingClass} flex-1 flex flex-col`}>
-          <div className="flex-1">
-            <h3 className={`font-display font-bold text-foreground ${titleSizeClass} leading-tight group-hover:text-primary transition-colors`}>
-              {vehicle.name}
-            </h3>
-            {vehicle.model && (
-              <p className="text-xs text-muted-foreground mt-0.5">{vehicle.model}</p>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 flex-wrap">
-            {vehicle.engine_cc && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-md">
-                <Gauge className="h-3 w-3" />{vehicle.engine_cc}cc
-              </span>
-            )}
-            {vehicle.condition && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-md capitalize">
-                {vehicle.condition}
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded-md">
-              <Store className="h-3 w-3" />{displayShopName}
-            </span>
-            <span className="inline-flex items-center gap-1 text-[11px] text-primary bg-primary/10 px-2 py-0.5 rounded-md">
-              <Star className="h-3 w-3 fill-current" />{vehicle.rating || "New"}
-            </span>
-          </div>
-
-          {/* Price */}
-          {(footerText || !hidePrice) && (
-            <div className={`${footerPaddingClass} border-t border-border/50 flex items-baseline gap-3 mt-auto`}>
-              {footerText ? (
-                <span className="text-primary font-display text-sm">{footerText}</span>
-              ) : (
-                <>
-                  {/* {vehicle.price_per_hour != null && (
-                    <span>
-                      <span className="text-primary font-display font-bold text-lg">₹{vehicle.price_per_hour}</span>
-                      <span className="text-muted-foreground text-[10px] ml-0.5">/hr</span>
-                    </span>
-                  )*/}
-                  {vehicle.price_per_day != null && (
-                    <span>
-                      <span className="text-foreground font-display font-bold text-sm">₹{vehicle.price_per_day}</span>
-                      <span className="text-muted-foreground text-[10px] ml-0.5">/day</span>
-                    </span>
-                  )}
-                  {vehicle.price_per_hour == null && vehicle.price_per_day == null && (
-                    <span className="text-muted-foreground font-display">Contact for price</span>
-                  )}
-                </>
+        {/* Content — streamlined */}
+        <div className={`${compact ? "px-3 py-2.5" : "p-4"} flex-1 flex flex-col gap-2`}>
+          {/* Title + rating row */}
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <h3 className={`font-display font-bold text-foreground ${compact ? "text-sm" : "text-base"} leading-tight group-hover:text-primary transition-colors truncate`}>
+                {vehicle.name}
+              </h3>
+              {vehicle.model && (
+                <p className="text-xs text-muted-foreground mt-0.5 truncate">{vehicle.model}</p>
               )}
+            </div>
+            <div className="flex items-center gap-0.5 shrink-0">
+              <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+              <span className="text-xs font-medium text-foreground">{vehicle.rating || "New"}</span>
+            </div>
+          </div>
+
+          {/* Shop name — simple and clean */}
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Store className="h-3 w-3 shrink-0" />
+            <span className="truncate">{displayShopName}</span>
+            {vehicle.engine_cc && (
+              <>
+                <span className="text-border">·</span>
+                <span>{vehicle.engine_cc}cc</span>
+              </>
+            )}
+          </div>
+
+          {/* Footer: custom text or CTA */}
+          {footerText ? (
+            <div className="pt-2 border-t border-border mt-auto">
+              <span className="text-primary font-display text-sm">{footerText}</span>
+            </div>
+          ) : (
+            <div className="pt-2 mt-auto">
+              <div className="flex items-center justify-between">
+                {!hidePrice && (
+                  <div>
+                    {vehicle.price_per_day != null ? (
+                      <span className="text-xs text-muted-foreground">from <strong className="text-foreground">₹{vehicle.price_per_day}</strong>/day</span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Contact for price</span>
+                    )}
+                  </div>
+                )}
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                  View details <ArrowRight className="h-3 w-3" />
+                </span>
+              </div>
             </div>
           )}
         </div>

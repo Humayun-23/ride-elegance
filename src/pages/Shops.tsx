@@ -32,10 +32,10 @@ export default function Shops() {
           <div>
             <p className="text-xs font-display uppercase tracking-[0.3em] text-muted-foreground mb-2">Browse</p>
             <h1 className="font-display text-3xl md:text-5xl font-bold">
-              Rental <span className="text-gradient">Shops</span>
+              Rental <span className="text-primary">Shops</span>
             </h1>
             <p className="text-muted-foreground mt-2 max-w-lg">
-              Discover trusted rental shops near you. Compare vehicles, read reviews, and book your ride.
+              Real shops run by real people. Pick one near you, see what they have, and book a ride.
             </p>
           </div>
 
