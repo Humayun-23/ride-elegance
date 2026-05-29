@@ -21,6 +21,7 @@ export default function Index() {
   const [query, setQuery] = useState("");
   const [vehicleType, setVehicleType] = useState("");
   const [showStickySearch, setShowStickySearch] = useState(false);
+  const [activeStep, setActiveStep] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
 
   const { data: shopsData, isLoading: isLoadingShops } = useShops({ limit: 6 });
@@ -129,17 +130,17 @@ export default function Index() {
               className="flex-1 space-y-6 text-center lg:text-left"
             >
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-50 border border-amber-200/60 text-sm font-medium text-amber-800">
-                ₹0 booking fee — seriously
+                ₹0 booking fee
               </div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight font-display leading-[1.12]">
-                Rent a bike or car{" "}
+                Rent a vehicle{" "}
                 <span className="text-highlight">from local shops</span>{" "}
-                in Guwahati
+                Near You
               </h1>
 
               <p className="text-lg text-muted-foreground max-w-xl leading-relaxed mx-auto lg:mx-0">
-                Pick a ride from verified neighbourhood shops. Lock it with a small token (₹299), pay the rest when you pick up. No middlemen, no surprises.
+                Pick a ride from verified local shops. Lock it with a small token (min ₹299), pay the rest at pick up. No middlemen, no surprises.
               </p>
 
               {/* Search form */}
@@ -206,8 +207,8 @@ export default function Index() {
               <div className="relative">
                 <div className="rounded-3xl overflow-hidden shadow-2xl shadow-foreground/8 border border-border">
                   <img
-                    src="/hero-rider.png"
-                    alt="A rider on a motorcycle through the green hills of Assam"
+                    src="/vignesh-rajendran-x-dyoS4EmM8-unsplash.jpg"
+                    alt="A white car driving on a highway at dusk"
                     className="w-full h-auto object-cover aspect-[4/3]"
                     loading="eager"
                     fetchPriority="high"
@@ -244,7 +245,7 @@ export default function Index() {
         <div className="container px-4 mx-auto">
           <div className="text-center mb-14 max-w-2xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold font-display text-foreground mb-3">How it works</h2>
-            <p className="text-muted-foreground text-base">Four steps. No paperwork. No hidden fees.</p>
+            <p className="text-muted-foreground text-base">Four steps. No hidden fees.</p>
           </div>
 
           <motion.div
@@ -252,7 +253,12 @@ export default function Index() {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-80px" }}
-            className="grid md:grid-cols-4 gap-8 relative"
+            onScroll={(e) => {
+              const target = e.currentTarget;
+              const scrollRatio = target.scrollLeft / (target.scrollWidth - target.clientWidth || 1);
+              setActiveStep(Math.round(scrollRatio * 3));
+            }}
+            className="flex md:grid md:grid-cols-4 gap-4 md:gap-8 relative overflow-x-auto snap-x snap-mandatory pb-8 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
           >
             <div className="hidden md:block absolute top-12 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-border to-transparent z-0" />
 
@@ -262,18 +268,43 @@ export default function Index() {
               { icon: MessageCircle, title: "Get confirmation", desc: "The shop owner gets a WhatsApp notification. You're all set." },
               { icon: Wallet, title: "Pick up & pay rest", desc: "Head to the shop, pay the balance, and ride out." }
             ].map((step, i) => (
-              <motion.div key={i} variants={fadeInUp} className="relative z-10 flex flex-col items-center text-center group">
-                <div className="w-20 h-20 rounded-2xl bg-white border border-border shadow-lg shadow-foreground/4 flex items-center justify-center mb-5 group-hover:-translate-y-1 transition-transform duration-200">
-                  <div className="w-12 h-12 rounded-xl bg-primary/8 flex items-center justify-center text-primary">
-                    <step.icon className="h-6 w-6" />
+              <motion.div
+                key={i}
+                variants={fadeInUp}
+                className="relative z-10 flex flex-col items-center text-center group shrink-0 w-[80vw] sm:w-[280px] md:w-auto snap-center bg-card md:bg-transparent p-6 md:p-0 rounded-3xl md:rounded-none border border-border md:border-transparent shadow-sm md:shadow-none"
+              >
+                {/* Icon Box */}
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white border border-border shadow-md md:shadow-lg shadow-foreground/4 flex items-center justify-center mb-4 md:mb-5 group-hover:-translate-y-1 transition-transform duration-200">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/8 flex items-center justify-center text-primary">
+                    <step.icon className="h-5 w-5 md:h-6 md:w-6" />
                   </div>
                 </div>
-                <div className="text-xs font-bold text-primary/60 font-display mb-1">Step {i + 1}</div>
-                <h3 className="text-lg font-bold text-foreground mb-1.5">{step.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed max-w-[200px]">{step.desc}</p>
+
+                {/* Text Content */}
+                <div className="text-[10px] md:text-xs font-bold text-primary/60 font-display mb-1 md:mb-1 uppercase tracking-wider">Step {i + 1}</div>
+                <h3 className="text-base md:text-lg font-bold text-foreground mb-1 md:mb-1.5">{step.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed max-w-[220px] mx-auto">{step.desc}</p>
               </motion.div>
             ))}
           </motion.div>
+
+          {/* Mobile Swipe Indicator */}
+          <div className="flex md:hidden items-center justify-center gap-4 mt-2 mb-4 text-muted-foreground">
+            <div className="flex gap-1.5">
+              {[0, 1, 2, 3].map((idx) => (
+                <div
+                  key={idx}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${activeStep === idx ? "w-4 bg-primary" : "w-1.5 bg-border"
+                    }`}
+                />
+              ))}
+            </div>
+            <span className="text-[10px] font-display font-bold tracking-widest uppercase flex items-center gap-1 opacity-50 transition-opacity">
+              {activeStep === 3 ? "Ready!" : (
+                <>Swipe <ArrowRight className="w-3 h-3" /></>
+              )}
+            </span>
+          </div>
         </div>
       </section>
 
