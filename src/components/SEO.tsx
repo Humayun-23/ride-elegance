@@ -19,6 +19,10 @@ export function SEO({
   image = 'https://www.gopanda.in/og-image.png',
   schema,
 }: SEOProps) {
+  const canonicalUrl = typeof window !== 'undefined' 
+    ? window.location.origin + window.location.pathname.toLowerCase() 
+    : url;
+
   // Default Schema for GoPanda (LocalBusiness)
   const defaultSchema = JSON.stringify({
     '@context': 'https://schema.org',
@@ -51,6 +55,7 @@ export function SEO({
       <title>{title}</title>
       <meta name="description" content={description} />
       <meta name="keywords" content="car hire in guwahati, rental cars guwahati, car rent in guwahati, guwahati car rent, self drive car rental guwahati, self driving car rental in guwahati, self drive cars in guwahati, guwahati traveller, bike rentals near me, vehicle rental in guwahati" />
+      <link rel="canonical" href={canonicalUrl} />
 
       {/* End standard metadata tags */}
       {/* Facebook tags */}

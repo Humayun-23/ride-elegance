@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap.xml"
+    },
+    {
+      "source": "/rent/(.*)",
+      "destination": "/api/seo"
+    },
+    {
+      "source": "/search/(.*)",
+      "destination": "/api/seo"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

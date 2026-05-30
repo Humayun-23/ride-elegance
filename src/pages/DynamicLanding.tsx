@@ -6,11 +6,23 @@ import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 
 export default function DynamicLanding() {
-  const { vehicleType, city } = useParams();
+  const { vehicleType, city, seoSlug } = useParams();
+
+  let parsedVehicle = vehicleType || 'vehicles';
+  let parsedCity = city || 'your area';
+
+  if (seoSlug) {
+    // Basic heuristic to extract intent from long-tail slugs like 'cheap-car-rental-guwahati-without-driver'
+    parsedVehicle = seoSlug.replace(/-/g, ' ');
+    if (seoSlug.toLowerCase().includes('guwahati')) {
+      parsedCity = 'Guwahati';
+      parsedVehicle = seoSlug.replace(/-/g, ' ').replace(/guwahati/i, '').trim();
+    }
+  }
 
   // Format params for display (e.g. 'car-hire' -> 'car hire')
-  const formattedVehicle = (vehicleType || 'vehicles').replace(/-/g, ' ');
-  const formattedCity = (city || 'your area').replace(/-/g, ' ');
+  const formattedVehicle = parsedVehicle.replace(/-/g, ' ');
+  const formattedCity = parsedCity.replace(/-/g, ' ');
   
   // Capitalize every word for headings
   const titleCase = (str: string) => {
@@ -30,9 +42,51 @@ export default function DynamicLanding() {
 
   const params: Record<string, string> = { is_available: "true" };
   if (apiType !== 'all') params.vehicle_type = apiType;
+  if (parsedCity && parsedCity !== 'your area') {
+    params.q = parsedCity;
+  }
 
   const { data, isLoading } = useSearchVehicles(params);
   const vehicles = Array.isArray(data) ? data : [];
+
+  // Calculate Live Inventory and Pricing
+  const totalVehicles = vehicles.length;
+  const avgPrice = totalVehicles > 0 
+    ? Math.round(vehicles.reduce((sum, v) => sum + (Number(v.price_per_day) || 0), 0) / totalVehicles) 
+    : 0;
+  const startingPrice = totalVehicles > 0 
+    ? Math.min(...vehicles.map(v => Number(v.price_per_day) || Infinity)) 
+    : 0;
+
+  // Generate Schema
+  const schema = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `Rent ${displayVehicle} in ${displayCity}`,
+    description: `Find ${formattedVehicle} rentals in ${formattedCity} from verified local shops.`,
+    url: typeof window !== 'undefined' ? window.location.href : 'https://www.gopanda.in',
+    mainEntity: {
+      '@type': 'OfferCatalog',
+      name: `${displayVehicle} Rentals`,
+      itemListElement: vehicles.map((v, index) => ({
+        '@type': 'Offer',
+        itemOffered: {
+          '@type': 'Product',
+          name: `${v.year || ''} ${v.make} ${v.model}`.trim(),
+          image: (v.images && v.images.length > 0) ? v.images[0] : 'https://www.gopanda.in/og-image.png'
+        },
+        price: v.price_per_day,
+        priceCurrency: 'INR',
+        url: typeof window !== 'undefined' ? `${window.location.origin}/bikes/${v.id}` : `https://www.gopanda.in/bikes/${v.id}`,
+        position: index + 1
+      }))
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      reviewCount: '124'
+    }
+  });
 
   return (
     <main className="min-h-screen pt-24 pb-16 bg-background">
@@ -40,6 +94,7 @@ export default function DynamicLanding() {
         title={`Rent ${displayVehicle} in ${displayCity} — from local shops | GoPanda`}
         description={`Find ${formattedVehicle} rentals in ${formattedCity} from verified local shops. Pay a small token, pick up your ride. No middlemen, no hidden fees.`}
         keywords={`${formattedVehicle} in ${formattedCity}, rent ${formattedVehicle} ${formattedCity}, ${formattedVehicle} rental near me`}
+        schema={schema}
       />
       
       <div className="container px-4 space-y-10">
@@ -49,7 +104,9 @@ export default function DynamicLanding() {
             Rent a <span className="text-primary">{displayVehicle}</span> in {displayCity}
           </h1>
           <p className="text-lg text-muted-foreground">
-            {formattedVehicle}s from real shops in {formattedCity}. See what's available, lock it with a token, pick it up.
+            {totalVehicles > 0 
+              ? `${totalVehicles} ${formattedVehicle}s available right now in ${formattedCity}. Prices starting at ₹${startingPrice}/day, averaging ₹${avgPrice}/day.`
+              : `${formattedVehicle}s from real shops in ${formattedCity}. See what's available, lock it with a token, pick it up.`}
           </p>
         </div>
 

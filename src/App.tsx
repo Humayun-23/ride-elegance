@@ -44,6 +44,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/search-vehicles" element={<SearchVehicles />} />
+            <Route path="/search/:seoSlug" element={<DynamicLanding />} />
             <Route path="/rent/:vehicleType/in/:city" element={<DynamicLanding />} />
             <Route path="/rent/:vehicleType" element={<DynamicLanding />} />
             <Route path="/shops" element={<Shops />} />

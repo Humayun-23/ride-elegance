@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Plus, Store, Bike, Package, Calendar, TrendingUp, Star, Activity } from "lucide-react";
+import { Plus, Store, Bike, Package, Calendar, TrendingUp, Star, Activity, Code } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
@@ -325,6 +325,27 @@ export default function AdminDashboard() {
                     )}
                     <div className="flex gap-2">
                       <Button size="sm" variant="outline" className="font-display" onClick={() => navigate(`/shops/${shop.id}`)}>View</Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline" className="font-display"><Code className="h-4 w-4 mr-1"/> Badge</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader><DialogTitle className="font-display">Promote Your Shop</DialogTitle></DialogHeader>
+                          <p className="text-sm text-muted-foreground">Copy this HTML snippet and paste it on your website or blog to let customers know they can book your vehicles on GoPanda.</p>
+                          <div className="bg-secondary p-3 rounded-lg relative font-mono text-xs overflow-x-auto whitespace-pre-wrap">
+                            {`<a href="https://www.gopanda.in/rent/vehicles/in/${shop.city ? shop.city.toLowerCase().replace(/\s+/g, '-') : 'guwahati'}" target="_blank" rel="noopener noreferrer">\n  <img src="https://www.gopanda.in/badge.png" alt="Book on GoPanda" width="200" height="60" />\n</a>`}
+                          </div>
+                          <Button 
+                            className="w-full mt-2" 
+                            onClick={() => {
+                              navigator.clipboard.writeText(`<a href="https://www.gopanda.in/rent/vehicles/in/${shop.city ? shop.city.toLowerCase().replace(/\s+/g, '-') : 'guwahati'}" target="_blank" rel="noopener noreferrer">\n  <img src="https://www.gopanda.in/badge.png" alt="Book on GoPanda" width="200" height="60" />\n</a>`);
+                              toast({ title: "Copied to clipboard!" });
+                            }}
+                          >
+                            Copy HTML
+                          </Button>
+                        </DialogContent>
+                      </Dialog>
                       <Button size="sm" variant="outline" className="font-display text-destructive border-destructive/30" onClick={async () => {
                         await api.delete(`/shops/${shop.id}`);
                         setShops((p) => p.filter((s) => s.id !== shop.id));

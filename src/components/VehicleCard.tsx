@@ -82,7 +82,7 @@ export default function VehicleCard({
           {vehicle.image_url ? (
             <img
               src={getOptimizedImageUrl(vehicle.image_url)}
-              alt={vehicle.name}
+              alt={`Rent ${vehicle.name} ${vehicle.model || ''}`.trim() + ` in ${vehicle.location || 'Guwahati'}`}
               loading={priority ? "eager" : "lazy"}
               fetchPriority={priority ? "high" : "auto"}
               decoding="async"

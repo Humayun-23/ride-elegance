@@ -528,11 +528,13 @@ export default function Index() {
             </div>
 
             <div className="space-y-3">
-              <h4 className="font-bold text-foreground">Explore</h4>
+              <h4 className="font-bold text-foreground">Popular Destinations</h4>
               <ul className="space-y-2 text-muted-foreground">
-                <li><button onClick={() => navigate("/search-vehicles")} className="hover:text-primary transition-colors">Search Vehicles</button></li>
-                <li><button onClick={() => navigate("/shops")} className="hover:text-primary transition-colors">Browse Shops</button></li>
+                <li><a href="/rent/car/in/guwahati" className="hover:text-primary transition-colors">Car rental in Guwahati</a></li>
+                <li><a href="/rent/bike/in/guwahati" className="hover:text-primary transition-colors">Bike rental in Guwahati</a></li>
                 <li><a href="/rent/car/in/jorhat" className="hover:text-primary transition-colors">Car rental in Jorhat</a></li>
+                <li><a href="/rent/scooty/in/dibrugarh" className="hover:text-primary transition-colors">Scooty rental in Dibrugarh</a></li>
+                <li><a href="/search/cheap-car-rental-guwahati" className="hover:text-primary transition-colors">Cheap Car Rental Guwahati</a></li>
               </ul>
             </div>
 
