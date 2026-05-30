@@ -54,7 +54,7 @@ export default function Navbar() {
                   <User className="h-4 w-4" /> Profile
                 </DropdownMenuItem>
                 {user.user_type === "shop_owner" && (
-                  <DropdownMenuItem onClick={() => navigate("/admin")} className="gap-2">
+                  <DropdownMenuItem onClick={() => navigate("/owner/dashboard")} className="gap-2">
                     <LayoutDashboard className="h-4 w-4" /> Dashboard
                   </DropdownMenuItem>
                 )}

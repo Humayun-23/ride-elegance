@@ -52,19 +52,19 @@ export default function AdminDashboard() {
       return;
     }
     const isAdmin = user.user_type === "admin";
-    
+
     Promise.all([
       api.get(isAdmin ? "/shops/" : "/shops/me").catch(() => ({ data: [] })),
       api.get("/shops/dashboard-metrics").catch(() => ({ data: null })),
       api.get("/bookings/", { params: { limit: 100 } }).catch(() => ({ data: [] }))
     ]).then(([shopsRes, metricsRes, bookingsRes]) => {
       setShops(shopsRes.data || []);
-      
+
       if (metricsRes.data) {
         setDashboardMetrics(metricsRes.data);
         setAllReviews(metricsRes.data.recent_reviews || []);
       }
-      
+
       setAllBookings(Array.isArray(bookingsRes.data) ? bookingsRes.data : []);
       setLoading(false);
     });
@@ -300,62 +300,41 @@ export default function AdminDashboard() {
                       className="bg-background"
                     />
                   </div>
-              <Button className="w-full font-display" onClick={createShop} disabled={isCreatingShop}>
-                {isCreatingShop ? "Creating..." : "Create Shop"}
-              </Button>
+                  <Button className="w-full font-display" onClick={createShop} disabled={isCreatingShop}>
+                    {isCreatingShop ? "Creating..." : "Create Shop"}
+                  </Button>
                 </div>
               </DialogContent>
             </Dialog>
           </div>
 
           {loading ? (
-              <div className="text-muted-foreground animate-pulse py-12 text-center border-2 border-dashed border-border/50 rounded-xl">Loading your shops...</div>
-            ) : shops.length === 0 ? (
-              <div className="text-muted-foreground py-12 text-center border-2 border-dashed border-border/50 rounded-xl">No shops found. Click "Add Shop" to get started!</div>
-            ) : (
-              <div className="grid md:grid-cols-2 gap-4">
-                {shops.map((shop) => (
-                  <motion.div key={shop.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    className="rounded-lg border border-border bg-card p-5 space-y-2">
-                    <h3 className="font-display font-bold text-lg">{shop.name}</h3>
-                    <p className="text-sm text-muted-foreground">{shop.address}, {shop.city}</p>
-                    {shop.phone_number && <p className="text-xs text-muted-foreground">📞 {shop.phone_number}</p>}
-                    {(shop.opening_time || shop.closing_time) && (
-                      <p className="text-xs text-muted-foreground">🕐 {shop.opening_time || "?"} – {shop.closing_time || "?"}</p>
-                    )}
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="font-display" onClick={() => navigate(`/shops/${shop.id}`)}>View</Button>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button size="sm" variant="outline" className="font-display"><Code className="h-4 w-4 mr-1"/> Badge</Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader><DialogTitle className="font-display">Promote Your Shop</DialogTitle></DialogHeader>
-                          <p className="text-sm text-muted-foreground">Copy this HTML snippet and paste it on your website or blog to let customers know they can book your vehicles on GoPanda.</p>
-                          <div className="bg-secondary p-3 rounded-lg relative font-mono text-xs overflow-x-auto whitespace-pre-wrap">
-                            {`<a href="https://www.gopanda.in/rent/vehicles/in/${shop.city ? shop.city.toLowerCase().replace(/\s+/g, '-') : 'guwahati'}" target="_blank" rel="noopener noreferrer">\n  <img src="https://www.gopanda.in/badge.png" alt="Book on GoPanda" width="200" height="60" />\n</a>`}
-                          </div>
-                          <Button 
-                            className="w-full mt-2" 
-                            onClick={() => {
-                              navigator.clipboard.writeText(`<a href="https://www.gopanda.in/rent/vehicles/in/${shop.city ? shop.city.toLowerCase().replace(/\s+/g, '-') : 'guwahati'}" target="_blank" rel="noopener noreferrer">\n  <img src="https://www.gopanda.in/badge.png" alt="Book on GoPanda" width="200" height="60" />\n</a>`);
-                              toast({ title: "Copied to clipboard!" });
-                            }}
-                          >
-                            Copy HTML
-                          </Button>
-                        </DialogContent>
-                      </Dialog>
-                      <Button size="sm" variant="outline" className="font-display text-destructive border-destructive/30" onClick={async () => {
-                        await api.delete(`/shops/${shop.id}`);
-                        setShops((p) => p.filter((s) => s.id !== shop.id));
-                        toast({ title: "Shop deleted" });
-                      }}>Delete</Button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
+            <div className="text-muted-foreground animate-pulse py-12 text-center border-2 border-dashed border-border/50 rounded-xl">Loading your shops...</div>
+          ) : shops.length === 0 ? (
+            <div className="text-muted-foreground py-12 text-center border-2 border-dashed border-border/50 rounded-xl">No shops found. Click "Add Shop" to get started!</div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-4">
+              {shops.map((shop) => (
+                <motion.div key={shop.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  className="rounded-lg border border-border bg-card p-5 space-y-2">
+                  <h3 className="font-display font-bold text-lg">{shop.name}</h3>
+                  <p className="text-sm text-muted-foreground">{shop.address}, {shop.city}</p>
+                  {shop.phone_number && <p className="text-xs text-muted-foreground">📞 {shop.phone_number}</p>}
+                  {(shop.opening_time || shop.closing_time) && (
+                    <p className="text-xs text-muted-foreground">🕐 {shop.opening_time || "?"} – {shop.closing_time || "?"}</p>
+                  )}
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="font-display" onClick={() => navigate(`/shops/${shop.id}`)}>View</Button>
+                    <Button size="sm" variant="outline" className="font-display text-destructive border-destructive/30" onClick={async () => {
+                      await api.delete(`/shops/${shop.id}`);
+                      setShops((p) => p.filter((s) => s.id !== shop.id));
+                      toast({ title: "Shop deleted" });
+                    }}>Delete</Button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
