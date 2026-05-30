@@ -58,6 +58,15 @@ export default function DynamicLanding() {
     ? Math.min(...vehicles.map(v => Number(v.price_per_day) || Infinity)) 
     : 0;
 
+  // Hyper-Local Context Dictionary
+  const LOCAL_CONTEXT: Record<string, string> = {
+    'guwahati': 'Popular pickup points include Lokpriya Gopinath Bordoloi International Airport, Kamakhya Railway Station, and routes heading toward Shillong and Kaziranga.',
+    'jorhat': 'Conveniently located for trips to Majuli and Kaziranga, with easy pickups near Rowriah Airport and Jorhat Town Railway Station.',
+    'dibrugarh': 'Start your Upper Assam journey here. Local shops offer quick handovers near Mohanbari Airport and Dibrugarh Railway Station.',
+    'tezpur': 'The perfect starting point for your Arunachal Pradesh or Tawang expedition. Pick up near Tezpur Airport or the main transport nodes.',
+  };
+  const localContextText = LOCAL_CONTEXT[parsedCity.toLowerCase()] || 'Explore the local area with convenient pickups from top-rated shops right in your neighborhood.';
+
   // Generate Schema
   const schema = JSON.stringify({
     '@context': 'https://schema.org',
@@ -108,6 +117,12 @@ export default function DynamicLanding() {
               ? `${totalVehicles} ${formattedVehicle}s available right now in ${formattedCity}. Prices starting at ₹${startingPrice}/day, averaging ₹${avgPrice}/day.`
               : `${formattedVehicle}s from real shops in ${formattedCity}. See what's available, lock it with a token, pick it up.`}
           </p>
+          <div className="mt-4 p-4 bg-muted/30 rounded-xl border border-border text-left max-w-2xl mx-auto">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              <span className="font-semibold text-foreground">📍 Local Tip for {displayCity}: </span>
+              {localContextText}
+            </p>
+          </div>
         </div>
 
         {/* Vehicles Grid */}

@@ -3,8 +3,12 @@ User-agent: *
 Allow: /
 Disallow: /owner/
 Disallow: /users/
+Disallow: /profile/
 Disallow: /login
 Disallow: /register
 Disallow: /bookings
+Disallow: /password-reset
+Disallow: /forgot-password
+Disallow: /verify-email
 
-Sitemap: https://gopanda.in/sitemap.xml
+Sitemap: https://www.gopanda.in/sitemap.xml
