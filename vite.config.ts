@@ -34,15 +34,12 @@ export default defineConfig(({ mode }) => ({
   build: {
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('framer-motion')) return 'framer-motion';
-            if (id.includes('lucide-react')) return 'lucide-react';
-            if (id.includes('@radix-ui')) return 'radix-ui';
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) return 'react-vendor';
-            if (id.includes('@tanstack') || id.includes('axios')) return 'data-vendor';
-            return 'vendor'; // all other dependencies
-          }
+        manualChunks: {
+          'react-core': ['react', 'react-dom', 'react-router-dom'],
+          'framer-motion': ['framer-motion'],
+          'lucide-react': ['lucide-react'],
+          'radix-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-popover', '@radix-ui/react-slot', '@radix-ui/react-toast', '@radix-ui/react-tabs', '@radix-ui/react-accordion', '@radix-ui/react-checkbox', '@radix-ui/react-label', '@radix-ui/react-radio-group', '@radix-ui/react-scroll-area', '@radix-ui/react-select', '@radix-ui/react-separator', '@radix-ui/react-switch', '@radix-ui/react-toggle', '@radix-ui/react-toggle-group'],
+          'data-vendor': ['@tanstack/react-query', 'axios']
         }
       }
     }
