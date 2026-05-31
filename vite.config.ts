@@ -31,6 +31,20 @@ export default defineConfig(({ mode }) => ({
     },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime", "@tanstack/react-query", "@tanstack/query-core"],
   },
-  // Removed manualChunks to allow Vite's default aggressive code-splitting. 
-  // This drastically reduces the "Unused JavaScript" downloaded on the initial page load, improving LCP.
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('framer-motion')) return 'framer-motion';
+            if (id.includes('lucide-react')) return 'lucide-react';
+            if (id.includes('@radix-ui')) return 'radix-ui';
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) return 'react-vendor';
+            if (id.includes('@tanstack') || id.includes('axios')) return 'data-vendor';
+            return 'vendor'; // all other dependencies
+          }
+        }
+      }
+    }
+  }
 }));
