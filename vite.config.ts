@@ -2,6 +2,18 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
+// Plugin to make Vite's injected CSS load asynchronously, eliminating render-blocking delays for the App Shell
+const asyncCssPlugin = () => ({
+  name: 'async-css',
+  enforce: 'post' as const,
+  transformIndexHtml(html: string) {
+    return html.replace(
+      /<link rel="stylesheet"(.*?)href="(.*?\.css)">/g,
+      `<link rel="preload" as="style"$1href="$2">\n    <link rel="stylesheet" media="print" onload="this.media='all'"$1href="$2">\n    <noscript><link rel="stylesheet"$1href="$2"></noscript>`
+    );
+  }
+});
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
@@ -12,7 +24,7 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
-  plugins: [react()],
+  plugins: [react(), asyncCssPlugin()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
