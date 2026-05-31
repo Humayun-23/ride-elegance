@@ -31,7 +31,59 @@
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- SKELETON APP SHELL FOR INSTANT LCP & FCP -->
+      <style>
+        :root { --bg: hsl(30, 25%, 97%); --fg: hsl(20, 15%, 12%); --primary: hsl(152, 45%, 36%); --border: hsl(30, 12%, 88%); }
+        body { margin: 0; background-color: var(--bg); color: var(--fg); font-family: 'Outfit', sans-serif; -webkit-font-smoothing: antialiased; }
+        .shell-nav { position: fixed; top: 0; left: 0; right: 0; height: 56px; border-bottom: 1px solid var(--border); background: rgba(249, 246, 243, 0.85); backdrop-filter: blur(12px); display: flex; align-items: center; padding: 0 1rem; z-index: 50; }
+        .shell-container { max-width: 1536px; margin: 0 auto; width: 100%; padding: 0 1rem; box-sizing: border-box; }
+        .shell-nav-inner { display: flex; justify-content: space-between; width: 100%; align-items: center; height: 100%; }
+        .shell-logo { font-size: 1.125rem; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .shell-hero { padding-top: 6rem; padding-bottom: 4rem; }
+        .shell-hero-inner { display: flex; flex-direction: column; gap: 3rem; }
+        .shell-content { flex: 1; display: flex; flex-direction: column; gap: 1.5rem; justify-content: center; }
+        .shell-badge { width: 110px; height: 32px; border-radius: 999px; background: hsl(38, 92%, 95%); border: 1px solid hsl(38, 92%, 90%); }
+        .shell-h1 { height: 48px; background: var(--border); border-radius: 8px; max-width: 80%; animation: shell-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .shell-h1-2 { height: 48px; background: var(--border); border-radius: 8px; max-width: 60%; animation: shell-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .shell-p { height: 20px; background: var(--border); border-radius: 6px; max-width: 90%; animation: shell-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .shell-form { height: 64px; background: #fff; border-radius: 16px; border: 1px solid var(--border); max-width: 600px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+        .shell-image-col { flex: 1; width: 100%; max-width: 36rem; margin: 0 auto; }
+        .shell-image { width: 100%; aspect-ratio: 4/3; border-radius: 24px; background: var(--border); overflow: hidden; position: relative; border: 1px solid var(--border); }
+        .shell-image img { width: 100%; height: 100%; object-fit: cover; }
+        @media (min-width: 1024px) { .shell-hero { padding-top: 7rem; padding-bottom: 6rem; } .shell-hero-inner { flex-direction: row; align-items: center; gap: 4rem; } }
+        @keyframes shell-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+      </style>
+      <div class="shell-nav">
+        <div class="shell-container shell-nav-inner">
+          <div class="shell-logo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary)"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg>
+            <span><span style="color: var(--primary)">Go</span>Panda</span>
+          </div>
+        </div>
+      </div>
+      <div class="shell-hero shell-container">
+        <div class="shell-hero-inner">
+          <div class="shell-content">
+            <div class="shell-badge"></div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div class="shell-h1"></div>
+              <div class="shell-h1-2"></div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div class="shell-p"></div>
+              <div class="shell-p" style="max-width: 70%;"></div>
+            </div>
+            <div class="shell-form"></div>
+          </div>
+          <div class="shell-image-col">
+            <div class="shell-image">
+              <img src="/vignesh-rajendran-x-dyoS4EmM8-unsplash.webp" alt="Loading hero image..." />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
 
     <!-- Google tag (gtag.js) -->
