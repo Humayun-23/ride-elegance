@@ -12,6 +12,7 @@ import VehicleDetail from './pages/VehicleDetail';
 import DynamicLanding from './pages/DynamicLanding';
 
 // Lazy load the pages
+const NotFound = lazy(() => import('./pages/NotFound'));
 const Shops = lazy(() => import('./pages/Shops'));
 const ShopDetail = lazy(() => import('./pages/ShopDetail'));
 const Bookings = lazy(() => import('./pages/Bookings'));
@@ -68,6 +69,9 @@ function App() {
 
             {/* User Specific Routes */}
             <Route path="/users/bookings" element={<Bookings />} />
+
+            {/* Catch-all 404 */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

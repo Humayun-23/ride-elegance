@@ -2,10 +2,12 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 
 export default function NotFound() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative">
+      <SEO title="Page Not Found | GoPanda" noindex={true} />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(45_100%_51%/0.04),transparent_50%)]" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}

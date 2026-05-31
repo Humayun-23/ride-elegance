@@ -9,6 +9,7 @@ import { Car, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { stripIndianPrefix } from "@/lib/phone";
+import { SEO } from "@/components/SEO";
 
 export default function Register() {
   const [firstname, setFirstname] = useState("");
@@ -54,6 +55,7 @@ export default function Register() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-24 relative">
+      <SEO title="Create Account | GoPanda" noindex={true} />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(45_100%_51%/0.05),transparent_50%)]" />
 
       <motion.div

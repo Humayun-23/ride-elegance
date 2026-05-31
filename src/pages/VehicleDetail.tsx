@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { ArrowLeft, Gauge, Calendar, Info, MapPin, Shield, Clock, CheckCircle2, Star, MessageSquare } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SEO } from "@/components/SEO";
 
 const TYPE_EMOJI: Record<string, string> = {
   scooty: "🛵", bike: "🏍️", car: "🚗", mountain: "🚵",
@@ -189,8 +190,42 @@ ${rejectLink}`;
     : [];
   const heroImage = images[activeImage] || vehicle.image_url || "";
 
+  // Build Product schema for this vehicle
+  const vehicleSchema = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: `${vehicle.name}${vehicle.model ? ` ${vehicle.model}` : ''}`,
+    description: vehicle.description || `Rent ${vehicle.name} in ${shop?.city || 'Guwahati'}`,
+    image: heroImage || 'https://www.gopanda.in/og-image.png',
+    brand: {
+      '@type': 'Brand',
+      name: vehicle.name?.split(' ')[0] || 'Vehicle',
+    },
+    offers: {
+      '@type': 'Offer',
+      price: vehicle.price_per_day || 0,
+      priceCurrency: 'INR',
+      availability: vehicle.is_available !== false
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      url: `https://www.gopanda.in/bikes/${id}`,
+      seller: shop ? {
+        '@type': 'LocalBusiness',
+        name: shop.name || 'GoPanda Partner Shop',
+      } : undefined,
+    },
+  });
+
   return (
     <div className="min-h-screen pt-24 pb-16">
+      <SEO
+        title={`Rent ${vehicle.name}${vehicle.model ? ` ${vehicle.model}` : ''} in ${shop?.city || 'Guwahati'} | GoPanda`}
+        description={vehicle.description || `Rent ${vehicle.name} from ${shop?.name || 'a verified shop'} in ${shop?.city || 'Guwahati'}. ₹${vehicle.price_per_day || ''}/day. Book online with a small token.`}
+        keywords={`rent ${vehicle.name}, ${vehicle.name} rental ${shop?.city || 'guwahati'}, ${vehicle.bike_type || 'vehicle'} rental near me`}
+        canonical={`https://www.gopanda.in/bikes/${id}`}
+        image={heroImage || undefined}
+        schema={vehicleSchema}
+      />
       <div className="container px-4 max-w-6xl">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-6 gap-2 text-muted-foreground -ml-2">
           <ArrowLeft className="h-4 w-4" /> Back

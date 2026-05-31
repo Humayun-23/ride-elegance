@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { MapPin, Star, ChevronRight, Phone, Clock, Store, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { formatIndianPhone } from "@/lib/phone";
+import { SEO } from "@/components/SEO";
 
 export default function Shops() {
   const [shops, setShops] = useState<any[]>([]);
@@ -26,6 +27,12 @@ export default function Shops() {
 
   return (
     <div className="min-h-screen pt-24 pb-16">
+      <SEO
+        title="Verified Rental Shops Near You | GoPanda"
+        description="Browse verified bike, scooty, and car rental shops in Guwahati and across Assam. See ratings, timings, and available vehicles from real local shops."
+        keywords="bike rental shops guwahati, car rental shops near me, vehicle rental shops assam, car rental in guwahati"
+        canonical="https://www.gopanda.in/shops"
+      />
       <div className="container px-4 space-y-8">
         {/* Header */}
         <div className="space-y-6">

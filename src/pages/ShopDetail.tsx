@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { formatIndianPhone } from "@/lib/phone";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SEO } from "@/components/SEO";
 
 export default function ShopDetail() {
   const { id } = useParams<{ id: string }>();
@@ -138,8 +139,43 @@ export default function ShopDetail() {
     ? (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1)
     : null;
 
+  // Build LocalBusiness schema for this shop
+  const shopSchema = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: shop.name || 'Rental Shop',
+    description: shop.description || `Vehicle rental shop in ${shop.city || 'Guwahati'}`,
+    image: shop.image_url || 'https://www.gopanda.in/og-image.png',
+    telephone: shop.phone_number || undefined,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: shop.address || undefined,
+      addressLocality: shop.city || 'Guwahati',
+      addressRegion: shop.state || 'Assam',
+      postalCode: shop.zip_code || undefined,
+      addressCountry: 'IN',
+    },
+    ...(shop.opening_time && shop.closing_time ? {
+      openingHours: `Mo-Su ${shop.opening_time}-${shop.closing_time}`,
+    } : {}),
+    ...(avgRating ? {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: avgRating,
+        reviewCount: String(reviews.length),
+      },
+    } : {}),
+  });
+
   return (
     <div className="min-h-screen pt-24 pb-16">
+      <SEO
+        title={`${shop.name || 'Rental Shop'} — Bike & Car Rental in ${shop.city || 'Guwahati'} | GoPanda`}
+        description={shop.description || `Rent bikes, scooties, and cars from ${shop.name || 'this shop'} in ${shop.city || 'Guwahati'}. ${bikes.length} vehicles available. See ratings and book online.`}
+        keywords={`${shop.name}, bike rental ${shop.city || 'guwahati'}, car rental ${shop.city || 'guwahati'}, vehicle rental near me`}
+        canonical={`https://www.gopanda.in/shops/${id}`}
+        schema={shopSchema}
+      />
       <div className="container px-4 max-w-6xl space-y-10">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-2 text-muted-foreground -ml-2">
           <ArrowLeft className="h-4 w-4" /> Back

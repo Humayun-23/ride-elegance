@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-// Base URL of your website
+// Base URL of your website (canonical: www)
 const BASE_URL = 'https://www.gopanda.in';
 
 // Static routes
@@ -11,19 +11,17 @@ const staticRoutes = [
   '/shops'
 ];
 
-// Targeted SEO keywords we want to dynamically generate routes for
-const seoCombinations = [
-  '/rent/car-hire/in/guwahati',
-  '/rent/rental-cars/in/guwahati',
-  '/rent/self-drive-car/in/guwahati',
-  '/rent/self-drive-cars/in/guwahati',
-  '/rent/scooty/in/guwahati',
-  '/rent/bike/in/guwahati',
-  '/rent/tempo-traveller/in/guwahati',
-  '/rent/car-rent/in/guwahati',
-];
+// Canonical vehicle types × cities — no synonym slugs
+const cities = ['guwahati', 'jorhat', 'dibrugarh', 'tezpur', 'silchar', 'shillong'];
+const vehicles = ['car', 'bike', 'scooty'];
+
+const seoCombinations = cities.flatMap(city =>
+  vehicles.map(vehicle => `/rent/${vehicle}/in/${city}`)
+);
 
 const allRoutes = [...staticRoutes, ...seoCombinations];
+
+const today = new Date().toISOString().split('T')[0];
 
 // Generate the XML structure
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -32,8 +30,8 @@ ${allRoutes
   .map(
     (route) => `  <url>
     <loc>${BASE_URL}${route}</loc>
-    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
-    <changefreq>${route === '/' ? 'daily' : 'weekly'}</changefreq>
+    <lastmod>${today}</lastmod>
+    <changefreq>${route === '/' ? 'daily' : route.includes('/rent/') ? 'hourly' : 'weekly'}</changefreq>
     <priority>${route === '/' ? '1.0' : route.includes('/rent/') ? '0.9' : '0.8'}</priority>
   </url>`
   )

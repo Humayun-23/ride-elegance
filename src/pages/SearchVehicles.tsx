@@ -74,7 +74,9 @@ export default function SearchVehicles() {
     <div className="min-h-screen pt-24 pb-16">
       <SEO 
         title="Search Bike and Car Rentals Near You | GoPanda" 
-        description="Find the best bike rentals near you. Search our wide range of scooties, bikes, and cars for rent near you." 
+        description="Find the best bike rentals near you. Search our wide range of scooties, bikes, and cars for rent near you."
+        keywords="bike rental near me, car rental guwahati, scooty rental, search vehicles"
+        canonical="https://www.gopanda.in/search-vehicles"
       />
       <div className="container px-4 space-y-8">
         <div className="space-y-6">

@@ -4,7 +4,6 @@ export default async function handler(req, res) {
     const host = req.headers.host || 'www.gopanda.in';
     
     // Fetch the raw index.html to modify
-    // Appending a query param to bust any potential caches for this specific serverless fetch
     const fetchUrl = `${protocol}://${host}/index.html?_seo=1`;
     const response = await fetch(fetchUrl);
     let html = await response.text();
@@ -13,6 +12,7 @@ export default async function handler(req, res) {
     
     let title = 'GoPanda — Best Bike Rental Platform Near You';
     let description = 'Looking for the best bike rentals near you? GoPanda offers premium and affordable two-wheelers.';
+    let canonicalUrl = `${protocol}://${host}${url.split('?')[0]}`;
     
     // Helper to format strings
     const formatStr = (str) => {
@@ -28,6 +28,14 @@ export default async function handler(req, res) {
       const city = formatStr(rentMatch[2]);
       title = `Rent ${vType} in ${city} — from local shops | GoPanda`;
       description = `Find ${vType.toLowerCase()} rentals in ${city} from verified local shops. Pay a small token, pick up your ride.`;
+      
+      // Normalize canonical for synonym slugs
+      const vTypeLower = rentMatch[1].toLowerCase();
+      let canonicalVehicle = rentMatch[1];
+      if (vTypeLower.includes('car')) canonicalVehicle = 'car';
+      else if (vTypeLower.includes('scooty') || vTypeLower.includes('scooter')) canonicalVehicle = 'scooty';
+      else if (vTypeLower.includes('bike') || vTypeLower.includes('motorcycle')) canonicalVehicle = 'bike';
+      canonicalUrl = `${protocol}://${host}/rent/${canonicalVehicle}/in/${rentMatch[2].toLowerCase()}`;
     } 
     // Example: /search/cheap-car-rental-guwahati
     else if (url.includes('/search/') && !url.includes('search-vehicles')) {
@@ -46,20 +54,35 @@ export default async function handler(req, res) {
       description = `Find ${parsedVehicle.toLowerCase()} rentals in ${formatStr(parsedCity)} from verified local shops. Pay a small token, pick up your ride.`;
     }
 
-    // Inject into HTML
-    // We do a simple string replace for the <title> and add <meta> tags before </head>
+    // Replace <title> tag
     html = html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
     
-    const metaTags = `
-      <meta name="description" content="${description}" />
-      <meta property="og:title" content="${title}" />
-      <meta property="og:description" content="${description}" />
-      <meta property="og:url" content="${protocol}://${host}${url}" />
-      <meta name="twitter:title" content="${title}" />
-      <meta name="twitter:description" content="${description}" />
-    `;
+    // Replace existing meta tags instead of appending duplicates
+    html = html.replace(
+      /<meta name="description" content="[^"]*"\s*\/?>/,
+      `<meta name="description" content="${description}" />`
+    );
+    html = html.replace(
+      /<meta property="og:title" content="[^"]*"\s*\/?>/,
+      `<meta property="og:title" content="${title}" />`
+    );
+    html = html.replace(
+      /<meta property="og:description" content="[^"]*"\s*\/?>/,
+      `<meta property="og:description" content="${description}" />`
+    );
+    html = html.replace(
+      /<meta property="og:url" content="[^"]*"\s*\/?>/,
+      `<meta property="og:url" content="${canonicalUrl}" />`
+    );
+    html = html.replace(
+      /<meta name="twitter:image" content="[^"]*"\s*\/?>/,
+      `<meta name="twitter:image" content="${protocol}://${host}/og-image.png" />`
+    );
     
-    html = html.replace('</head>', `${metaTags}</head>`);
+    // Add canonical link before </head> if not already present
+    if (!html.includes('rel="canonical"')) {
+      html = html.replace('</head>', `  <link rel="canonical" href="${canonicalUrl}" />\n  </head>`);
+    }
 
     // Send modified HTML
     res.setHeader('Content-Type', 'text/html');

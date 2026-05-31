@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Car, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { SEO } from "@/components/SEO";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -38,6 +39,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative">
+      <SEO title="Sign In | GoPanda" noindex={true} />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(152_45%_36%/0.04),transparent_50%)]" />
 
       <motion.div

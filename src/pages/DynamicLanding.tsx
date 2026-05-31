@@ -40,6 +40,13 @@ export default function DynamicLanding() {
   else if (vTypeLower.includes('scooty') || vTypeLower.includes('scooter')) apiType = 'scooty';
   else if (vTypeLower.includes('bike') || vTypeLower.includes('motorcycle')) apiType = 'bike';
 
+  // Compute canonical URL for this page — normalizes synonym slugs to canonical
+  const canonicalSlug = apiType === 'all' ? 'vehicles' : apiType;
+  const canonicalCity = parsedCity !== 'your area' ? parsedCity.toLowerCase().replace(/\s+/g, '-') : '';
+  const canonicalUrl = canonicalCity
+    ? `https://www.gopanda.in/rent/${canonicalSlug}/in/${canonicalCity}`
+    : `https://www.gopanda.in/rent/${canonicalSlug}`;
+
   const params: Record<string, string> = { is_available: "true" };
   if (apiType !== 'all') params.vehicle_type = apiType;
   if (parsedCity && parsedCity !== 'your area') {
@@ -89,11 +96,6 @@ export default function DynamicLanding() {
         url: typeof window !== 'undefined' ? `${window.location.origin}/bikes/${v.id}` : `https://www.gopanda.in/bikes/${v.id}`,
         position: index + 1
       }))
-    },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      reviewCount: '124'
     }
   });
 
@@ -103,6 +105,8 @@ export default function DynamicLanding() {
         title={`Rent ${displayVehicle} in ${displayCity} — from local shops | GoPanda`}
         description={`Find ${formattedVehicle} rentals in ${formattedCity} from verified local shops. Pay a small token, pick up your ride. No middlemen, no hidden fees.`}
         keywords={`${formattedVehicle} in ${formattedCity}, rent ${formattedVehicle} ${formattedCity}, ${formattedVehicle} rental near me`}
+        canonical={canonicalUrl}
+        url={canonicalUrl}
         schema={schema}
       />
       

@@ -73,6 +73,7 @@ export default function Index() {
       <SEO
         title="GoPanda — Rent bikes & cars from local shops in Guwahati"
         description="Find and book bikes, scooties, and cars from verified rental shops in Guwahati. Pay a small token, pick up your ride. No middlemen, no hidden fees."
+        canonical="https://www.gopanda.in"
       />
 
       {/* ─── STICKY SEARCH BAR ─── */}
@@ -207,7 +208,7 @@ export default function Index() {
               <div className="relative">
                 <div className="rounded-3xl overflow-hidden shadow-2xl shadow-foreground/8 border border-border">
                   <img
-                    src="/vignesh-rajendran-x-dyoS4EmM8-unsplash.jpg"
+                    src="/vignesh-rajendran-x-dyoS4EmM8-unsplash.webp"
                     alt="A white car driving on a highway at dusk"
                     className="w-full h-auto object-cover aspect-[4/3]"
                     loading="eager"
