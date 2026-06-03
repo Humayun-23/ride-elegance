@@ -4,14 +4,16 @@ import Navbar from './components/Navbar';
 import WhatsAppButton from './components/WhatsAppButton';
 import { AuthProvider } from './contexts/AuthContext';
 
-// Eagerly load high-traffic pages for instant rendering
+// Eagerly load the main entry pages to preserve the index.html Skeleton Shell and protect LCP/CLS
 import Index from './pages/Index';
-import SearchVehicles from './pages/SearchVehicles';
-import Login from './pages/Login';
-import VehicleDetail from './pages/VehicleDetail';
 import DynamicLanding from './pages/DynamicLanding';
 
-// Lazy load the pages
+// Lazy load the rest to reduce bundle size for subsequent navigations
+const SearchVehicles = lazy(() => import('./pages/SearchVehicles'));
+const Login = lazy(() => import('./pages/Login'));
+const VehicleDetail = lazy(() => import('./pages/VehicleDetail'));
+
+// Lazy load the remaining pages
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Shops = lazy(() => import('./pages/Shops'));
 const ShopDetail = lazy(() => import('./pages/ShopDetail'));
