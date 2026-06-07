@@ -76,7 +76,7 @@ export default function VehicleCard({
 
   return (
     <Link to={href ?? `/bikes/${vehicle.id}`} className="group block h-full">
-      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-200 h-full flex flex-col">
+      <div className="overflow-hidden rounded-3xl card-elevated h-full flex flex-col relative z-10">
         {/* Image — bigger, cleaner */}
         <div className={`${compact ? "aspect-[16/9]" : "aspect-[3/2]"} bg-muted relative overflow-hidden`}>
           {vehicle.image_url ? (
@@ -98,7 +98,7 @@ export default function VehicleCard({
 
           {/* Type badge — top left */}
           {!hideTypeBadge && vehicle.bike_type && (
-            <Badge className="absolute top-2.5 left-2.5 bg-white/90 backdrop-blur-sm text-foreground font-display text-[10px] uppercase tracking-wider border-0 shadow-sm">
+            <Badge className="absolute top-2.5 left-2.5 bg-white/80 backdrop-blur-md text-foreground font-display text-[10px] uppercase tracking-wider border border-white/40 shadow-sm transition-transform group-hover:scale-105">
               {TYPE_EMOJI[vehicle.bike_type] || ""} {TYPE_LABEL[vehicle.bike_type] || vehicle.bike_type}
             </Badge>
           )}
@@ -112,9 +112,9 @@ export default function VehicleCard({
 
           {/* Price overlay — bottom right of image */}
           {!hidePrice && vehicle.price_per_day != null && (
-            <div className="absolute bottom-2.5 right-2.5 bg-white/95 backdrop-blur-sm rounded-lg px-2.5 py-1 shadow-sm">
-              <span className="text-foreground font-display font-bold text-sm">₹{vehicle.price_per_day}</span>
-              <span className="text-muted-foreground text-[10px] ml-0.5">/day</span>
+            <div className="absolute bottom-2.5 right-2.5 bg-background/90 backdrop-blur-md border border-white/20 rounded-xl px-3 py-1 shadow-glow transition-transform group-hover:scale-105">
+              <span className="text-foreground font-display font-extrabold text-sm text-gradient-warm">₹{vehicle.price_per_day}</span>
+              <span className="text-muted-foreground text-[10px] ml-0.5 font-bold">/day</span>
             </div>
           )}
         </div>
@@ -124,7 +124,7 @@ export default function VehicleCard({
           {/* Title + rating row */}
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
-              <h3 className={`font-display font-bold text-foreground ${compact ? "text-sm" : "text-base"} leading-tight group-hover:text-primary transition-colors truncate`}>
+              <h3 className={`font-display font-bold text-foreground ${compact ? "text-sm" : "text-lg"} leading-tight group-hover:text-primary transition-colors truncate`}>
                 {vehicle.name}
               </h3>
               {vehicle.model && (

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { ArrowLeft, Gauge, Calendar, Info, MapPin, Shield, Clock, CheckCircle2, Star, MessageSquare } from "lucide-react";
+import { ArrowLeft, Gauge, Calendar, Info, MapPin, Shield, Clock, CheckCircle2, Star, MessageSquare, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SEO } from "@/components/SEO";
+import VehicleCard from "@/components/VehicleCard";
 
 const TYPE_EMOJI: Record<string, string> = {
   scooty: "🛵", bike: "🏍️", car: "🚗", mountain: "🚵",
@@ -25,6 +26,7 @@ export default function VehicleDetail() {
   const [availability, setAvailability] = useState<any>(null);
   const [shop, setShop] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [relatedVehicles, setRelatedVehicles] = useState<any[]>([]);
   const [activeImage, setActiveImage] = useState(0);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
@@ -52,6 +54,21 @@ export default function VehicleDetail() {
         setAvailability(res.data.availability ?? null);
         setShop(res.data.shop ?? null);
         setReviews(Array.isArray(res.data.reviews) ? res.data.reviews : []);
+        
+        // Defer fetching related vehicles to avoid blocking the main LCP element network/CPU
+        if (res.data.vehicle?.bike_type) {
+          setTimeout(() => {
+            if (active) {
+              api.get(`/search/vehicles?vehicle_type=${res.data.vehicle.bike_type}&limit=5`, {
+                signal: controller.signal
+              })
+              .then(r => {
+                if (active) setRelatedVehicles(r.data.filter((v: any) => v.id !== Number(id)).slice(0, 4));
+              })
+              .catch(() => {});
+            }
+          }, 1000);
+        }
       } catch (err: any) {
         if (!active || err.name === 'CanceledError' || err.message === 'canceled') return;
         setVehicle(null);
@@ -227,6 +244,17 @@ ${rejectLink}`;
         schema={vehicleSchema}
       />
       <div className="container px-4 max-w-6xl">
+        {/* Breadcrumbs */}
+        <nav className="flex items-center gap-1.5 text-[11px] md:text-xs font-display text-muted-foreground mb-6 uppercase tracking-wider overflow-x-auto whitespace-nowrap pb-2 scrollbar-none">
+          <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+          <ChevronRight className="h-3 w-3 shrink-0" />
+          <Link to="/search-vehicles" className="hover:text-primary transition-colors">{(shop?.city || "Guwahati").toLowerCase()}</Link>
+          <ChevronRight className="h-3 w-3 shrink-0" />
+          <Link to={`/search-vehicles?type=${vehicle.bike_type}`} className="hover:text-primary transition-colors">{vehicle.bike_type || "vehicles"}</Link>
+          <ChevronRight className="h-3 w-3 shrink-0" />
+          <span className="text-foreground font-semibold truncate max-w-[150px] md:max-w-none">{vehicle.name}</span>
+        </nav>
+
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-6 gap-2 text-muted-foreground -ml-2">
           <ArrowLeft className="h-4 w-4" /> Back
         </Button>
@@ -236,7 +264,14 @@ ${rejectLink}`;
           <div className="space-y-3">
             <div className="rounded-2xl border border-border/50 bg-card/60 overflow-hidden aspect-[4/3] relative">
               {heroImage ? (
-                <img src={heroImage} alt={vehicle.name} fetchpriority="high" className="h-full w-full object-cover" />
+                <img 
+                  src={heroImage} 
+                  alt={vehicle.name} 
+                  fetchPriority="high" 
+                  loading="eager"
+                  decoding="sync"
+                  className="h-full w-full object-cover" 
+                />
               ) : (
                 <div className="flex h-full items-center justify-center bg-gradient-to-br from-secondary to-background">
                   <span className="text-8xl opacity-20">
@@ -420,6 +455,20 @@ ${rejectLink}`;
             </div>
           )}
         </div>
+
+        {/* Related Vehicles Section */}
+        {relatedVehicles.length > 0 && (
+          <div className="mt-16 space-y-6">
+            <h2 className="font-display text-xl md:text-2xl font-bold capitalize">
+              More {vehicle.bike_type ? vehicle.bike_type + 's' : 'Vehicles'} in {shop?.city || 'Guwahati'}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {relatedVehicles.map((v) => (
+                <VehicleCard key={v.id} vehicle={v} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

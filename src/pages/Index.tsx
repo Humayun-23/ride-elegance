@@ -71,8 +71,8 @@ export default function Index() {
   return (
     <main className="min-h-screen bg-background text-foreground font-body">
       <SEO
-        title="GoPanda — Rent bikes & cars from local shops in Guwahati"
-        description="Find and book bikes, scooties, and cars from verified rental shops in Guwahati. Pay a small token, pick up your ride. No middlemen, no hidden fees."
+        title="Self Drive Car Rental in Guwahati | Rent Bikes & Cars - GoPanda"
+        description="Looking for the best self drive car rental in Guwahati? Find and book bikes, scooties, and cars from verified local shops. No middlemen, no hidden fees."
         canonical="https://www.gopanda.in"
       />
 
@@ -117,9 +117,10 @@ export default function Index() {
 
       {/* ─── HERO ─── */}
       <section className="relative pt-24 pb-16 lg:pt-28 lg:pb-24 overflow-hidden">
-        {/* Warm ambient blobs - subtler than before */}
-        <div className="absolute top-[-8%] left-[-5%] w-[35%] h-[35%] rounded-full bg-primary/8 blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-[-5%] right-[-8%] w-[30%] h-[30%] rounded-full bg-amber-400/8 blur-[100px] pointer-events-none" />
+        {/* Vibrant ambient blobs */}
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-[hsl(var(--primary))]/20 blur-[120px] pointer-events-none animate-pulse-glow" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-[hsl(var(--warm))]/20 blur-[120px] pointer-events-none animate-pulse-glow" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-[20%] right-[10%] w-[20%] h-[20%] rounded-full bg-blue-500/10 blur-[100px] pointer-events-none animate-pulse-glow" style={{ animationDelay: '2s' }} />
 
         <div className="container px-4 mx-auto relative z-10">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
@@ -150,7 +151,7 @@ export default function Index() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.15 }}
                 onSubmit={handleSearch}
-                className="bg-white p-3 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-border max-w-2xl mx-auto lg:mx-0 flex flex-col sm:flex-row gap-3"
+                className="bg-white/90 backdrop-blur-xl p-3 rounded-2xl shadow-xl shadow-[hsl(var(--primary))]/5 border border-white/50 max-w-2xl mx-auto lg:mx-0 flex flex-col sm:flex-row gap-3 relative z-10 transition-all focus-within:border-glow"
               >
                 <div className="flex-1 flex items-center gap-2.5 bg-muted/50 px-3.5 py-2.5 rounded-xl border border-border focus-within:border-primary/40 focus-within:bg-white transition-colors">
                   <MapPin className="text-muted-foreground h-4 w-4 shrink-0" />
@@ -177,7 +178,7 @@ export default function Index() {
                   </select>
                 </div>
 
-                <Button type="submit" size="lg" className="rounded-xl h-auto py-3 px-6 text-sm font-semibold shadow-md shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-0.5">
+                <Button type="submit" size="lg" className="rounded-xl h-auto py-3 px-6 text-sm font-bold glow bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] text-white border-0 hover:scale-105 transition-transform">
                   Find rides <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
               </motion.form>
@@ -209,7 +210,7 @@ export default function Index() {
                 <div className="rounded-3xl overflow-hidden shadow-2xl shadow-foreground/8 border border-border">
                   <img
                     src="/vignesh-rajendran-x-dyoS4EmM8-unsplash.webp"
-                    alt="A white car driving on a highway at dusk"
+                    alt="Self drive car rental in Guwahati - Premium white car driving on a highway"
                     className="w-full h-auto object-cover aspect-[4/3]"
                     loading="eager"
                     fetchPriority="high"
@@ -275,8 +276,8 @@ export default function Index() {
                 className="relative z-10 flex flex-col items-center text-center group shrink-0 w-[80vw] sm:w-[280px] md:w-auto snap-center bg-card md:bg-transparent p-6 md:p-0 rounded-3xl md:rounded-none border border-border md:border-transparent shadow-sm md:shadow-none"
               >
                 {/* Icon Box */}
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white border border-border shadow-md md:shadow-lg shadow-foreground/4 flex items-center justify-center mb-4 md:mb-5 group-hover:-translate-y-1 transition-transform duration-200">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary/8 flex items-center justify-center text-primary">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white border border-border shadow-md md:shadow-lg shadow-foreground/4 flex items-center justify-center mb-4 md:mb-5 group-hover:-translate-y-2 group-hover:shadow-glow transition-all duration-300">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] flex items-center justify-center text-white">
                     <step.icon className="h-5 w-5 md:h-6 md:w-6" />
                   </div>
                 </div>
@@ -434,7 +435,7 @@ export default function Index() {
 
           <div className="grid md:grid-cols-3 gap-5 auto-rows-[220px]">
             {/* Box 1 - wide */}
-            <motion.div whileHover={{ y: -3 }} className="md:col-span-2 bg-white rounded-2xl p-7 border border-border shadow-sm overflow-hidden relative group">
+            <motion.div whileHover={{ y: -5 }} className="md:col-span-2 card-elevated rounded-3xl p-7 overflow-hidden relative group">
               <div className="relative z-10 w-3/4">
                 <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
                   <ShieldCheck className="h-5 w-5" />
@@ -446,7 +447,7 @@ export default function Index() {
             </motion.div>
 
             {/* Box 2 */}
-            <motion.div whileHover={{ y: -3 }} className="bg-white rounded-2xl p-7 border border-border shadow-sm overflow-hidden relative group">
+            <motion.div whileHover={{ y: -5 }} className="card-elevated rounded-3xl p-7 overflow-hidden relative group">
               <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
                 <Star className="h-5 w-5" />
               </div>
@@ -455,7 +456,7 @@ export default function Index() {
             </motion.div>
 
             {/* Box 3 */}
-            <motion.div whileHover={{ y: -3 }} className="bg-white rounded-2xl p-7 border border-border shadow-sm overflow-hidden relative group">
+            <motion.div whileHover={{ y: -5 }} className="card-elevated rounded-3xl p-7 overflow-hidden relative group">
               <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
                 <MessageCircle className="h-5 w-5" />
               </div>
@@ -464,7 +465,7 @@ export default function Index() {
             </motion.div>
 
             {/* Box 4 - wide, dark */}
-            <motion.div whileHover={{ y: -3 }} className="md:col-span-2 bg-foreground rounded-2xl p-7 shadow-lg overflow-hidden relative group">
+            <motion.div whileHover={{ y: -5 }} className="md:col-span-2 bg-foreground rounded-3xl p-7 shadow-xl overflow-hidden relative group border border-white/10">
               <div className="relative z-10 w-3/4">
                 <div className="w-10 h-10 rounded-lg bg-white/10 text-white flex items-center justify-center mb-4">
                   <Wallet className="h-5 w-5" />
@@ -480,7 +481,7 @@ export default function Index() {
       {/* ─── PARTNER CTA ─── */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <div className="bg-primary rounded-3xl p-8 md:p-14 relative overflow-hidden text-center md:text-left">
+          <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] rounded-[2rem] p-8 md:p-14 relative overflow-hidden text-center md:text-left shadow-glow">
             <div className="absolute top-[-15%] right-[-8%] w-72 h-72 bg-white/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute bottom-[-15%] left-[-8%] w-72 h-72 bg-black/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -493,7 +494,7 @@ export default function Index() {
                   Get bookings on WhatsApp, receive UPI payments, manage your fleet — all for free. No commissions, ever.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <Button size="lg" variant="secondary" className="rounded-xl px-6 py-5 text-base font-bold bg-white text-primary hover:bg-white/90 transition-transform hover:-translate-y-0.5" onClick={() => navigate("/register")}>
+                  <Button size="lg" variant="secondary" className="rounded-xl px-6 py-5 text-base font-bold bg-white text-[hsl(var(--primary))] hover:bg-white/90 hover:shadow-lg transition-all hover:-translate-y-1" onClick={() => navigate("/register")}>
                     List your shop — it's free
                   </Button>
                   <Button size="lg" variant="outline" className="rounded-xl px-6 py-5 text-base font-bold text-black border-white/30 hover:bg-white/10 transition-colors" onClick={() => navigate("/login")}>

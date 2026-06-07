@@ -20,18 +20,21 @@ export default function Navbar() {
   const displayName = user ? `${user.firstname || ""} ${user.lastname || ""}`.trim() || user.email : "";
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-md">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/20 glass transition-all duration-300">
       <div className="container flex h-14 items-center justify-between">
-        <Link to="/" className="flex items-center gap-1.5 font-display text-lg font-bold">
-          <Car className="h-5 w-5 text-primary" />
-          <span><span className="text-primary">Go</span><span className="text-foreground">Panda</span></span>
+        <Link to="/" className="flex items-center gap-1.5 font-display text-xl font-bold group">
+          <div className="relative flex items-center justify-center">
+            <div className="absolute inset-0 bg-primary/20 blur-md rounded-full group-hover:bg-primary/40 transition-colors" />
+            <Car className="h-6 w-6 text-primary relative z-10 transition-transform group-hover:scale-110" />
+          </div>
+          <span className="tracking-tight"><span className="text-gradient">Go</span><span className="text-foreground">Panda</span></span>
         </Link>
 
         <div className="hidden md:flex items-center gap-1">
-          <Link to="/search-vehicles" className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary/50">
+          <Link to="/search-vehicles" className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-all rounded-lg hover:bg-primary/5">
             Explore
           </Link>
-          <Link to="/shops" className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary/50">
+          <Link to="/shops" className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-all rounded-lg hover:bg-primary/5">
             Shops
           </Link>
           {user ? (
@@ -66,10 +69,10 @@ export default function Navbar() {
             </DropdownMenu>
           ) : (
             <div className="flex gap-2 ml-2">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/login")} className="rounded-xl text-primary hover:text-primary/80 hover:bg-primary/5">
+              <Button variant="ghost" size="sm" onClick={() => navigate("/login")} className="rounded-xl text-primary hover:text-primary/80 hover:bg-primary/5 font-semibold">
                 Login
               </Button>
-              <Button size="sm" onClick={() => navigate("/register")} className="rounded-xl glow">
+              <Button size="sm" onClick={() => navigate("/register")} className="rounded-xl glow bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] text-white border-0 hover:scale-105 transition-transform font-bold">
                 Register
               </Button>
             </div>
@@ -78,7 +81,7 @@ export default function Navbar() {
 
         <div className="flex items-center gap-2 md:hidden">
           {!user && (
-            <Button size="sm" onClick={() => navigate("/register")} className="h-8 px-3 rounded-lg text-xs font-medium">
+            <Button size="sm" onClick={() => navigate("/register")} className="h-8 px-3 rounded-lg text-xs font-bold glow bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] text-white border-0">
               Register
             </Button>
           )}
