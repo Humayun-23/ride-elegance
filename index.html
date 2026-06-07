@@ -87,14 +87,43 @@
     </div>
     <script type="module" src="/src/main.tsx"></script>
 
-    <!-- Google tag (gtag.js) -->
-    <script defer src="https://www.googletagmanager.com/gtag/js?id=G-QGG0X621Q6"></script>
+    <!-- Delayed Google tag (gtag.js) for Performance -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+      (function() {
+        var loaded = false;
+        function loadGTM() {
+          if (loaded) return;
+          loaded = true;
+          
+          // Inject the GTM script
+          var script = document.createElement('script');
+          script.src = 'https://www.googletagmanager.com/gtag/js?id=G-QGG0X621Q6';
+          script.async = true;
+          document.head.appendChild(script);
 
-      gtag('config', 'G-QGG0X621Q6');
+          // Initialize gtag
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          window.gtag = gtag; // Make it globally accessible
+          gtag('js', new Date());
+          gtag('config', 'G-QGG0X621Q6');
+          
+          // Clean up listeners
+          var events = ['scroll', 'mousemove', 'touchstart', 'click', 'keydown'];
+          events.forEach(function(e) {
+            window.removeEventListener(e, loadGTM);
+          });
+        }
+        
+        // Trigger GTM on first user interaction
+        var events = ['scroll', 'mousemove', 'touchstart', 'click', 'keydown'];
+        events.forEach(function(e) {
+          window.addEventListener(e, loadGTM, { once: true, passive: true });
+        });
+
+        // Fallback: trigger after 3.5 seconds if no interaction occurs
+        setTimeout(loadGTM, 3500);
+      })();
     </script>
   </body>
 </html>
