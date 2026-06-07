@@ -1,25 +1,9 @@
 import fs from 'fs';
 import path from 'path';
+import { allRoutes } from './routes.js';
 
 // Base URL of your website (canonical: www)
 const BASE_URL = 'https://www.gopanda.in';
-
-// Static routes
-const staticRoutes = [
-  '/',
-  '/search-vehicles',
-  '/shops'
-];
-
-// Canonical vehicle types × cities — no synonym slugs
-const cities = ['guwahati', 'jorhat', 'dibrugarh', 'tezpur', 'silchar', 'shillong'];
-const vehicles = ['car', 'bike', 'scooty'];
-
-const seoCombinations = cities.flatMap(city =>
-  vehicles.map(vehicle => `/rent/${vehicle}/in/${city}`)
-);
-
-const allRoutes = [...staticRoutes, ...seoCombinations];
 
 const today = new Date().toISOString().split('T')[0];
 

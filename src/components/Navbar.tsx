@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Car, Menu, X, User, LogOut, Bookmark, LayoutDashboard } from "lucide-react";
+import { Car, Menu, X, User, LogOut, Bookmark, LayoutDashboard, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -37,6 +37,23 @@ export default function Navbar() {
           <Link to="/shops" className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-all rounded-lg hover:bg-primary/5">
             Shops
           </Link>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="px-4 py-2 flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-all rounded-lg hover:bg-primary/5">
+                Locations <ChevronDown className="h-3.5 w-3.5 opacity-50" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-40">
+              <DropdownMenuItem onClick={() => navigate("/rent/car/in/guwahati")}>
+                Guwahati
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate("/rent/car/in/jorhat")}>
+                Jorhat
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -106,6 +123,11 @@ export default function Navbar() {
               <Link to="/shops" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>
                 Shops
               </Link>
+              <div className="py-2 border-y border-border/60 my-2">
+                 <span className="block px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Locations</span>
+                 <Link to="/rent/car/in/guwahati" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>Guwahati</Link>
+                 <Link to="/rent/car/in/jorhat" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>Jorhat</Link>
+              </div>
               {user ? (
                 <>
                   <Link to="/bookings" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>
