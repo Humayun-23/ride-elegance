@@ -26,7 +26,6 @@ export default function VehicleDetail() {
   const [availability, setAvailability] = useState<any>(null);
   const [shop, setShop] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
-  const [relatedVehicles, setRelatedVehicles] = useState<any[]>([]);
   const [activeImage, setActiveImage] = useState(0);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
@@ -48,27 +47,12 @@ export default function VehicleDetail() {
           signal: controller.signal
         });
         if (!active) return;
-        
+
         setVehicle(res.data.vehicle);
         setActiveImage(0);
         setAvailability(res.data.availability ?? null);
         setShop(res.data.shop ?? null);
         setReviews(Array.isArray(res.data.reviews) ? res.data.reviews : []);
-        
-        // Defer fetching related vehicles to avoid blocking the main LCP element network/CPU
-        if (res.data.vehicle?.bike_type) {
-          setTimeout(() => {
-            if (active) {
-              api.get(`/search/vehicles?vehicle_type=${res.data.vehicle.bike_type}&limit=5`, {
-                signal: controller.signal
-              })
-              .then(r => {
-                if (active) setRelatedVehicles(r.data.filter((v: any) => v.id !== Number(id)).slice(0, 4));
-              })
-              .catch(() => {});
-            }
-          }, 1000);
-        }
       } catch (err: any) {
         if (!active || err.name === 'CanceledError' || err.message === 'canceled') return;
         setVehicle(null);
@@ -103,10 +87,10 @@ export default function VehicleDetail() {
   const handleWhatsAppRedirect = (booking: any, vehicleName: string, shopPhone: string, customerName: string, waWindow: Window | null) => {
     // Use your real backend URL for the magic links
     const apiUrl = import.meta.env.VITE_API_BASE_URL || "https://gopanda.in/api/v1";
-    
+
     const confirmLink = `${apiUrl}/bookings/${booking.id}/magic-action?action=confirm&token=${booking.magic_token}`;
     const rejectLink = `${apiUrl}/bookings/${booking.id}/magic-action?action=reject&token=${booking.magic_token}`;
-    
+
     const fromDate = new Date(booking.start_time).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
     const toDate = new Date(booking.end_time).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
@@ -133,7 +117,7 @@ ${rejectLink}`;
     const encodedMessage = encodeURIComponent(message);
     const cleanPhone = shopPhone.replace(/[^\w\s]/gi, '').replace(/\s+/g, '');
     const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
-    
+
     if (waWindow) {
       waWindow.location.href = whatsappUrl;
     } else {
@@ -154,7 +138,7 @@ ${rejectLink}`;
       const response = await api.post("/bookings/", { bike_id: Number(id), start_time: startTime, end_time: endTime, utr_number: utrNumber });
       const newBooking = response.data;
       toast({ title: "Booking created!", description: "Check your bookings for status." });
-      
+
       if (shop?.phone_number) {
         handleWhatsAppRedirect(newBooking, vehicle.name, shop.phone_number, user.firstname || "Customer", waWindow);
       } else if (waWindow) {
@@ -264,13 +248,13 @@ ${rejectLink}`;
           <div className="space-y-3">
             <div className="rounded-2xl border border-border/50 bg-card/60 overflow-hidden aspect-[4/3] relative">
               {heroImage ? (
-                <img 
-                  src={heroImage} 
-                  alt={vehicle.name} 
-                  fetchPriority="high" 
+                <img
+                  src={heroImage}
+                  alt={vehicle.name}
+                  fetchPriority="high"
                   loading="eager"
                   decoding="sync"
-                  className="h-full w-full object-cover" 
+                  className="h-full w-full object-cover"
                 />
               ) : (
                 <div className="flex h-full items-center justify-center bg-gradient-to-br from-secondary to-background">
@@ -385,7 +369,7 @@ ${rejectLink}`;
                 {startTime && endTime && (
                   <div className="bg-secondary/30 border border-border/50 rounded-xl p-4 space-y-4 mt-2">
                     <div className="space-y-1">
-                      <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Shield className="h-3 w-3"/> Step 1: Pay Token Advance</Label>
+                      <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Shield className="h-3 w-3" /> Step 1: Pay Token Advance</Label>
                       <p className="text-[11px] text-muted-foreground">Secure your booking by paying a ₹{tokenAmount} token directly to the shop owner.</p>
                     </div>
                     <div className="flex items-center justify-between bg-background p-3 rounded-lg border border-border">
@@ -455,20 +439,6 @@ ${rejectLink}`;
             </div>
           )}
         </div>
-
-        {/* Related Vehicles Section */}
-        {relatedVehicles.length > 0 && (
-          <div className="mt-16 space-y-6">
-            <h2 className="font-display text-xl md:text-2xl font-bold capitalize">
-              More {vehicle.bike_type ? vehicle.bike_type + 's' : 'Vehicles'} in {shop?.city || 'Guwahati'}
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedVehicles.map((v) => (
-                <VehicleCard key={v.id} vehicle={v} />
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

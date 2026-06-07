@@ -22,6 +22,7 @@ export default function Index() {
   const [vehicleType, setVehicleType] = useState("");
   const [showStickySearch, setShowStickySearch] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
 
   const { data: shopsData, isLoading: isLoadingShops } = useShops({ limit: 6 });
@@ -65,7 +66,14 @@ export default function Index() {
       setShowStickySearch(scrollY > 500);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    // Defer below-the-fold rendering to prioritize the Hero paint (LCP)
+    const timer = setTimeout(() => setIsMounted(true), 10);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(timer);
+    };
   }, []);
 
   return (
@@ -242,327 +250,332 @@ export default function Index() {
         </div>
       </section>
 
-      {/* ─── HOW IT WORKS ─── */}
-      <section className="py-20 bg-white relative">
-        <div className="container px-4 mx-auto">
-          <div className="text-center mb-14 max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold font-display text-foreground mb-3">How it works</h2>
-            <p className="text-muted-foreground text-base">Four steps. No hidden fees.</p>
-          </div>
+      {/* ─── DEFERRED BELOW-THE-FOLD CONTENT ─── */}
+      {isMounted && (
+        <>
+          {/* ─── HOW IT WORKS ─── */}
+          <section className="py-20 bg-white relative">
+            <div className="container px-4 mx-auto">
+              <div className="text-center mb-14 max-w-2xl mx-auto">
+                <h2 className="text-3xl md:text-4xl font-bold font-display text-foreground mb-3">How it works</h2>
+                <p className="text-muted-foreground text-base">Four steps. No hidden fees.</p>
+              </div>
 
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            onScroll={(e) => {
-              const target = e.currentTarget;
-              const scrollRatio = target.scrollLeft / (target.scrollWidth - target.clientWidth || 1);
-              setActiveStep(Math.round(scrollRatio * 3));
-            }}
-            className="flex md:grid md:grid-cols-4 gap-4 md:gap-8 relative overflow-x-auto snap-x snap-mandatory pb-8 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          >
-            <div className="hidden md:block absolute top-12 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-border to-transparent z-0" />
-
-            {[
-              { icon: Search, title: "Find a ride", desc: "Browse local shops, see what's available right now." },
-              { icon: Zap, title: "Pay a small token", desc: "Lock your dates with ₹299 via UPI. Goes directly to the shop." },
-              { icon: MessageCircle, title: "Get confirmation", desc: "The shop owner gets a WhatsApp notification. You're all set." },
-              { icon: Wallet, title: "Pick up & pay rest", desc: "Head to the shop, pay the balance, and ride out." }
-            ].map((step, i) => (
               <motion.div
-                key={i}
-                variants={fadeInUp}
-                className="relative z-10 flex flex-col items-center text-center group shrink-0 w-[80vw] sm:w-[280px] md:w-auto snap-center bg-card md:bg-transparent p-6 md:p-0 rounded-3xl md:rounded-none border border-border md:border-transparent shadow-sm md:shadow-none"
+                variants={staggerContainer}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-80px" }}
+                onScroll={(e) => {
+                  const target = e.currentTarget;
+                  const scrollRatio = target.scrollLeft / (target.scrollWidth - target.clientWidth || 1);
+                  setActiveStep(Math.round(scrollRatio * 3));
+                }}
+                className="flex md:grid md:grid-cols-4 gap-4 md:gap-8 relative overflow-x-auto snap-x snap-mandatory pb-8 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
               >
-                {/* Icon Box */}
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white border border-border shadow-md md:shadow-lg shadow-foreground/4 flex items-center justify-center mb-4 md:mb-5 group-hover:-translate-y-2 group-hover:shadow-glow transition-all duration-300">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] flex items-center justify-center text-white">
-                    <step.icon className="h-5 w-5 md:h-6 md:w-6" />
-                  </div>
-                </div>
+                <div className="hidden md:block absolute top-12 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-border to-transparent z-0" />
 
-                {/* Text Content */}
-                <div className="text-[10px] md:text-xs font-bold text-primary/60 font-display mb-1 md:mb-1 uppercase tracking-wider">Step {i + 1}</div>
-                <h3 className="text-base md:text-lg font-bold text-foreground mb-1 md:mb-1.5">{step.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed max-w-[220px] mx-auto">{step.desc}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          {/* Mobile Swipe Indicator */}
-          <div className="flex md:hidden items-center justify-center gap-4 mt-2 mb-4 text-muted-foreground">
-            <div className="flex gap-1.5">
-              {[0, 1, 2, 3].map((idx) => (
-                <div
-                  key={idx}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${activeStep === idx ? "w-4 bg-primary" : "w-1.5 bg-border"
-                    }`}
-                />
-              ))}
-            </div>
-            <span className="text-[10px] font-display font-bold tracking-widest uppercase flex items-center gap-1 opacity-50 transition-opacity">
-              {activeStep === 3 ? "Ready!" : (
-                <>Swipe <ArrowRight className="w-3 h-3" /></>
-              )}
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── POPULAR VEHICLES ─── */}
-      {(popularBikes.length > 0 || isLoadingVehicles) && (
-        <section className="py-20 bg-white border-t border-border">
-          <div className="container px-4 space-y-8">
-            <div className="flex items-end justify-between gap-4 flex-wrap">
-              <div>
-                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Rides available right now</h2>
-                <p className="text-muted-foreground mt-1.5 text-sm">These are actually available today — not placeholder listings.</p>
-              </div>
-              <Button variant="outline" className="font-display gap-1 rounded-full text-foreground text-sm" onClick={() => navigate("/search-vehicles")}>
-                See all <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {isLoadingVehicles ? (
-                Array.from({ length: 4 }).map((_, i) => (
-                  <div key={`sk-vh-${i}`} className="flex flex-col space-y-3 rounded-2xl border border-border p-4">
-                    <Skeleton className="h-[180px] w-full rounded-xl bg-muted" />
-                    <Skeleton className="h-5 w-2/3 bg-muted mt-2" />
-                    <Skeleton className="h-4 w-1/2 bg-muted" />
-                    <div className="flex justify-between mt-4">
-                      <Skeleton className="h-8 w-1/3 bg-muted" />
-                      <Skeleton className="h-8 w-1/3 bg-muted" />
-                    </div>
-                  </div>
-                ))
-              ) : (
-                popularBikes.map((v, i) => (
-                  <motion.div key={v.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
-                    <VehicleCard vehicle={v} priority={i < 4} />
-                  </motion.div>
-                ))
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ─── SHOPS NEAR YOU ─── */}
-      {(featuredShops.length > 0 || isLoadingShops) && (
-        <section className="py-20 bg-secondary/40 border-t border-border">
-          <div className="container px-4 space-y-8">
-            <div className="flex items-center justify-between gap-6 flex-wrap">
-              <div className="space-y-1.5">
-                <p className="text-xs font-display uppercase tracking-[0.2em] text-muted-foreground">Local partners</p>
-                <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-                  Shops you can <span className="text-primary">actually trust</span>
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={() => navigate("/shops")}
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground hover:text-primary transition-colors"
-              >
-                All shops <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-              {isLoadingShops ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <div key={`sk-sh-${i}`} className="w-full flex flex-col rounded-2xl border border-border bg-white p-5 md:p-6 shadow-sm">
-                    <div className="flex items-center gap-4">
-                      <Skeleton className="h-14 w-14 rounded-2xl bg-muted shrink-0" />
-                      <div className="min-w-0 w-full space-y-2">
-                        <Skeleton className="h-5 w-3/4 bg-muted" />
-                        <Skeleton className="h-4 w-1/2 bg-muted" />
+                {[
+                  { icon: Search, title: "Find a ride", desc: "Browse local shops, see what's available right now." },
+                  { icon: Zap, title: "Pay a small token", desc: "Lock your dates with ₹299 via UPI. Goes directly to the shop." },
+                  { icon: MessageCircle, title: "Get confirmation", desc: "The shop owner gets a WhatsApp notification. You're all set." },
+                  { icon: Wallet, title: "Pick up & pay rest", desc: "Head to the shop, pay the balance, and ride out." }
+                ].map((step, i) => (
+                  <motion.div
+                    key={i}
+                    variants={fadeInUp}
+                    className="relative z-10 flex flex-col items-center text-center group shrink-0 w-[80vw] sm:w-[280px] md:w-auto snap-center bg-card md:bg-transparent p-6 md:p-0 rounded-3xl md:rounded-none border border-border md:border-transparent shadow-sm md:shadow-none"
+                  >
+                    {/* Icon Box */}
+                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white border border-border shadow-md md:shadow-lg shadow-foreground/4 flex items-center justify-center mb-4 md:mb-5 group-hover:-translate-y-2 group-hover:shadow-glow transition-all duration-300">
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] flex items-center justify-center text-white">
+                        <step.icon className="h-5 w-5 md:h-6 md:w-6" />
                       </div>
                     </div>
+
+                    {/* Text Content */}
+                    <div className="text-[10px] md:text-xs font-bold text-primary/60 font-display mb-1 md:mb-1 uppercase tracking-wider">Step {i + 1}</div>
+                    <h3 className="text-base md:text-lg font-bold text-foreground mb-1 md:mb-1.5">{step.title}</h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed max-w-[220px] mx-auto">{step.desc}</p>
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {/* Mobile Swipe Indicator */}
+              <div className="flex md:hidden items-center justify-center gap-4 mt-2 mb-4 text-muted-foreground">
+                <div className="flex gap-1.5">
+                  {[0, 1, 2, 3].map((idx) => (
+                    <div
+                      key={idx}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${activeStep === idx ? "w-4 bg-primary" : "w-1.5 bg-border"
+                        }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-[10px] font-display font-bold tracking-widest uppercase flex items-center gap-1 opacity-50 transition-opacity">
+                  {activeStep === 3 ? "Ready!" : (
+                    <>Swipe <ArrowRight className="w-3 h-3" /></>
+                  )}
+                </span>
+              </div>
+            </div>
+          </section>
+
+          {/* ─── POPULAR VEHICLES ─── */}
+          {(popularBikes.length > 0 || isLoadingVehicles) && (
+            <section className="py-20 bg-white border-t border-border">
+              <div className="container px-4 space-y-8">
+                <div className="flex items-end justify-between gap-4 flex-wrap">
+                  <div>
+                    <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Rides available right now</h2>
+                    <p className="text-muted-foreground mt-1.5 text-sm">These are actually available today — not placeholder listings.</p>
                   </div>
-                ))
-              ) : (
-                featuredShops.map((shop, i) => (
-                  <motion.div key={shop.id ?? i} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/shops/${shop.id}`)}
-                      className="w-full h-full flex flex-col text-left rounded-2xl border border-border bg-white p-5 md:p-6 shadow-sm hover:shadow-md hover:border-primary/20 transition-all"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="h-14 w-14 rounded-2xl bg-primary/8 text-primary flex items-center justify-center border border-primary/10 overflow-hidden shrink-0">
-                          {shop.image_url ? (
-                            <img src={shop.image_url} alt={shop.name ? `${shop.name} - Bike Rental in Guwahati` : "Bike Rental Shop in Guwahati"} className="h-full w-full object-cover" />
-                          ) : (
-                            <Store className="h-6 w-6" />
-                          )}
+                  <Button variant="outline" className="font-display gap-1 rounded-full text-foreground text-sm" onClick={() => navigate("/search-vehicles")}>
+                    See all <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {isLoadingVehicles ? (
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <div key={`sk-vh-${i}`} className="flex flex-col space-y-3 rounded-2xl border border-border p-4">
+                        <Skeleton className="h-[180px] w-full rounded-xl bg-muted" />
+                        <Skeleton className="h-5 w-2/3 bg-muted mt-2" />
+                        <Skeleton className="h-4 w-1/2 bg-muted" />
+                        <div className="flex justify-between mt-4">
+                          <Skeleton className="h-8 w-1/3 bg-muted" />
+                          <Skeleton className="h-8 w-1/3 bg-muted" />
                         </div>
-                        <div className="min-w-0">
-                          <h3 className="text-base md:text-lg font-bold text-foreground truncate">{shop.name || "Partner Shop"}</h3>
-                          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                            {(shop.city || shop.address || shop.state) && (
-                              <span className="inline-flex items-center gap-1">
-                                <MapPin className="h-3.5 w-3.5" />
-                                <span className="truncate">
-                                  {shop.city || shop.address}{shop.state ? `, ${shop.state}` : ""}
-                                </span>
-                              </span>
-                            )}
-                            {(shop.opening_time || shop.closing_time) && (
-                              <span className="inline-flex items-center gap-1">
-                                <Clock className="h-3.5 w-3.5" />
-                                {shop.opening_time || "?"} – {shop.closing_time || "?"}
-                              </span>
-                            )}
+                      </div>
+                    ))
+                  ) : (
+                    popularBikes.map((v, i) => (
+                      <motion.div key={v.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
+                        <VehicleCard vehicle={v} priority={i < 4} />
+                      </motion.div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ─── SHOPS NEAR YOU ─── */}
+          {(featuredShops.length > 0 || isLoadingShops) && (
+            <section className="py-20 bg-secondary/40 border-t border-border">
+              <div className="container px-4 space-y-8">
+                <div className="flex items-center justify-between gap-6 flex-wrap">
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-display uppercase tracking-[0.2em] text-muted-foreground">Local partners</p>
+                    <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+                      Shops you can <span className="text-primary">actually trust</span>
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/shops")}
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground hover:text-primary transition-colors"
+                  >
+                    All shops <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                  {isLoadingShops ? (
+                    Array.from({ length: 6 }).map((_, i) => (
+                      <div key={`sk-sh-${i}`} className="w-full flex flex-col rounded-2xl border border-border bg-white p-5 md:p-6 shadow-sm">
+                        <div className="flex items-center gap-4">
+                          <Skeleton className="h-14 w-14 rounded-2xl bg-muted shrink-0" />
+                          <div className="min-w-0 w-full space-y-2">
+                            <Skeleton className="h-5 w-3/4 bg-muted" />
+                            <Skeleton className="h-4 w-1/2 bg-muted" />
                           </div>
                         </div>
                       </div>
-                    </button>
-                  </motion.div>
-                ))
-              )}
+                    ))
+                  ) : (
+                    featuredShops.map((shop, i) => (
+                      <motion.div key={shop.id ?? i} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/shops/${shop.id}`)}
+                          className="w-full h-full flex flex-col text-left rounded-2xl border border-border bg-white p-5 md:p-6 shadow-sm hover:shadow-md hover:border-primary/20 transition-all"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="h-14 w-14 rounded-2xl bg-primary/8 text-primary flex items-center justify-center border border-primary/10 overflow-hidden shrink-0">
+                              {shop.image_url ? (
+                                <img src={shop.image_url} alt={shop.name ? `${shop.name} - Bike Rental in Guwahati` : "Bike Rental Shop in Guwahati"} className="h-full w-full object-cover" />
+                              ) : (
+                                <Store className="h-6 w-6" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="text-base md:text-lg font-bold text-foreground truncate">{shop.name || "Partner Shop"}</h3>
+                              <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                                {(shop.city || shop.address || shop.state) && (
+                                  <span className="inline-flex items-center gap-1">
+                                    <MapPin className="h-3.5 w-3.5" />
+                                    <span className="truncate">
+                                      {shop.city || shop.address}{shop.state ? `, ${shop.state}` : ""}
+                                    </span>
+                                  </span>
+                                )}
+                                {(shop.opening_time || shop.closing_time) && (
+                                  <span className="inline-flex items-center gap-1">
+                                    <Clock className="h-3.5 w-3.5" />
+                                    {shop.opening_time || "?"} – {shop.closing_time || "?"}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      </motion.div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ─── WHY GOPANDA ─── */}
+          <section className="py-20 bg-background">
+            <div className="container px-4 mx-auto">
+              <div className="max-w-2xl mb-12">
+                <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground mb-3">Fair deals, no middlemen</h2>
+                <p className="text-muted-foreground">We built GoPanda so you pay the best price and local shops keep what they earn.</p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-5 auto-rows-[220px]">
+                {/* Box 1 - wide */}
+                <motion.div whileHover={{ y: -5 }} className="md:col-span-2 card-elevated rounded-3xl p-7 overflow-hidden relative group">
+                  <div className="relative z-10 w-3/4">
+                    <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
+                      <ShieldCheck className="h-5 w-5" />
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground mb-2">If you book it, it's yours</h3>
+                    <p className="text-muted-foreground text-sm">Real-time inventory means no double bookings. Your ride is locked the moment you pay.</p>
+                  </div>
+                  <div className="absolute right-[-8%] bottom-[-15%] w-48 h-48 bg-gradient-to-br from-blue-50 to-transparent rounded-full opacity-60 group-hover:scale-110 transition-transform duration-500" />
+                </motion.div>
+
+                {/* Box 2 */}
+                <motion.div whileHover={{ y: -5 }} className="card-elevated rounded-3xl p-7 overflow-hidden relative group">
+                  <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
+                    <Star className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground mb-2">Real reviews only</h3>
+                  <p className="text-muted-foreground text-sm">Every review comes from someone who actually rented. No fake 5-stars.</p>
+                </motion.div>
+
+                {/* Box 3 */}
+                <motion.div whileHover={{ y: -5 }} className="card-elevated rounded-3xl p-7 overflow-hidden relative group">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
+                    <MessageCircle className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground mb-2">Talk to the owner</h3>
+                  <p className="text-muted-foreground text-sm">Direct WhatsApp connection with the shop. No call centres, no bots.</p>
+                </motion.div>
+
+                {/* Box 4 - wide, dark */}
+                <motion.div whileHover={{ y: -5 }} className="md:col-span-2 bg-foreground rounded-3xl p-7 shadow-xl overflow-hidden relative group border border-white/10">
+                  <div className="relative z-10 w-3/4">
+                    <div className="w-10 h-10 rounded-lg bg-white/10 text-white flex items-center justify-center mb-4">
+                      <Wallet className="h-5 w-5" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2 text-white">We take 0% commission</h3>
+                    <p className="text-white/60 text-sm">Every rupee goes to the shop owner. No platform markups, no "convenience fees". You get the real price.</p>
+                  </div>
+                </motion.div>
+              </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
 
-      {/* ─── WHY GOPANDA ─── */}
-      <section className="py-20 bg-background">
-        <div className="container px-4 mx-auto">
-          <div className="max-w-2xl mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold font-display text-foreground mb-3">Fair deals, no middlemen</h2>
-            <p className="text-muted-foreground">We built GoPanda so you pay the best price and local shops keep what they earn.</p>
-          </div>
+          {/* ─── PARTNER CTA ─── */}
+          <section className="py-20 bg-white">
+            <div className="container mx-auto px-4">
+              <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] rounded-[2rem] p-8 md:p-14 relative overflow-hidden text-center md:text-left shadow-glow">
+                <div className="absolute top-[-15%] right-[-8%] w-72 h-72 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-[-15%] left-[-8%] w-72 h-72 bg-black/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="grid md:grid-cols-3 gap-5 auto-rows-[220px]">
-            {/* Box 1 - wide */}
-            <motion.div whileHover={{ y: -5 }} className="md:col-span-2 card-elevated rounded-3xl p-7 overflow-hidden relative group">
-              <div className="relative z-10 w-3/4">
-                <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
-                  <ShieldCheck className="h-5 w-5" />
-                </div>
-                <h3 className="text-xl font-bold text-foreground mb-2">If you book it, it's yours</h3>
-                <p className="text-muted-foreground text-sm">Real-time inventory means no double bookings. Your ride is locked the moment you pay.</p>
-              </div>
-              <div className="absolute right-[-8%] bottom-[-15%] w-48 h-48 bg-gradient-to-br from-blue-50 to-transparent rounded-full opacity-60 group-hover:scale-110 transition-transform duration-500" />
-            </motion.div>
+                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                  <div className="max-w-xl">
+                    <h2 className="text-2xl md:text-4xl font-bold font-display text-white mb-4 leading-tight">
+                      Run a rental shop? We'll send you customers.
+                    </h2>
+                    <p className="text-primary-foreground/80 text-base md:text-lg mb-6">
+                      Get bookings on WhatsApp, receive UPI payments, manage your fleet — all for free. No commissions, ever.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button size="lg" variant="secondary" className="rounded-xl px-6 py-5 text-base font-bold bg-white text-[hsl(var(--primary))] hover:bg-white/90 hover:shadow-lg transition-all hover:-translate-y-1" onClick={() => navigate("/register")}>
+                        List your shop — it's free
+                      </Button>
+                      <Button size="lg" variant="outline" className="rounded-xl px-6 py-5 text-base font-bold text-black border-white/30 hover:bg-white/10 transition-colors" onClick={() => navigate("/login")}>
+                        Partner login
+                      </Button>
+                    </div>
+                  </div>
 
-            {/* Box 2 */}
-            <motion.div whileHover={{ y: -5 }} className="card-elevated rounded-3xl p-7 overflow-hidden relative group">
-              <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
-                <Star className="h-5 w-5" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground mb-2">Real reviews only</h3>
-              <p className="text-muted-foreground text-sm">Every review comes from someone who actually rented. No fake 5-stars.</p>
-            </motion.div>
-
-            {/* Box 3 */}
-            <motion.div whileHover={{ y: -5 }} className="card-elevated rounded-3xl p-7 overflow-hidden relative group">
-              <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
-                <MessageCircle className="h-5 w-5" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground mb-2">Talk to the owner</h3>
-              <p className="text-muted-foreground text-sm">Direct WhatsApp connection with the shop. No call centres, no bots.</p>
-            </motion.div>
-
-            {/* Box 4 - wide, dark */}
-            <motion.div whileHover={{ y: -5 }} className="md:col-span-2 bg-foreground rounded-3xl p-7 shadow-xl overflow-hidden relative group border border-white/10">
-              <div className="relative z-10 w-3/4">
-                <div className="w-10 h-10 rounded-lg bg-white/10 text-white flex items-center justify-center mb-4">
-                  <Wallet className="h-5 w-5" />
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-white">We take 0% commission</h3>
-                <p className="text-white/60 text-sm">Every rupee goes to the shop owner. No platform markups, no "convenience fees". You get the real price.</p>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── PARTNER CTA ─── */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="bg-gradient-to-br from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] rounded-[2rem] p-8 md:p-14 relative overflow-hidden text-center md:text-left shadow-glow">
-            <div className="absolute top-[-15%] right-[-8%] w-72 h-72 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-[-15%] left-[-8%] w-72 h-72 bg-black/10 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-              <div className="max-w-xl">
-                <h2 className="text-2xl md:text-4xl font-bold font-display text-white mb-4 leading-tight">
-                  Run a rental shop? We'll send you customers.
-                </h2>
-                <p className="text-primary-foreground/80 text-base md:text-lg mb-6">
-                  Get bookings on WhatsApp, receive UPI payments, manage your fleet — all for free. No commissions, ever.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button size="lg" variant="secondary" className="rounded-xl px-6 py-5 text-base font-bold bg-white text-[hsl(var(--primary))] hover:bg-white/90 hover:shadow-lg transition-all hover:-translate-y-1" onClick={() => navigate("/register")}>
-                    List your shop — it's free
-                  </Button>
-                  <Button size="lg" variant="outline" className="rounded-xl px-6 py-5 text-base font-bold text-black border-white/30 hover:bg-white/10 transition-colors" onClick={() => navigate("/login")}>
-                    Partner login
-                  </Button>
-                </div>
-              </div>
-
-              <div className="hidden lg:flex items-center justify-center w-48 h-48">
-                <div className="relative w-full h-full">
-                  <div className="absolute inset-0 border-2 border-white/15 rounded-full border-dashed animate-[spin_25s_linear_infinite]" />
-                  <div className="absolute inset-4 bg-white/8 rounded-full flex items-center justify-center">
-                    <Store className="w-16 h-16 text-white/80" />
+                  <div className="hidden lg:flex items-center justify-center w-48 h-48">
+                    <div className="relative w-full h-full">
+                      <div className="absolute inset-0 border-2 border-white/15 rounded-full border-dashed animate-[spin_25s_linear_infinite]" />
+                      <div className="absolute inset-4 bg-white/8 rounded-full flex items-center justify-center">
+                        <Store className="w-16 h-16 text-white/80" />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      {/* ─── FOOTER ─── */}
-      <footer className="bg-white border-t border-border pt-14 pb-8 text-sm">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
-            <div className="col-span-2 md:col-span-1 space-y-3">
-              <div className="font-display font-bold text-xl text-foreground tracking-tight flex items-center gap-1.5">
-                <span className="text-primary">Go</span>Panda
+          {/* ─── FOOTER ─── */}
+          <footer className="bg-white border-t border-border pt-14 pb-8 text-sm">
+            <div className="container mx-auto px-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+                <div className="col-span-2 md:col-span-1 space-y-3">
+                  <div className="font-display font-bold text-xl text-foreground tracking-tight flex items-center gap-1.5">
+                    <span className="text-primary">Go</span>Panda
+                  </div>
+                  <p className="text-muted-foreground pr-4 text-sm leading-relaxed">
+                    We connect you with <strong>local rental shops</strong> in Guwahati. Find a ride, book it, go.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="font-bold text-foreground">Popular Destinations</h4>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li><a href="/rent/car/in/guwahati" className="hover:text-primary transition-colors">Car rental in Guwahati</a></li>
+                    <li><a href="/rent/bike/in/guwahati" className="hover:text-primary transition-colors">Bike rental in Guwahati</a></li>
+                    <li><a href="/rent/car/in/jorhat" className="hover:text-primary transition-colors">Car rental in Jorhat</a></li>
+                    <li><a href="/rent/scooty/in/dibrugarh" className="hover:text-primary transition-colors">Scooty rental in Dibrugarh</a></li>
+                    <li><a href="/search/cheap-car-rental-guwahati" className="hover:text-primary transition-colors">Cheap Car Rental Guwahati</a></li>
+                  </ul>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="font-bold text-foreground">Partners</h4>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li><button onClick={() => navigate("/register")} className="hover:text-primary transition-colors">Register Shop</button></li>
+                    <li><button onClick={() => navigate("/login")} className="hover:text-primary transition-colors">Shop Login</button></li>
+                  </ul>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="font-bold text-foreground">Legal</h4>
+                  <ul className="space-y-2 text-muted-foreground">
+                    <li><a href="#" className="hover:text-primary transition-colors">Terms of Service</a></li>
+                    <li><a href="#" className="hover:text-primary transition-colors">Privacy Policy</a></li>
+                  </ul>
+                </div>
               </div>
-              <p className="text-muted-foreground pr-4 text-sm leading-relaxed">
-                We connect you with <strong>local rental shops</strong> in Guwahati. Find a ride, book it, go.
-              </p>
-            </div>
 
-            <div className="space-y-3">
-              <h4 className="font-bold text-foreground">Popular Destinations</h4>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><a href="/rent/car/in/guwahati" className="hover:text-primary transition-colors">Car rental in Guwahati</a></li>
-                <li><a href="/rent/bike/in/guwahati" className="hover:text-primary transition-colors">Bike rental in Guwahati</a></li>
-                <li><a href="/rent/car/in/jorhat" className="hover:text-primary transition-colors">Car rental in Jorhat</a></li>
-                <li><a href="/rent/scooty/in/dibrugarh" className="hover:text-primary transition-colors">Scooty rental in Dibrugarh</a></li>
-                <li><a href="/search/cheap-car-rental-guwahati" className="hover:text-primary transition-colors">Cheap Car Rental Guwahati</a></li>
-              </ul>
+              <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between text-muted-foreground">
+                <p>© {new Date().getFullYear()} GoPanda. All rights reserved.</p>
+                <p className="mt-2 md:mt-0">Made with ❤️ in Assam for local businesses.</p>
+              </div>
             </div>
-
-            <div className="space-y-3">
-              <h4 className="font-bold text-foreground">Partners</h4>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><button onClick={() => navigate("/register")} className="hover:text-primary transition-colors">Register Shop</button></li>
-                <li><button onClick={() => navigate("/login")} className="hover:text-primary transition-colors">Shop Login</button></li>
-              </ul>
-            </div>
-
-            <div className="space-y-3">
-              <h4 className="font-bold text-foreground">Legal</h4>
-              <ul className="space-y-2 text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Privacy Policy</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between text-muted-foreground">
-            <p>© {new Date().getFullYear()} GoPanda. All rights reserved.</p>
-            <p className="mt-2 md:mt-0">Made with ❤️ in Assam for local businesses.</p>
-          </div>
-        </div>
-      </footer>
+          </footer>
+        </>
+      )}
     </main>
   );
 }
