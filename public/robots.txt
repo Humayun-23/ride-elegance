@@ -1,6 +1,7 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Allow: /
+Allow: /api/
 Disallow: /owner/
 Disallow: /users/
 Disallow: /profile/
