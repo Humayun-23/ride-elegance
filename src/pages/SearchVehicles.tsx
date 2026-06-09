@@ -72,8 +72,8 @@ export default function SearchVehicles() {
 
   return (
     <div className="min-h-screen pt-24 pb-16">
-      <SEO 
-        title="Search Bike and Car Rentals Near You | GoPanda" 
+      <SEO
+        title="Search Bike and Car Rentals Near You | GoPanda"
         description="Find the best bike rentals near you. Search our wide range of scooties, bikes, and cars for rent near you."
         keywords="bike rental near me, car rental guwahati, scooty rental, search vehicles"
         canonical="https://www.gopanda.in/search-vehicles"
@@ -112,11 +112,10 @@ export default function SearchVehicles() {
               <button
                 key={t.value}
                 onClick={() => handleTypeChange(t.value)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-display transition-all ${
-                  activeType === t.value
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-display transition-all ${activeType === t.value
                     ? "bg-primary text-primary-foreground glow"
                     : "bg-card/60 text-muted-foreground hover:text-foreground hover:bg-card border border-border"
-                }`}
+                  }`}
               >
                 <span>{t.icon}</span>
                 {t.label}
