@@ -14,8 +14,8 @@ interface SEOProps {
 }
 
 export function SEO({
-  title = 'GoPanda — Best Vehicle Rental Platform Near You',
-  description = 'Looking for the best self-drive car, bike, or scooty rentals near you? GoPanda offers premium rides from local shops. Book your ideal ride today and explore the city with ease!',
+  title = 'Self Drive Car & Bike Rental in Guwahati | GoPanda',
+  description = 'Looking for a reliable self drive car rental in Guwahati? GoPanda is a top-rated car rental service in Guwahati, also offering premium bike rental in Guwahati. Book your ride from verified local shops today.',
   keywords = 'car rental in guwahati, bike rental in guwahati, self drive car rental in guwahati, car rental service in guwahati',
   canonical,
   type = 'website',

@@ -25,8 +25,8 @@ async function prerender() {
 
     console.log(`⏳ Generating SEO tags for ${route}...`);
 
-    let title = 'GoPanda — Best Vehicle Rental Platform Near You';
-    let description = 'Looking for the best self-drive car, bike, or scooty rentals in Guwahati? GoPanda offers premium rides from local shops. Book your ideal ride today and explore the city with ease!';
+    let title = 'Self Drive Car & Bike Rental in Guwahati | GoPanda';
+    let description = 'Looking for a reliable self drive car rental in Guwahati? GoPanda is a top-rated car rental service in Guwahati, also offering premium bike rental in Guwahati. Book your ride from verified local shops today.';
     let canonicalUrl = `${BASE_URL}${route}`;
 
     const rentMatch = route.match(/\/rent\/([^\/]+)\/in\/([^\/\?]+)/);
@@ -38,13 +38,13 @@ async function prerender() {
       // Inject variations naturally based on vehicle type
       if (rawVType === 'car') {
         title = `Self Drive Car Rental in ${city} — Best Car Rentals | GoPanda`;
-        description = `Looking for the best car rental in ${city}? Find affordable self drive car rentals in ${city} from verified local shops. Pay a small token, pick up your ride.`;
+        description = `Looking for a self drive car rental in ${city}? GoPanda is the premier car rental service in ${city}. Find affordable cars from verified local shops and book your ride today.`;
       } else if (rawVType === 'scooty') {
         title = `Scooty Rental in ${city} — Rent a Scooty Near You | GoPanda`;
-        description = `Looking for a scooty rental in ${city}? Find the best and most affordable scooty rentals in ${city} from verified local shops. Easy booking, no hidden fees.`;
+        description = `Looking for a scooty rental near you in ${city}? Find the most affordable scooty rentals in ${city} from verified local shops. Easy booking, no hidden fees.`;
       } else if (rawVType === 'bike') {
         title = `Bike Rental in ${city} — Rent a Bike Near You | GoPanda`;
-        description = `Looking for a bike rental in ${city}? Find the best bike rentals in ${city} from verified local shops. Pay a small token, pick up your ride.`;
+        description = `Looking for a premium bike rental in ${city}? Find the best bike rentals in ${city} from verified local shops. Pay a small token and pick up your ideal two-wheeler today.`;
       } else {
         title = `Rent ${vType} in ${city} — from local shops | GoPanda`;
         description = `Find ${vType.toLowerCase()} rentals in ${city} from verified local shops. Pay a small token, pick up your ride. No middlemen, no hidden fees.`;
