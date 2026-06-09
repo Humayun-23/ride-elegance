@@ -9,6 +9,7 @@ import { useShops } from "@/hooks/useShops";
 import { useSearchVehicles } from "@/hooks/useVehicles";
 import { SEO } from "@/components/SEO";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const VEHICLE_TYPES = [
   { label: "Scooty", icon: "🛵", value: "scooty", desc: "Quick city rides" },
@@ -143,11 +144,14 @@ export default function Index() {
                 ₹0 booking fee
               </div>
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight font-display leading-[1.12]">
+              <h1 className="sr-only">
+                Self Drive Car Rental in Guwahati | Rent Bikes & Cars
+              </h1>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight font-display leading-[1.12]">
                 Rent a vehicle{" "}
                 <span className="text-highlight">from local shops</span>{" "}
                 Near You
-              </h1>
+              </h2>
 
               <p className="text-lg text-muted-foreground max-w-xl leading-relaxed mx-auto lg:mx-0">
                 Pick a ride from verified local shops. Lock it with a small token (min ₹299), pay the rest at pick up. No middlemen, no surprises.
@@ -524,6 +528,42 @@ export default function Index() {
                   </div>
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* ─── FAQ SECTION ─── */}
+          <section className="py-20 bg-secondary/40 border-t border-border">
+            <div className="container px-4 mx-auto max-w-4xl">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold font-display text-foreground mb-3">Frequently Asked Questions</h2>
+                <p className="text-muted-foreground">Everything you need to know about renting a vehicle with GoPanda.</p>
+              </div>
+              <Accordion type="single" collapsible className="w-full bg-white rounded-2xl p-6 shadow-sm border border-border">
+                <AccordionItem value="item-1">
+                  <AccordionTrigger className="text-left font-bold text-lg hover:text-primary">What documents are required for a self drive car rental in guwahati?</AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground leading-relaxed text-base">
+                    You will need a valid Driving License (DL) for the respective vehicle category (two-wheeler or four-wheeler), and an original ID proof (Aadhar Card, Voter ID, or Passport). The shop may keep the original ID as security during the rental period.
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-2">
+                  <AccordionTrigger className="text-left font-bold text-lg hover:text-primary">Is there a security deposit for bike rental in guwahati?</AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground leading-relaxed text-base">
+                    No, there is no platform security deposit. GoPanda ensures you only pay the rental amount. However, you need to pay a small token amount (minimum ₹299) to lock your booking, and the remaining balance is paid directly to the shop during pickup.
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-3">
+                  <AccordionTrigger className="text-left font-bold text-lg hover:text-primary">Are the cars provided by the car rental service in guwahati insured?</AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground leading-relaxed text-base">
+                    All vehicles provided by our verified local partners come with standard third-party insurance. However, any physical damage caused to the vehicle during your rental period will be your responsibility as per the shop's terms and conditions.
+                  </AccordionContent>
+                </AccordionItem>
+                <AccordionItem value="item-4">
+                  <AccordionTrigger className="text-left font-bold text-lg hover:text-primary">Can I take a scooty rental near me for outstation trips?</AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground leading-relaxed text-base">
+                    Yes! Many of our partners allow inter-state travel (e.g., from Assam to Meghalaya). Please make sure to check the specific shop's terms or communicate with them via WhatsApp after booking to ensure the vehicle has the necessary permits.
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </div>
           </section>
 

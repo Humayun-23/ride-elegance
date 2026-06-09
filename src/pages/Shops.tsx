@@ -38,9 +38,12 @@ export default function Shops() {
         <div className="space-y-6">
           <div>
             <p className="text-xs font-display uppercase tracking-[0.3em] text-muted-foreground mb-2">Browse</p>
-            <h1 className="font-display text-3xl md:text-5xl font-bold">
-              Rental <span className="text-primary">Shops</span>
+            <h1 className="sr-only">
+              Verified Bike and Car Rental Shops in Guwahati
             </h1>
+            <h2 className="font-display text-3xl md:text-5xl font-bold">
+              Rental <span className="text-primary">Shops</span>
+            </h2>
             <p className="text-muted-foreground mt-2 max-w-lg">
               Real shops run by real people. Pick one near you, see what they have, and book a ride.
             </p>

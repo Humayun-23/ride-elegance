@@ -108,6 +108,7 @@ export default function DynamicLanding() {
         canonical={canonicalUrl}
         url={canonicalUrl}
         schema={schema}
+        noindex={!isLoading && vehicles.length === 0}
       />
       
       <div className="container px-4 space-y-10">
@@ -156,6 +157,17 @@ export default function DynamicLanding() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* ─── ON-PAGE TEXT DEPTH FOR SEO ─── */}
+        <div className="mt-20 max-w-4xl mx-auto prose prose-slate">
+          <h2 className="font-display text-2xl font-bold mb-4">About {displayVehicle} Rentals in {displayCity}</h2>
+          <p className="text-muted-foreground leading-relaxed mb-4">
+            Exploring {displayCity} is best done at your own pace. With GoPanda, finding a reliable and affordable {formattedVehicle} rental is seamless. We partner strictly with verified local shops, ensuring you get transparent pricing, well-maintained vehicles, and a hassle-free pickup process.
+          </p>
+          <p className="text-muted-foreground leading-relaxed">
+            Whether you need a ride for daily commutes, a weekend getaway, or a long road trip, our real-time inventory guarantees that the vehicle you book is the vehicle you get. Pay a small booking token to lock your dates, and settle the rest directly with the shop owner. Support local businesses while enjoying the freedom of the open road.
+          </p>
         </div>
       </div>
     </main>

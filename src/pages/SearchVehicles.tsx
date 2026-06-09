@@ -77,14 +77,18 @@ export default function SearchVehicles() {
         description="Find the best bike rentals near you. Search our wide range of scooties, bikes, and cars for rent near you."
         keywords="bike rental near me, car rental guwahati, scooty rental, search vehicles"
         canonical="https://www.gopanda.in/search-vehicles"
+        noindex={!loading && vehicles.length === 0}
       />
       <div className="container px-4 space-y-8">
         <div className="space-y-6">
           <div>
             <p className="text-xs font-display uppercase tracking-[0.3em] text-muted-foreground mb-2">Explore</p>
-            <h1 className="font-display text-3xl md:text-5xl font-bold">
-              Find Your <span className="text-gradient">Ride</span>
+            <h1 className="sr-only">
+              Search Bike and Car Rentals Near You
             </h1>
+            <h2 className="font-display text-3xl md:text-5xl font-bold">
+              Find Your <span className="text-gradient">Ride</span>
+            </h2>
           </div>
 
           <div className="flex gap-2 max-w-2xl">
