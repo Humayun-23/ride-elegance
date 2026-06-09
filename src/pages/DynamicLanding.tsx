@@ -82,19 +82,23 @@ export default function DynamicLanding() {
     description: `Find ${formattedVehicle} rentals in ${formattedCity} from verified local shops.`,
     url: typeof window !== 'undefined' ? window.location.href : 'https://www.gopanda.in',
     mainEntity: {
-      '@type': 'OfferCatalog',
+      '@type': 'ItemList',
       name: `${displayVehicle} Rentals`,
       itemListElement: vehicles.map((v, index) => ({
-        '@type': 'Offer',
-        itemOffered: {
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
           '@type': 'Product',
-          name: `${v.year || ''} ${v.make} ${v.model}`.trim(),
-          image: (v.images && v.images.length > 0) ? v.images[0] : 'https://www.gopanda.in/og-image.png'
-        },
-        price: v.price_per_day,
-        priceCurrency: 'INR',
-        url: typeof window !== 'undefined' ? `${window.location.origin}/bikes/${v.id}` : `https://www.gopanda.in/bikes/${v.id}`,
-        position: index + 1
+          name: `${v.name} ${v.model || ''}`.trim(),
+          image: v.image_url ? `https://api.gopanda.in${v.image_url}` : 'https://www.gopanda.in/og-image.png',
+          offers: {
+            '@type': 'Offer',
+            price: v.price_per_day || 0,
+            priceCurrency: 'INR',
+            availability: v.is_available !== false ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            url: typeof window !== 'undefined' ? `${window.location.origin}/bikes/${v.id}` : `https://www.gopanda.in/bikes/${v.id}`
+          }
+        }
       }))
     }
   });
