@@ -113,7 +113,7 @@ export default function DynamicLanding() {
       <SEO 
         title={`Rent ${displayVehicle} in ${displayCity} — from local shops | GoPanda`}
         description={`Find ${formattedVehicle} rentals in ${formattedCity} from verified local shops. Pay a small token, pick up your ride. No middlemen, no hidden fees.`}
-        keywords={`${formattedVehicle} rental in ${formattedCity}, ${formattedCity} ${formattedVehicle} rental, self drive ${formattedVehicle} rental in ${formattedCity}, rent ${formattedVehicle} in ${formattedCity}, ${formattedVehicle} rental near me`}
+        keywords={`${formattedVehicle} rental in ${formattedCity}, ${formattedCity} ${formattedVehicle} rental, ${formattedCity} ${formattedVehicle} rent, self drive ${formattedVehicle} rental in ${formattedCity}, rent ${formattedVehicle} in ${formattedCity}, ${formattedVehicle} rental near me`}
         canonical={canonicalUrl}
         url={canonicalUrl}
         schema={schema}
