@@ -183,6 +183,25 @@ export default function SearchVehicles() {
             )}
           </>
         )}
+        {/* ─── BROWSE BY LOCATION (SEO CROSS-LINKS) ─── */}
+        <div className="mt-16 pt-10 border-t border-border">
+          <h3 className="font-display text-lg font-bold text-foreground mb-4">Browse by location</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {['guwahati', 'jorhat', 'dibrugarh', 'tezpur', 'silchar', 'shillong'].map(city => (
+              <div key={city} className="space-y-1.5">
+                <h4 className="text-sm font-semibold text-foreground capitalize">{city}</h4>
+                <ul className="space-y-1 text-xs text-muted-foreground">
+                  <li><a href={`/rent/car/in/${city}`} className="hover:text-primary transition-colors">Car rental</a></li>
+                  <li><a href={`/rent/bike/in/${city}`} className="hover:text-primary transition-colors">Bike rental</a></li>
+                  <li><a href={`/rent/scooty/in/${city}`} className="hover:text-primary transition-colors">Scooty rental</a></li>
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4">
+            <a href="/shops" className="text-sm text-primary hover:underline font-medium">Browse all rental shops →</a>
+          </div>
+        </div>
       </div>
     </div>
   );

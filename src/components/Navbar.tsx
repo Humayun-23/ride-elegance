@@ -45,11 +45,23 @@ export default function Navbar() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-40">
-              <DropdownMenuItem onClick={() => navigate("/rent/car/in/guwahati")}>
-                Guwahati
+              <DropdownMenuItem asChild>
+                <a href="/rent/car/in/guwahati">Guwahati</a>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate("/rent/car/in/jorhat")}>
-                Jorhat
+              <DropdownMenuItem asChild>
+                <a href="/rent/car/in/jorhat">Jorhat</a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a href="/rent/car/in/dibrugarh">Dibrugarh</a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a href="/rent/car/in/tezpur">Tezpur</a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a href="/rent/car/in/silchar">Silchar</a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a href="/rent/car/in/shillong">Shillong</a>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -127,6 +139,10 @@ export default function Navbar() {
                  <span className="block px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Locations</span>
                  <Link to="/rent/car/in/guwahati" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>Guwahati</Link>
                  <Link to="/rent/car/in/jorhat" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>Jorhat</Link>
+                 <Link to="/rent/car/in/dibrugarh" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>Dibrugarh</Link>
+                 <Link to="/rent/car/in/tezpur" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>Tezpur</Link>
+                 <Link to="/rent/car/in/silchar" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>Silchar</Link>
+                 <Link to="/rent/car/in/shillong" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>Shillong</Link>
               </div>
               {user ? (
                 <>

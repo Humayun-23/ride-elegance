@@ -374,13 +374,12 @@ export default function Index() {
                       Shops you can <span className="text-primary">actually trust</span>
                     </h2>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/shops")}
+                  <a
+                    href="/shops"
                     className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground hover:text-primary transition-colors"
                   >
                     All shops <ChevronRight className="h-4 w-4" />
-                  </button>
+                  </a>
                 </div>
                 <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                   {isLoadingShops ? (
@@ -398,9 +397,8 @@ export default function Index() {
                   ) : (
                     featuredShops.map((shop, i) => (
                       <motion.div key={shop.id ?? i} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
-                        <button
-                          type="button"
-                          onClick={() => navigate(`/shops/${shop.id}`)}
+                        <a
+                          href={`/shops/${shop.id}`}
                           className="w-full h-full flex flex-col text-left rounded-2xl border border-border bg-white p-5 md:p-6 shadow-sm hover:shadow-md hover:border-primary/20 transition-all"
                         >
                           <div className="flex items-center gap-4">
@@ -431,7 +429,7 @@ export default function Index() {
                               </div>
                             </div>
                           </div>
-                        </button>
+                        </a>
                       </motion.div>
                     ))
                   )}
@@ -509,12 +507,12 @@ export default function Index() {
                       Get bookings on WhatsApp, receive UPI payments, manage your fleet — all for free. No commissions, ever.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3">
-                      <Button size="lg" variant="secondary" className="rounded-xl px-6 py-5 text-base font-bold bg-white text-[hsl(var(--primary))] hover:bg-white/90 hover:shadow-lg transition-all hover:-translate-y-1" onClick={() => navigate("/register")}>
+                      <a href="/register" className="inline-flex items-center justify-center rounded-xl px-6 py-5 text-base font-bold bg-white text-[hsl(var(--primary))] hover:bg-white/90 hover:shadow-lg transition-all hover:-translate-y-1">
                         List your shop — it's free
-                      </Button>
-                      <Button size="lg" variant="outline" className="rounded-xl px-6 py-5 text-base font-bold text-black border-white/30 hover:bg-white/10 transition-colors" onClick={() => navigate("/login")}>
+                      </a>
+                      <a href="/login" className="inline-flex items-center justify-center rounded-xl px-6 py-5 text-base font-bold text-black border border-white/30 hover:bg-white/10 transition-colors">
                         Partner login
-                      </Button>
+                      </a>
                     </div>
                   </div>
 
@@ -567,53 +565,7 @@ export default function Index() {
             </div>
           </section>
 
-          {/* ─── FOOTER ─── */}
-          <footer className="bg-white border-t border-border pt-14 pb-8 text-sm">
-            <div className="container mx-auto px-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
-                <div className="col-span-2 md:col-span-1 space-y-3">
-                  <div className="font-display font-bold text-xl text-foreground tracking-tight flex items-center gap-1.5">
-                    <span className="text-primary">Go</span>Panda
-                  </div>
-                  <p className="text-muted-foreground pr-4 text-sm leading-relaxed">
-                    We connect you with <strong>local rental shops</strong> in Guwahati. Find a ride, book it, go.
-                  </p>
-                </div>
-
-                <div className="space-y-3">
-                  <h4 className="font-bold text-foreground">Popular Destinations</h4>
-                  <ul className="space-y-2 text-muted-foreground">
-                    <li><a href="/rent/car/in/guwahati" className="hover:text-primary transition-colors">Car rental in Guwahati</a></li>
-                    <li><a href="/rent/bike/in/guwahati" className="hover:text-primary transition-colors">Bike rental in Guwahati</a></li>
-                    <li><a href="/rent/car/in/jorhat" className="hover:text-primary transition-colors">Car rental in Jorhat</a></li>
-                    <li><a href="/rent/scooty/in/dibrugarh" className="hover:text-primary transition-colors">Scooty rental in Dibrugarh</a></li>
-                    <li><a href="/search/cheap-car-rental-guwahati" className="hover:text-primary transition-colors">Cheap Car Rental Guwahati</a></li>
-                  </ul>
-                </div>
-
-                <div className="space-y-3">
-                  <h4 className="font-bold text-foreground">Partners</h4>
-                  <ul className="space-y-2 text-muted-foreground">
-                    <li><button onClick={() => navigate("/register")} className="hover:text-primary transition-colors">Register Shop</button></li>
-                    <li><button onClick={() => navigate("/login")} className="hover:text-primary transition-colors">Shop Login</button></li>
-                  </ul>
-                </div>
-
-                <div className="space-y-3">
-                  <h4 className="font-bold text-foreground">Legal</h4>
-                  <ul className="space-y-2 text-muted-foreground">
-                    <li><a href="#" className="hover:text-primary transition-colors">Terms of Service</a></li>
-                    <li><a href="#" className="hover:text-primary transition-colors">Privacy Policy</a></li>
-                  </ul>
-                </div>
-              </div>
-
-              <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between text-muted-foreground">
-                <p>© {new Date().getFullYear()} GoPanda. All rights reserved.</p>
-                <p className="mt-2 md:mt-0">Made with ❤️ in Assam for local businesses.</p>
-              </div>
-            </div>
-          </footer>
+          {/* Footer is now rendered globally in App.tsx */}
         </>
       )}
     </main>

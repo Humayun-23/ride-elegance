@@ -178,6 +178,55 @@ export default function DynamicLanding() {
             Whether you need a ride for daily commutes, a weekend getaway, or a long road trip, our real-time inventory guarantees that the vehicle you book is the vehicle you get. Pay a small booking token to lock your dates, and settle the rest directly with the shop owner. Support local businesses while enjoying the freedom of the open road.
           </p>
         </div>
+
+        {/* ─── CROSS-LINKS FOR SEO ─── */}
+        <div className="mt-16 max-w-4xl mx-auto">
+          {/* Other vehicle types in the same city */}
+          {parsedCity !== 'your area' && (
+            <div className="mb-8">
+              <h3 className="font-display text-lg font-bold text-foreground mb-3">
+                Also available in {displayCity}
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {['car', 'bike', 'scooty'].filter(t => t !== apiType).map(t => (
+                  <a
+                    key={t}
+                    href={`/rent/${t}/in/${parsedCity.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="px-4 py-2 rounded-xl bg-card border border-border text-sm font-medium text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors"
+                  >
+                    {t === 'car' ? '🚗' : t === 'bike' ? '🏍️' : '🛵'} {t.charAt(0).toUpperCase() + t.slice(1)} rental in {displayCity}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Same vehicle type in other cities */}
+          <div className="mb-8">
+            <h3 className="font-display text-lg font-bold text-foreground mb-3">
+              {displayVehicle} rentals in other cities
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {['guwahati', 'jorhat', 'dibrugarh', 'tezpur', 'silchar', 'shillong']
+                .filter(c => c !== parsedCity.toLowerCase())
+                .map(c => (
+                  <a
+                    key={c}
+                    href={`/rent/${apiType === 'all' ? 'car' : apiType}/in/${c}`}
+                    className="px-4 py-2 rounded-xl bg-card border border-border text-sm font-medium text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors"
+                  >
+                    {formattedVehicle} rental in {c.charAt(0).toUpperCase() + c.slice(1)}
+                  </a>
+                ))}
+            </div>
+          </div>
+
+          {/* Quick links */}
+          <div className="flex flex-wrap gap-3 text-sm">
+            <a href="/search-vehicles" className="text-primary hover:underline font-medium">Search all vehicles →</a>
+            <a href="/shops" className="text-primary hover:underline font-medium">Browse rental shops →</a>
+          </div>
+        </div>
       </div>
     </main>
   );

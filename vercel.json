@@ -4,7 +4,8 @@
     { "source": "/rent/rental-cars/in/:city", "destination": "/rent/car/in/:city", "statusCode": 301 },
     { "source": "/rent/self-drive-car/in/:city", "destination": "/rent/car/in/:city", "statusCode": 301 },
     { "source": "/rent/self-drive-cars/in/:city", "destination": "/rent/car/in/:city", "statusCode": 301 },
-    { "source": "/rent/car-rent/in/:city", "destination": "/rent/car/in/:city", "statusCode": 301 }
+    { "source": "/rent/car-rent/in/:city", "destination": "/rent/car/in/:city", "statusCode": 301 },
+    { "source": "/submit-email", "destination": "/", "statusCode": 301 }
   ],
   "rewrites": [
     {
