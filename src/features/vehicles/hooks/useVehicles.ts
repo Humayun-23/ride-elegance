@@ -1,0 +1,13 @@
+import { useQuery } from '@tanstack/react-query';
+import { searchVehicles } from '@/features/vehicles/services/vehicleService';
+
+export const useSearchVehicles = (params?: Record<string, any>) => {
+  return useQuery({
+    queryKey: ['searchVehicles', params],
+    queryFn: async () => {
+      const response = await searchVehicles(params);
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+};

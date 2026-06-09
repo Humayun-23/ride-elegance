@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
-import { SEO } from '@/components/SEO';
-import { useSearchVehicles } from '@/hooks/useVehicles';
-import VehicleCard from '@/components/VehicleCard';
+import { SEO } from '@/components/common/SEO';
+import { useSearchVehicles } from '@/features/vehicles/hooks/useVehicles';
+import VehicleCard from '@/features/vehicles/components/VehicleCard';
 import { motion } from 'framer-motion';
 import { Search } from 'lucide-react';
 

@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Zap, Shield, Clock, ArrowRight, MapPin, Star, ChevronRight, ShieldCheck, Wallet, Car, Store, MessageCircle } from "lucide-react";
 import { useState, useMemo, useEffect, useRef } from "react";
-import VehicleCard from "@/components/VehicleCard";
-import { useShops } from "@/hooks/useShops";
-import { useSearchVehicles } from "@/hooks/useVehicles";
-import { SEO } from "@/components/SEO";
+import VehicleCard from "@/features/vehicles/components/VehicleCard";
+import { useShops } from "@/features/shops/hooks/useShops";
+import { useSearchVehicles } from "@/features/vehicles/hooks/useVehicles";
+import { SEO } from "@/components/common/SEO";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 

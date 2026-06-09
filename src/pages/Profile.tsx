@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { api } from "@/lib/api";
+import { useAuth } from "@/features/auth/context/AuthContext";
+import { updateUser } from "@/features/auth/services/authService";
+import { getUserBookings } from "@/features/bookings/services/bookingService";
+import { getShops, getShopReviews } from "@/features/shops/services/shopService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,15 +30,15 @@ export default function Profile() {
     setFirstname(user.firstname || "");
     setLastname(user.lastname || "");
     setPhone(user.phone_number || "");
-    api.get("/bookings/user/", { params: { limit: 50 } })
+    getUserBookings({ limit: 50 })
       .then((res) => setBookings(Array.isArray(res.data) ? res.data : []))
       .catch(() => {});
     const loadReviews = async () => {
       try {
-        const shopsRes = await api.get("/shops/");
+        const shopsRes = await getShops();
         const shopList = Array.isArray(shopsRes.data) ? shopsRes.data : [];
         const reviewLists = await Promise.all(
-          shopList.map((s: any) => api.get(`/reviews/${s.id}`).then((res) => res.data).catch(() => []))
+          shopList.map((s: any) => getShopReviews(s.id).then((res) => res.data).catch(() => []))
         );
         const allReviews = reviewLists.flat();
         const mine = allReviews.filter((x: any) => (x.customer_id ?? x.user_id) === user.id);
@@ -52,7 +54,7 @@ export default function Profile() {
     if (!user) return;
     setSaving(true);
     try {
-      await api.put(`/users/${user.id}`, { firstname, lastname, phone_number: phone });
+      await updateUser(user.id, { firstname, lastname, phone_number: phone });
       toast({ title: "Profile updated successfully" });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });

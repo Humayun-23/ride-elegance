@@ -1,42 +1,36 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import WhatsAppButton from './components/WhatsAppButton';
-import { AuthProvider } from './contexts/AuthContext';
+import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
+import WhatsAppButton from './components/common/WhatsAppButton';
+import { LoadingState } from './components/common/LoadingState';
+import { AuthProvider } from './features/auth/context/AuthContext';
 
 // Eagerly load the main entry pages to preserve the index.html Skeleton Shell and protect LCP/CLS
 import Index from './pages/Index';
 import DynamicLanding from './pages/DynamicLanding';
 
 // Lazy load the rest to reduce bundle size for subsequent navigations
-const SearchVehicles = lazy(() => import('./pages/SearchVehicles'));
-const Login = lazy(() => import('./pages/Login'));
-const VehicleDetail = lazy(() => import('./pages/VehicleDetail'));
+const SearchVehicles = lazy(() => import('./features/vehicles/pages/SearchVehicles'));
+const Login = lazy(() => import('./features/auth/pages/Login'));
+const VehicleDetail = lazy(() => import('./features/vehicles/pages/VehicleDetail'));
 
 // Lazy load the remaining pages
 const NotFound = lazy(() => import('./pages/NotFound'));
-const Shops = lazy(() => import('./pages/Shops'));
-const ShopDetail = lazy(() => import('./pages/ShopDetail'));
-const Bookings = lazy(() => import('./pages/Bookings'));
-const BookingDetails = lazy(() => import('./pages/BookingDetails'));
+const Shops = lazy(() => import('./features/shops/pages/Shops'));
+const ShopDetail = lazy(() => import('./features/shops/pages/ShopDetail'));
+const Bookings = lazy(() => import('./features/bookings/pages/Bookings'));
+const BookingDetails = lazy(() => import('./features/bookings/pages/BookingDetails'));
 const Profile = lazy(() => import('./pages/Profile'));
-const Register = lazy(() => import('./pages/Register'));
-const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
-const PasswordReset = lazy(() => import('./pages/PasswordReset'));
-const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
-const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
-const AdminBookings = lazy(() => import('./pages/AdminBookings'));
-const AdminInventory = lazy(() => import('./pages/AdminInventory'));
-const AdminReviews = lazy(() => import('./pages/AdminReviews'));
-const AdminShop = lazy(() => import('./pages/AdminShop'));
-
-// A reusable loading fallback
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="animate-pulse text-primary font-medium">Loading...</div>
-  </div>
-);
+const Register = lazy(() => import('./features/auth/pages/Register'));
+const ForgotPassword = lazy(() => import('./features/auth/pages/ForgotPassword'));
+const PasswordReset = lazy(() => import('./features/auth/pages/PasswordReset'));
+const VerifyEmail = lazy(() => import('./features/auth/pages/VerifyEmail'));
+const AdminDashboard = lazy(() => import('./features/admin/pages/AdminDashboard'));
+const AdminBookings = lazy(() => import('./features/admin/pages/AdminBookings'));
+const AdminInventory = lazy(() => import('./features/admin/pages/AdminInventory'));
+const AdminReviews = lazy(() => import('./features/admin/pages/AdminReviews'));
+const AdminShop = lazy(() => import('./features/admin/pages/AdminShop'));
 
 function App() {
   return (
@@ -44,7 +38,7 @@ function App() {
       <BrowserRouter>
         <Navbar />
         <WhatsAppButton />
-        <Suspense fallback={<PageLoader />}>
+        <Suspense fallback={<LoadingState />}>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/search-vehicles" element={<SearchVehicles />} />
