@@ -90,7 +90,12 @@ export default function DynamicLanding() {
         item: {
           '@type': 'Product',
           name: `${v.name} ${v.model || ''}`.trim(),
-          image: v.image_url ? `https://api.gopanda.in${v.image_url}` : 'https://www.gopanda.in/og-image.png',
+          description: v.description || `Rent a ${v.name} in ${displayCity}`,
+          brand: {
+            '@type': 'Brand',
+            name: v.name?.split(' ')[0] || 'Vehicle'
+          },
+          image: v.image_url ? (v.image_url.startsWith('http') ? v.image_url : `https://api.gopanda.in${v.image_url}`) : 'https://www.gopanda.in/og-image.png',
           offers: {
             '@type': 'Offer',
             price: v.price_per_day || 0,
