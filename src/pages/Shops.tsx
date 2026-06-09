@@ -32,18 +32,30 @@ export default function Shops() {
         description="Browse verified bike, scooty, and car rental shops in Guwahati and across Assam. See ratings, timings, and available vehicles from real local shops."
         keywords="bike rental shops guwahati, car rental shops near me, vehicle rental shops assam, car rental in guwahati"
         canonical="https://www.gopanda.in/shops"
+        schema={JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: 'Verified Rental Shops Near You | GoPanda',
+          description: 'Browse verified bike, scooty, and car rental shops in Guwahati and across Assam.',
+          url: 'https://www.gopanda.in/shops',
+          breadcrumb: {
+            '@type': 'BreadcrumbList',
+            itemListElement: [{
+              '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.gopanda.in'
+            }, {
+              '@type': 'ListItem', position: 2, name: 'Rental Shops', item: 'https://www.gopanda.in/shops'
+            }]
+          }
+        })}
       />
       <div className="container px-4 space-y-8">
         {/* Header */}
         <div className="space-y-6">
           <div>
             <p className="text-xs font-display uppercase tracking-[0.3em] text-muted-foreground mb-2">Browse</p>
-            <h1 className="sr-only">
-              Verified Bike and Car Rental Shops in Guwahati
+            <h1 className="font-display text-3xl md:text-5xl font-bold">
+              Verified Bike and Car Rental <span className="text-primary">Shops</span> Near You
             </h1>
-            <h2 className="font-display text-3xl md:text-5xl font-bold">
-              Rental <span className="text-primary">Shops</span>
-            </h2>
             <p className="text-muted-foreground mt-2 max-w-lg">
               Real shops run by real people. Pick one near you, see what they have, and book a ride.
             </p>

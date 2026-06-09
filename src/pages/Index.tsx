@@ -144,14 +144,11 @@ export default function Index() {
                 ₹0 booking fee
               </div>
 
-              <h1 className="sr-only">
-                Self Drive Car Rental in Guwahati | Rent Bikes & Cars
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight font-display leading-[1.12]">
+                Self Drive Car Rental Near You
+                <br />
+                <span className="text-highlight">Rent Bikes & Cars</span>
               </h1>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight font-display leading-[1.12]">
-                Rent a vehicle{" "}
-                <span className="text-highlight">from local shops</span>{" "}
-                Near You
-              </h2>
 
               <p className="text-lg text-muted-foreground max-w-xl leading-relaxed mx-auto lg:mx-0">
                 Pick a ride from verified local shops. Lock it with a small token (min ₹299), pay the rest at pick up. No middlemen, no surprises.

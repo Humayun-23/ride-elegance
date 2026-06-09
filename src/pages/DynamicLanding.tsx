@@ -112,7 +112,7 @@ export default function DynamicLanding() {
     <main className="min-h-screen pt-24 pb-16 bg-background">
       <SEO 
         title={`Rent ${displayVehicle} in ${displayCity} — from local shops | GoPanda`}
-        description={`Find ${formattedVehicle} rentals in ${formattedCity} from verified local shops. Pay a small token, pick up your ride. No middlemen, no hidden fees.`}
+        description={`Find ${displayVehicle} rentals in ${displayCity} from verified local shops. Pay a small token, pick up your ride. No middlemen, no hidden fees.`}
         keywords={`${formattedVehicle} rental in ${formattedCity}, ${formattedCity} ${formattedVehicle} rental, ${formattedCity} ${formattedVehicle} rent, self drive ${formattedVehicle} rental in ${formattedCity}, rent ${formattedVehicle} in ${formattedCity}, ${formattedVehicle} rental near me`}
         canonical={canonicalUrl}
         url={canonicalUrl}
@@ -128,8 +128,8 @@ export default function DynamicLanding() {
           </h1>
           <p className="text-lg text-muted-foreground">
             {totalVehicles > 0 
-              ? `${totalVehicles} ${formattedVehicle}s available right now in ${formattedCity}. Prices starting at ₹${startingPrice}/day, averaging ₹${avgPrice}/day.`
-              : `${formattedVehicle}s from real shops in ${formattedCity}. See what's available, lock it with a token, pick it up.`}
+              ? `${totalVehicles} ${displayVehicle}s available right now in ${displayCity}. Prices starting at ₹${startingPrice}/day, averaging ₹${avgPrice}/day.`
+              : `${displayVehicle}s from real shops in ${displayCity}. See what's available, lock it with a token, pick it up.`}
           </p>
           <div className="mt-4 p-4 bg-muted/30 rounded-xl border border-border text-left max-w-2xl mx-auto">
             <p className="text-sm text-muted-foreground leading-relaxed">
@@ -215,7 +215,7 @@ export default function DynamicLanding() {
                     href={`/rent/${apiType === 'all' ? 'car' : apiType}/in/${c}`}
                     className="px-4 py-2 rounded-xl bg-card border border-border text-sm font-medium text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors"
                   >
-                    {formattedVehicle} rental in {c.charAt(0).toUpperCase() + c.slice(1)}
+                    {displayVehicle} rental in {c.charAt(0).toUpperCase() + c.slice(1)}
                   </a>
                 ))}
             </div>

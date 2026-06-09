@@ -78,17 +78,29 @@ export default function SearchVehicles() {
         keywords="bike rental near me, car rental guwahati, scooty rental, search vehicles"
         canonical="https://www.gopanda.in/search-vehicles"
         noindex={!loading && vehicles.length === 0}
+        schema={JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: 'Search Bike and Car Rentals Near You | GoPanda',
+          description: 'Find the best bike rentals near you. Search our wide range of scooties, bikes, and cars for rent near you.',
+          url: 'https://www.gopanda.in/search-vehicles',
+          breadcrumb: {
+            '@type': 'BreadcrumbList',
+            itemListElement: [{
+              '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.gopanda.in'
+            }, {
+              '@type': 'ListItem', position: 2, name: 'Search Vehicles', item: 'https://www.gopanda.in/search-vehicles'
+            }]
+          }
+        })}
       />
       <div className="container px-4 space-y-8">
         <div className="space-y-6">
           <div>
             <p className="text-xs font-display uppercase tracking-[0.3em] text-muted-foreground mb-2">Explore</p>
-            <h1 className="sr-only">
-              Search Bike and Car Rentals Near You
+            <h1 className="font-display text-3xl md:text-5xl font-bold">
+              Search Bike and Car <span className="text-gradient">Rentals Near You</span>
             </h1>
-            <h2 className="font-display text-3xl md:text-5xl font-bold">
-              Find Your <span className="text-gradient">Ride</span>
-            </h2>
           </div>
 
           <div className="flex gap-2 max-w-2xl">
@@ -113,8 +125,8 @@ export default function SearchVehicles() {
                 key={t.value}
                 onClick={() => handleTypeChange(t.value)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-display transition-all ${activeType === t.value
-                    ? "bg-primary text-primary-foreground glow"
-                    : "bg-card/60 text-muted-foreground hover:text-foreground hover:bg-card border border-border"
+                  ? "bg-primary text-primary-foreground glow"
+                  : "bg-card/60 text-muted-foreground hover:text-foreground hover:bg-card border border-border"
                   }`}
               >
                 <span>{t.icon}</span>
