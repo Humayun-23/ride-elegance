@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Search, Zap, ArrowRight, MapPin, ChevronRight, ShieldCheck, Wallet, Car, Store, MessageCircle, CalendarDays, CheckCircle2, Star } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import VehicleCard from "@/features/vehicles/components/VehicleCard";
 import { useSearchVehicles } from "@/features/vehicles/hooks/useVehicles";
 import { useShops } from "@/features/shops/hooks/useShops";
@@ -55,6 +55,7 @@ export default function Index() {
   const [returnDate, setReturnDate] = useState("");
   const [activeStep, setActiveStep] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
+  const scrollTimeout = useRef<number | null>(null);
 
   const { data: vehiclesData, isLoading: isLoadingVehicles } = useSearchVehicles({ is_available: "true", limit: 6 });
   const { data: shopsData, isLoading: isLoadingShops } = useShops({ is_active: true, limit: 3 });
@@ -491,8 +492,16 @@ export default function Index() {
                 viewport={{ once: true, margin: "-80px" }}
                 onScroll={(e) => {
                   const target = e.currentTarget;
-                  const scrollRatio = target.scrollLeft / (target.scrollWidth - target.clientWidth || 1);
-                  setActiveStep(Math.round(scrollRatio * 3));
+                  const scrollLeft = target.scrollLeft; // Read only scrollLeft immediately
+                  
+                  if (scrollTimeout.current === null) {
+                    scrollTimeout.current = window.setTimeout(() => {
+                      // Perform layout reads asynchronously and throttled
+                      const scrollRatio = scrollLeft / (target.scrollWidth - target.clientWidth || 1);
+                      setActiveStep(Math.round(scrollRatio * 3));
+                      scrollTimeout.current = null;
+                    }, 50); // 50ms is within the 30ms-50ms budget for responsiveness
+                  }
                 }}
                 className="flex md:grid md:grid-cols-4 gap-4 md:gap-8 relative overflow-x-auto snap-x snap-mandatory pb-8 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
               >
