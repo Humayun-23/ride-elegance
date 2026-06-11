@@ -335,16 +335,6 @@ export default function Bookings() {
                                 <Separator orientation="vertical" className="h-10 hidden md:block" />
 
                                 <div className="flex items-center gap-2">
-                                  {b.status === "confirmed" && (
-                                    <Button
-                                      size="sm"
-                                      className="font-display gap-1.5 text-xs"
-                                      onClick={() => navigate(`/payment/${b.id}`)}
-                                    >
-                                      <CreditCard className="h-3.5 w-3.5" />
-                                      Pay Now
-                                    </Button>
-                                  )}
                                   {b.status === "pending" && (
                                     <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/30 font-display text-[10px] uppercase tracking-wider">
                                       Awaiting approval

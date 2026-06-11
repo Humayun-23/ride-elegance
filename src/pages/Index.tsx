@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { getOptimizedImageUrl } from "@/lib/imageUtils";
 import { Link } from "react-router-dom";
+import { PlatformStats } from "@/components/common/PlatformStats";
 
 const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "918011401900";
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi GoPanda, I need help finding a rental vehicle in Guwahati.")}`;
@@ -225,6 +226,11 @@ export default function Index() {
                 </Button>
               </motion.form>
 
+              {/* Mobile Stats */}
+              <div className="lg:hidden mt-5 mb-2 mx-auto w-full max-w-[760px]">
+                <PlatformStats variant="mobile" />
+              </div>
+
               {/* Trust badges — 2x2 grid on mobile, inline on desktop */}
               <div className="grid grid-cols-2 gap-1.5 lg:hidden max-w-sm mx-auto">
                 <span className="flex items-center gap-1.5 rounded-lg bg-secondary/60 px-2.5 py-1.5 text-[11px] font-semibold text-foreground/80">
@@ -297,6 +303,11 @@ export default function Index() {
               <p className="text-sm text-muted-foreground max-w-2xl mx-auto lg:mx-0">
                 No more calling multiple shops. Find local rentals in one place.
               </p>
+
+              {/* Desktop Stats */}
+              <div className="hidden lg:block py-4">
+                <PlatformStats variant="desktop" />
+              </div>
 
               <div className="flex flex-col gap-2 pt-1">
                 <span className="text-xs text-muted-foreground">Pickup areas:</span>

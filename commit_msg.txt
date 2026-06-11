@@ -1,0 +1,7 @@
+feat(home): implement responsive platform statistics section
+
+- Built a new `PlatformStats` component to display "Verified Shops", "Listed Vehicles", and "Bookings Assisted".
+- Integrated the stats section into the `Index.tsx` homepage, applying specific layouts for both desktop (strip) and mobile (compact row) views.
+- Created `statisticsService.ts` and the `usePlatformStats` React Query hook to fetch data from the new backend summary endpoint.
+- Handled empty states gracefully by hiding the component when stats are fully zero, and showing "Onboarding" or "New" for individual zero values.
+- Fix: Removed the redundant "Pay Now" button from the `Bookings.tsx` dashboard card.
