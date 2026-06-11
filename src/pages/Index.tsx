@@ -53,8 +53,6 @@ export default function Index() {
   const [vehicleType, setVehicleType] = useState("");
   const [pickupDate, setPickupDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
-  const [showStickySearch, setShowStickySearch] = useState(false);
-  const [showMobileCta, setShowMobileCta] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -122,20 +120,11 @@ export default function Index() {
     }
   };
 
-  // Show sticky search bar when scrolled past hero, and mobile CTA after hero search button
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      setShowStickySearch(scrollY > 500);
-      setShowMobileCta(scrollY > 400);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
     // Defer below-the-fold rendering to prioritize the Hero paint (LCP)
     const timer = setTimeout(() => setIsMounted(true), 10);
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
       clearTimeout(timer);
     };
   }, []);
@@ -148,63 +137,7 @@ export default function Index() {
         canonical="https://www.gopanda.in"
       />
 
-      {/* ─── STICKY SEARCH BAR ─── */}
-      <div
-        className={`fixed top-24 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-2xl z-40 transition-all duration-300 pointer-events-none ${showStickySearch
-          ? "translate-y-0 opacity-100"
-          : "-translate-y-full opacity-0"
-          }`}
-      >
-        <div className="glass rounded-full border border-white/20 shadow-elevated p-1.5 pointer-events-auto">
-          <form onSubmit={handleSearch} className="flex items-center gap-1">
-            <div className="flex-1 flex items-center gap-2 bg-white/50 dark:bg-black/20 px-4 py-2 rounded-full border border-transparent focus-within:border-primary/30 transition-colors">
-              <MapPin className="text-primary h-4 w-4 shrink-0" />
-              <input
-                aria-label="Search city"
-                type="text"
-                placeholder="Guwahati"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="w-full border-0 bg-transparent text-sm font-medium outline-none placeholder:text-muted-foreground/60"
-              />
-            </div>
-            <div className="flex-1 flex items-center gap-2 bg-white/50 dark:bg-black/20 px-4 py-2 rounded-full border border-transparent focus-within:border-primary/30 transition-colors hidden sm:flex">
-              <Car className="text-primary h-4 w-4 shrink-0" />
-              <select
-                aria-label="Vehicle type"
-                value={vehicleType}
-                onChange={(e) => setVehicleType(e.target.value)}
-                className="w-full border-0 bg-transparent text-sm font-medium outline-none text-foreground cursor-pointer appearance-none"
-              >
-                <option value="">Bike, Scooty or Car</option>
-                <option value="scooty">Scooty</option>
-                <option value="bike">Bike</option>
-                <option value="car">Car</option>
-              </select>
-            </div>
-            <Button type="submit" size="sm" className="rounded-full px-5 h-9 text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shrink-0">
-              <Search className="h-4 w-4 sm:mr-1.5" /> <span className="hidden sm:inline">Find Vehicles</span>
-            </Button>
-          </form>
-        </div>
-      </div>
 
-      {/* ─── MOBILE STICKY CTA ─── */}
-      <div className={`fixed inset-x-0 bottom-0 z-50 border-t border-border bg-white/95 p-3 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden transition-all duration-300 ${showMobileCta ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"}`}>
-        <div className="grid grid-cols-2 gap-3">
-          <Button className="h-11 rounded-xl font-bold" onClick={() => navigate("/search-vehicles")}>
-            <Search className="mr-2 h-4 w-4" /> Search Vehicles
-          </Button>
-          <a
-            href={WHATSAPP_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex h-11 items-center justify-center rounded-xl bg-[#25D366] px-4 text-sm font-bold text-white transition-colors hover:bg-[#1ebe5d]"
-          >
-            <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp Support
-          </a>
-        </div>
-      </div>
 
       {/* ─── HERO ─── */}
       <section className="relative pt-24 pb-12 lg:pt-28 lg:pb-16 overflow-x-hidden">

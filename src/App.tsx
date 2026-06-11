@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import { LoadingState } from './components/common/LoadingState';
+import ScrollToTop from './components/common/ScrollToTop';
 import { AuthProvider } from './features/auth/context/AuthContext';
 
 // Eagerly load the main entry pages to preserve the index.html Skeleton Shell and protect LCP/CLS
@@ -35,6 +36,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <Navbar />
         <Suspense fallback={<LoadingState />}>
           <Routes>
