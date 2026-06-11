@@ -4,9 +4,12 @@ import { useSearchVehicles } from "@/features/vehicles/hooks/useVehicles";
 import VehicleCard from "@/features/vehicles/components/VehicleCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
+import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, ArrowUpDown, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { SEO } from "@/components/common/SEO";
+
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "918011401900";
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi GoPanda, please help me find an available rental vehicle.")}`;
 
 const TYPES = [
   { value: "all", label: "All Vehicles", icon: "🔥" },
@@ -42,7 +45,7 @@ export default function SearchVehicles() {
 
   // Fetch using the globally cached hook!
   const { data, isLoading: loading } = useSearchVehicles(params);
-  const vehicles = Array.isArray(data) ? data : [];
+  const vehicles = useMemo(() => Array.isArray(data) ? data : [], [data]);
 
   const handleSearch = () => {
     const newParams: Record<string, string> = {};
@@ -61,8 +64,8 @@ export default function SearchVehicles() {
 
   const sorted = useMemo(() => {
     const arr = [...vehicles];
-    if (sort === "price_asc") arr.sort((a, b) => (a.price_per_hour || 0) - (b.price_per_hour || 0));
-    else if (sort === "price_desc") arr.sort((a, b) => (b.price_per_hour || 0) - (a.price_per_hour || 0));
+    if (sort === "price_asc") arr.sort((a, b) => (a.price_per_day || 0) - (b.price_per_day || 0));
+    else if (sort === "price_desc") arr.sort((a, b) => (b.price_per_day || 0) - (a.price_per_day || 0));
     else if (sort === "rating") arr.sort((a, b) => (b.avg_rating || b.rating || 0) - (a.avg_rating || a.rating || 0));
     return arr;
   }, [vehicles, sort]);
@@ -73,16 +76,16 @@ export default function SearchVehicles() {
   return (
     <div className="min-h-screen pt-24 pb-16">
       <SEO
-        title="Search Bike and Car Rentals Near You | GoPanda"
-        description="Find the best bike rentals near you. Search our wide range of scooties, bikes, and cars for rent near you."
+        title="Search Available Rental Vehicles | GoPanda"
+        description="Browse bikes, scooties, and cars from local rental shops."
         keywords="bike rental near me, car rental guwahati, scooty rental, search vehicles"
         canonical="https://www.gopanda.in/search-vehicles"
         noindex={!loading && vehicles.length === 0}
         schema={JSON.stringify({
           '@context': 'https://schema.org',
           '@type': 'WebPage',
-          name: 'Search Bike and Car Rentals Near You | GoPanda',
-          description: 'Find the best bike rentals near you. Search our wide range of scooties, bikes, and cars for rent near you.',
+          name: 'Search Available Rental Vehicles | GoPanda',
+          description: 'Browse bikes, scooties, and cars from local rental shops.',
           url: 'https://www.gopanda.in/search-vehicles',
           breadcrumb: {
             '@type': 'BreadcrumbList',
@@ -99,14 +102,21 @@ export default function SearchVehicles() {
           <div>
             <p className="text-xs font-display uppercase tracking-[0.3em] text-muted-foreground mb-2">Explore</p>
             <h1 className="font-display text-3xl md:text-5xl font-bold">
-              Search Bike and Car <span className="text-gradient">Rentals Near You</span>
+              Search Available Rental Vehicles
             </h1>
+            <p className="text-muted-foreground mt-2 max-w-lg">
+              Browse bikes, scooties, and cars from local rental shops.
+            </p>
+            <p className="text-sm text-muted-foreground mt-2 max-w-xl">
+              Local rentals. Verified shops. Easy booking. Starting with Guwahati and expanding across Northeast India.
+            </p>
           </div>
 
           <div className="flex gap-2 max-w-2xl">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
+                aria-label="Search vehicles"
                 placeholder="Search vehicles..."
                 className="pl-11 bg-card/80 border-border h-12 rounded-xl text-base"
                 value={query}
@@ -144,6 +154,7 @@ export default function SearchVehicles() {
             <div className="flex items-center gap-2">
               <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
               <select
+                aria-label="Sort vehicles"
                 value={sort}
                 onChange={(e) => { setSort(e.target.value); setPage(0); }}
                 className="bg-card border border-border rounded-lg px-3 py-1.5 text-sm font-display"
@@ -167,8 +178,18 @@ export default function SearchVehicles() {
             </div>
             <div className="space-y-2">
               <h2 className="font-display text-xl font-bold">No vehicles found</h2>
-              <p className="text-muted-foreground text-sm max-w-md mx-auto">Try adjusting your search or browse a different category.</p>
+              <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                We are onboarding vehicles in this area. Need help choosing a vehicle? Chat with GoPanda on WhatsApp.
+              </p>
             </div>
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-xl bg-[#25D366] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#1ebe5d]"
+            >
+              <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp GoPanda
+            </a>
           </motion.div>
         ) : (
           <>
@@ -195,25 +216,6 @@ export default function SearchVehicles() {
             )}
           </>
         )}
-        {/* ─── BROWSE BY LOCATION (SEO CROSS-LINKS) ─── */}
-        <div className="mt-16 pt-10 border-t border-border">
-          <h3 className="font-display text-lg font-bold text-foreground mb-4">Browse by location</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {['guwahati', 'jorhat', 'dibrugarh', 'tezpur', 'silchar', 'shillong'].map(city => (
-              <div key={city} className="space-y-1.5">
-                <h4 className="text-sm font-semibold text-foreground capitalize">{city}</h4>
-                <ul className="space-y-1 text-xs text-muted-foreground">
-                  <li><a href={`/rent/car/in/${city}`} className="hover:text-primary transition-colors">Car rental</a></li>
-                  <li><a href={`/rent/bike/in/${city}`} className="hover:text-primary transition-colors">Bike rental</a></li>
-                  <li><a href={`/rent/scooty/in/${city}`} className="hover:text-primary transition-colors">Scooty rental</a></li>
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4">
-            <a href="/shops" className="text-sm text-primary hover:underline font-medium">Browse all rental shops →</a>
-          </div>
-        </div>
       </div>
     </div>
   );

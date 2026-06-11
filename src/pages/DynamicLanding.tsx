@@ -3,7 +3,10 @@ import { SEO } from '@/components/common/SEO';
 import { useSearchVehicles } from '@/features/vehicles/hooks/useVehicles';
 import VehicleCard from '@/features/vehicles/components/VehicleCard';
 import { motion } from 'framer-motion';
-import { Search } from 'lucide-react';
+import { MessageCircle, Search } from 'lucide-react';
+
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "918011401900";
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi GoPanda, please help me find rental availability for this category.")}`;
 
 export default function DynamicLanding() {
   const { vehicleType, city, seoSlug } = useParams();
@@ -40,6 +43,15 @@ export default function DynamicLanding() {
   else if (vTypeLower.includes('scooty') || vTypeLower.includes('scooter')) apiType = 'scooty';
   else if (vTypeLower.includes('bike') || vTypeLower.includes('motorcycle')) apiType = 'bike';
 
+  const isGuwahati = parsedCity.toLowerCase().replace(/\s+/g, '-') === 'guwahati';
+  const exactH1 = isGuwahati && apiType === 'bike'
+    ? 'Bike Rental in Guwahati'
+    : isGuwahati && apiType === 'scooty'
+      ? 'Scooty Rental in Guwahati'
+      : isGuwahati && apiType === 'car'
+        ? 'Self-Drive Car Rental in Guwahati'
+        : '';
+
   // Compute canonical URL for this page — normalizes synonym slugs to canonical
   const canonicalSlug = apiType === 'all' ? 'vehicles' : apiType;
   const canonicalCity = parsedCity !== 'your area' ? parsedCity.toLowerCase().replace(/\s+/g, '-') : '';
@@ -56,14 +68,12 @@ export default function DynamicLanding() {
   const { data, isLoading } = useSearchVehicles(params);
   const vehicles = Array.isArray(data) ? data : [];
 
-  // Calculate Live Inventory and Pricing
+  // Summarize only data returned by the API for this page.
   const totalVehicles = vehicles.length;
-  const avgPrice = totalVehicles > 0 
-    ? Math.round(vehicles.reduce((sum, v) => sum + (Number(v.price_per_day) || 0), 0) / totalVehicles) 
-    : 0;
-  const startingPrice = totalVehicles > 0 
-    ? Math.min(...vehicles.map(v => Number(v.price_per_day) || Infinity)) 
-    : 0;
+  const validPrices = vehicles
+    .map((v) => Number(v.price_per_day))
+    .filter((price) => Number.isFinite(price) && price > 0);
+  const startingPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
 
   // Hyper-Local Context Dictionary
   const LOCAL_CONTEXT: Record<string, string> = {
@@ -72,7 +82,7 @@ export default function DynamicLanding() {
     'dibrugarh': 'Start your Upper Assam journey here. Local shops offer quick handovers near Mohanbari Airport and Dibrugarh Railway Station.',
     'tezpur': 'The perfect starting point for your Arunachal Pradesh or Tawang expedition. Pick up near Tezpur Airport or the main transport nodes.',
   };
-  const localContextText = LOCAL_CONTEXT[parsedCity.toLowerCase()] || 'Explore the local area with convenient pickups from top-rated shops right in your neighborhood.';
+  const localContextText = LOCAL_CONTEXT[parsedCity.toLowerCase()] || 'Explore the local area with convenient pickups from local rental shops in your neighborhood.';
 
   // Generate Schema
   const schema = JSON.stringify({
@@ -112,7 +122,7 @@ export default function DynamicLanding() {
     <main className="min-h-screen pt-24 pb-16 bg-background">
       <SEO 
         title={`Rent ${displayVehicle} in ${displayCity} — from local shops | GoPanda`}
-        description={`Find ${displayVehicle} rentals in ${displayCity} from verified local shops. Pay a small token, pick up your ride. No middlemen, no hidden fees.`}
+        description={`Find ${displayVehicle} rentals in ${displayCity} from verified local shops. Pay a small token and pick up your ride. Transparent local-shop pricing. No surprise charges from GoPanda.`}
         keywords={`${formattedVehicle} rental in ${formattedCity}, ${formattedCity} ${formattedVehicle} rental, ${formattedCity} ${formattedVehicle} rent, self drive ${formattedVehicle} rental in ${formattedCity}, rent ${formattedVehicle} in ${formattedCity}, ${formattedVehicle} rental near me`}
         canonical={canonicalUrl}
         url={canonicalUrl}
@@ -122,18 +132,23 @@ export default function DynamicLanding() {
       
       <div className="container px-4 space-y-10">
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <p className="text-xs font-display uppercase tracking-[0.2em] text-muted-foreground">Available now</p>
+          <p className="text-xs font-display uppercase tracking-[0.2em] text-muted-foreground">
+            Local rentals. Verified shops. Easy booking.
+          </p>
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-            Rent a <span className="text-primary">{displayVehicle}</span> in {displayCity}
+            {exactH1 || <>Rent a <span className="text-primary">{displayVehicle}</span> in {displayCity}</>}
           </h1>
           <p className="text-lg text-muted-foreground">
             {totalVehicles > 0 
-              ? `${totalVehicles} ${displayVehicle}s available right now in ${displayCity}. Prices starting at ₹${startingPrice}/day, averaging ₹${avgPrice}/day.`
+              ? `${displayVehicle}s from local rental shops in ${displayCity}${startingPrice ? `, starting at ₹${startingPrice}/day` : ""}.`
               : `${displayVehicle}s from real shops in ${displayCity}. See what's available, lock it with a token, pick it up.`}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Built in Assam. Starting with Guwahati. Expanding across Northeast India.
           </p>
           <div className="mt-4 p-4 bg-muted/30 rounded-xl border border-border text-left max-w-2xl mx-auto">
             <p className="text-sm text-muted-foreground leading-relaxed">
-              <span className="font-semibold text-foreground">📍 Local Tip for {displayCity}: </span>
+              <span className="font-semibold text-foreground">Local pickup context for {displayCity}: </span>
               {localContextText}
             </p>
           </div>
@@ -154,8 +169,18 @@ export default function DynamicLanding() {
               </div>
               <div className="space-y-2">
                 <h2 className="font-display text-xl font-bold">No exact matches found right now</h2>
-                <p className="text-muted-foreground text-sm max-w-md mx-auto">We might be sold out of {formattedVehicle}s in {formattedCity}. Check out our other vehicles available for rent!</p>
+                <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                  We are onboarding more {formattedVehicle} options in {formattedCity}. Need help choosing a vehicle? Chat with GoPanda on WhatsApp.
+                </p>
               </div>
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-xl bg-[#25D366] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#1ebe5d]"
+              >
+                <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp GoPanda
+              </a>
             </motion.div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -172,10 +197,10 @@ export default function DynamicLanding() {
         <div className="mt-20 max-w-4xl mx-auto prose prose-slate">
           <h2 className="font-display text-2xl font-bold mb-4">About {displayVehicle} Rentals in {displayCity}</h2>
           <p className="text-muted-foreground leading-relaxed mb-4">
-            Exploring {displayCity} is best done at your own pace. With GoPanda, finding a reliable and affordable {formattedVehicle} rental is seamless. We partner strictly with verified local shops, ensuring you get transparent pricing, well-maintained vehicles, and a hassle-free pickup process.
+            Exploring {displayCity} is best done at your own pace. With GoPanda, finding a reliable {formattedVehicle} rental is simple. We work with local shops so you can compare transparent pricing, vehicle details, and pickup information before booking.
           </p>
           <p className="text-muted-foreground leading-relaxed">
-            Whether you need a ride for daily commutes, a weekend getaway, or a long road trip, our real-time inventory guarantees that the vehicle you book is the vehicle you get. Pay a small booking token to lock your dates, and settle the rest directly with the shop owner. Support local businesses while enjoying the freedom of the open road.
+            Whether you need a ride for daily commutes, a weekend getaway, or a long road trip, you can pay a small booking token to lock your dates and settle the rest directly with the shop owner. Transparent local-shop pricing. No surprise charges from GoPanda.
           </p>
         </div>
 

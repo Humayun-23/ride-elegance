@@ -14,9 +14,9 @@ interface SEOProps {
 }
 
 export function SEO({
-  title = 'Self Drive Car & Bike Rental in Guwahati | GoPanda',
-  description = 'Self drive car rental in Guwahati — also offering bike rental from verified local shops. No middlemen, no hidden fees. Book today!',
-  keywords = 'car rental in guwahati, bike rental in guwahati, self drive car rental in guwahati, car rental service in guwahati',
+  title = 'Rent Bikes, Scooties & Self-Drive Cars in Guwahati | GoPanda',
+  description = 'Compare verified local rental shops in Guwahati, pay a small token, and get bike, scooty, or self-drive car booking confirmation on WhatsApp.',
+  keywords = 'bike rental in guwahati, scooty rental in guwahati, self drive car rental in guwahati, verified local rental shops guwahati',
   canonical,
   type = 'website',
   name = 'GoPanda',

@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Car, Menu, X, User, LogOut, Bookmark, LayoutDashboard, ChevronDown } from "lucide-react";
+import { Car, Menu, X, User, LogOut, Bookmark, LayoutDashboard } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,6 +12,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "918011401900";
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi GoPanda, I need help with a vehicle rental booking.")}`;
+
+const NAV_LINKS = [
+  { label: "Rent Vehicles", to: "/search-vehicles" },
+  { label: "How It Works", to: "/#how-it-works" },
+  { label: "Rental Shops", to: "/shops" },
+  { label: "List Your Shop", to: "/register" },
+];
+
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -20,145 +30,128 @@ export default function Navbar() {
   const displayName = user ? `${user.firstname || ""} ${user.lastname || ""}`.trim() || user.email : "";
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/20 glass transition-all duration-300">
-      <div className="container flex h-14 items-center justify-between">
-        <Link to="/" className="flex items-center gap-1.5 font-display text-xl font-bold group">
-          <div className="relative flex items-center justify-center">
-            <div className="absolute inset-0 bg-primary/20 blur-md rounded-full group-hover:bg-primary/40 transition-colors" />
-            <Car className="h-6 w-6 text-primary relative z-10 transition-transform group-hover:scale-110" />
+    <nav className="fixed top-4 inset-x-0 z-50 flex justify-center px-4 md:px-6 pointer-events-none">
+      <div className="w-full max-w-6xl flex h-[3.75rem] items-center justify-between rounded-full border border-slate-200/80 bg-white/[0.88] px-4 shadow-[0_18px_45px_rgba(15,23,42,0.14)] ring-1 ring-white/70 backdrop-blur-xl md:px-5 pointer-events-auto transition-all duration-300">
+        
+        {/* Brand */}
+        <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold group">
+          <div className="relative flex items-center justify-center w-9 h-9 rounded-full bg-primary/15 border border-primary/30 overflow-hidden">
+            <div className="absolute inset-0 bg-primary/25 blur-md group-hover:bg-primary/40 transition-colors duration-500" />
+            <Car className="h-4 w-4 text-primary relative z-10 transition-transform duration-300 group-hover:scale-110" />
           </div>
           <span className="tracking-tight"><span className="text-gradient">Go</span><span className="text-foreground">Panda</span></span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-1">
-          <Link to="/search-vehicles" className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-all rounded-lg hover:bg-primary/5">
-            Explore
-          </Link>
-          <Link to="/shops" className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-all rounded-lg hover:bg-primary/5">
-            Shops
-          </Link>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="px-4 py-2 flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-all rounded-lg hover:bg-primary/5">
-                Locations <ChevronDown className="h-3.5 w-3.5 opacity-50" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-40">
-              <DropdownMenuItem asChild>
-                <a href="/rent/car/in/guwahati">Guwahati</a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a href="/rent/car/in/jorhat">Jorhat</a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a href="/rent/car/in/dibrugarh">Dibrugarh</a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a href="/rent/car/in/tezpur">Tezpur</a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a href="/rent/car/in/silchar">Silchar</a>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a href="/rent/car/in/shillong">Shillong</a>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {/* Desktop Links - Nested Pill */}
+        <div className="hidden md:flex items-center gap-1 rounded-full border border-slate-200/80 bg-slate-100/80 p-0.5 shadow-sm">
+          {NAV_LINKS.map((link) => (
+            <Link key={link.to} to={link.to} className="px-3.5 lg:px-4 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-950 hover:bg-white transition-all rounded-full">
+              {link.label}
+            </Link>
+          ))}
+          <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="px-3.5 lg:px-4 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-950 hover:bg-white transition-all rounded-full">
+            Contact
+          </a>
+        </div>
 
+        {/* Desktop Actions */}
+        <div className="hidden md:flex items-center gap-3">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 ml-2 rounded-xl">
-                  <div className="h-5 w-5 rounded-md bg-primary/10 flex items-center justify-center">
-                    <span className="text-[10px] font-display font-bold text-primary">
+                <Button variant="outline" className="gap-2 rounded-full border-slate-200 bg-white/75 text-foreground hover:bg-white transition-all h-10 px-3">
+                  <div className="h-6 w-6 rounded-full bg-primary/15 flex items-center justify-center">
+                    <span className="text-[11px] font-display font-bold text-primary">
                       {(user.firstname?.[0] || "U").toUpperCase()}
                     </span>
                   </div>
-                  <span className="max-w-[120px] truncate">{displayName}</span>
+                  <span className="max-w-[100px] truncate text-sm font-medium">{displayName}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => navigate("/bookings")} className="gap-2">
-                  <Bookmark className="h-4 w-4" /> My Bookings
+              <DropdownMenuContent align="end" className="w-52 rounded-2xl border-white/20 glass p-2 shadow-xl">
+                <DropdownMenuItem onClick={() => navigate("/bookings")} className="gap-2 rounded-xl focus:bg-primary/10 cursor-pointer">
+                  <Bookmark className="h-4 w-4 text-muted-foreground" /> My Bookings
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/profile")} className="gap-2">
-                  <User className="h-4 w-4" /> Profile
+                <DropdownMenuItem onClick={() => navigate("/profile")} className="gap-2 rounded-xl focus:bg-primary/10 cursor-pointer">
+                  <User className="h-4 w-4 text-muted-foreground" /> Profile
                 </DropdownMenuItem>
                 {user.user_type === "shop_owner" && (
-                  <DropdownMenuItem onClick={() => navigate("/owner/dashboard")} className="gap-2">
-                    <LayoutDashboard className="h-4 w-4" /> Dashboard
+                  <DropdownMenuItem onClick={() => navigate("/owner/dashboard")} className="gap-2 rounded-xl focus:bg-primary/10 cursor-pointer">
+                    <LayoutDashboard className="h-4 w-4 text-muted-foreground" /> Dashboard
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => { logout(); navigate("/"); }} className="gap-2 text-destructive focus:text-destructive">
+                <DropdownMenuSeparator className="bg-border/50" />
+                <DropdownMenuItem onClick={() => { logout(); navigate("/"); }} className="gap-2 rounded-xl text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer">
                   <LogOut className="h-4 w-4" /> Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="flex gap-2 ml-2">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/login")} className="rounded-xl text-primary hover:text-primary/80 hover:bg-primary/5 font-semibold">
+            <div className="flex gap-2 items-center">
+              <Button variant="ghost" size="sm" onClick={() => navigate("/login")} className="rounded-full text-slate-600 hover:text-slate-950 hover:bg-slate-100 font-semibold px-5 h-10">
                 Login
               </Button>
-              <Button size="sm" onClick={() => navigate("/register")} className="rounded-xl glow bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] text-white border-0 hover:scale-105 transition-transform font-bold">
+              <Button size="sm" onClick={() => navigate("/register")} className="rounded-full glow bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] text-white border-0 hover:scale-105 transition-all duration-300 font-semibold px-6 h-10">
                 Register
               </Button>
             </div>
           )}
         </div>
 
+        {/* Mobile Toggle */}
         <div className="flex items-center gap-2 md:hidden">
           {!user && (
-            <Button size="sm" onClick={() => navigate("/register")} className="h-8 px-3 rounded-lg text-xs font-bold glow bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] text-white border-0">
+            <Button size="sm" onClick={() => navigate("/register")} className="h-9 px-4 rounded-full text-xs font-semibold glow bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] text-white border-0">
               Register
             </Button>
           )}
-          <button className="text-foreground p-2" onClick={() => setMobileOpen(!mobileOpen)}>
+          <button 
+            className="text-foreground p-2 rounded-full hover:bg-slate-100 transition-colors pointer-events-auto" 
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
+      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-border/60 bg-background/95 backdrop-blur-md overflow-hidden"
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="absolute top-20 left-4 right-4 md:hidden rounded-2xl border border-slate-200 bg-white/[0.96] shadow-elevated overflow-hidden pointer-events-auto"
           >
-            <div className="p-4 space-y-1">
-              <Link to="/search-vehicles" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>
-                Explore
-              </Link>
-              <Link to="/shops" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>
-                Shops
-              </Link>
-              <div className="py-2 border-y border-border/60 my-2">
-                 <span className="block px-3 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Locations</span>
-                 <Link to="/rent/car/in/guwahati" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>Guwahati</Link>
-                 <Link to="/rent/car/in/jorhat" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>Jorhat</Link>
-                 <Link to="/rent/car/in/dibrugarh" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>Dibrugarh</Link>
-                 <Link to="/rent/car/in/tezpur" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>Tezpur</Link>
-                 <Link to="/rent/car/in/silchar" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>Silchar</Link>
-                 <Link to="/rent/car/in/shillong" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>Shillong</Link>
-              </div>
+            <div className="p-4 space-y-1 backdrop-blur-xl">
+              {!user && (
+                <>
+                  {NAV_LINKS.map((link) => (
+                    <Link key={link.to} to={link.to} className="block px-4 py-3 text-sm font-medium text-foreground hover:bg-slate-100 rounded-xl transition-colors" onClick={() => setMobileOpen(false)}>
+                      {link.label}
+                    </Link>
+                  ))}
+                  <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="block px-4 py-3 text-sm font-medium text-foreground hover:bg-slate-100 rounded-xl transition-colors" onClick={() => setMobileOpen(false)}>
+                    Contact
+                  </a>
+                </>
+              )}
               {user ? (
                 <>
-                  <Link to="/bookings" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>
+                  <Link to="/bookings" className="block px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground rounded-xl hover:bg-slate-100 transition-colors" onClick={() => setMobileOpen(false)}>
                     My Bookings
                   </Link>
-                  <Link to="/profile" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>
+                  <Link to="/profile" className="block px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground rounded-xl hover:bg-slate-100 transition-colors" onClick={() => setMobileOpen(false)}>
                     Profile
                   </Link>
                   {user.user_type === "shop_owner" && (
-                    <Link to="/owner/dashboard" className="block px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground rounded-lg hover:bg-secondary/50 transition-colors" onClick={() => setMobileOpen(false)}>
+                    <Link to="/owner/dashboard" className="block px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground rounded-xl hover:bg-slate-100 transition-colors" onClick={() => setMobileOpen(false)}>
                       Dashboard
                     </Link>
                   )}
                   <button
-                    className="w-full text-left px-3 py-2.5 text-sm text-destructive rounded-lg hover:bg-destructive/10 transition-colors"
+                    className="w-full text-left px-4 py-3 text-sm font-medium text-destructive rounded-xl hover:bg-destructive/10 transition-colors"
                     onClick={() => { logout(); setMobileOpen(false); navigate("/"); }}
                   >
                     Sign Out
@@ -166,7 +159,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <div className="pt-2">
-                  <Button variant="outline" className="w-full rounded-xl border-primary text-primary hover:bg-primary/5" onClick={() => { setMobileOpen(false); navigate("/login"); }}>
+                  <Button variant="outline" className="w-full rounded-full border-primary text-primary hover:bg-primary/5 h-11" onClick={() => { setMobileOpen(false); navigate("/login"); }}>
                     Login
                   </Button>
                 </div>

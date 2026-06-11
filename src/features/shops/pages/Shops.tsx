@@ -3,14 +3,31 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
-import { MapPin, Star, ChevronRight, Phone, Clock, Store, Search } from "lucide-react";
+import { MapPin, Star, ChevronRight, Phone, Clock, Store, Search, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { formatIndianPhone } from "@/lib/phone";
 import { SEO } from "@/components/common/SEO";
 import { getShops } from "@/features/shops/services/shopService";
 
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "918011401900";
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi GoPanda, please help me find a rental shop in Guwahati.")}`;
+
+type ShopListItem = {
+  id: string | number;
+  name?: string;
+  city?: string;
+  address?: string;
+  state?: string;
+  phone_number?: string;
+  opening_time?: string;
+  closing_time?: string;
+  description?: string;
+  rating?: number;
+  is_active?: boolean;
+};
+
 export default function Shops() {
-  const [shops, setShops] = useState<any[]>([]);
+  const [shops, setShops] = useState<ShopListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
@@ -28,15 +45,15 @@ export default function Shops() {
   return (
     <div className="min-h-screen pt-24 pb-16">
       <SEO
-        title="Verified Rental Shops Near You | GoPanda"
-        description="Browse verified bike, scooty, and car rental shops in Guwahati and across Assam. See ratings, timings, and available vehicles from real local shops."
+        title="Verified Vehicle Rental Shops in Guwahati | GoPanda"
+        description="Explore local rental shops listed on GoPanda and find vehicles near you."
         keywords="bike rental shops guwahati, car rental shops near me, vehicle rental shops assam, car rental in guwahati"
         canonical="https://www.gopanda.in/shops"
         schema={JSON.stringify({
           '@context': 'https://schema.org',
           '@type': 'WebPage',
-          name: 'Verified Rental Shops Near You | GoPanda',
-          description: 'Browse verified bike, scooty, and car rental shops in Guwahati and across Assam.',
+          name: 'Verified Vehicle Rental Shops in Guwahati | GoPanda',
+          description: 'Explore local rental shops listed on GoPanda and find vehicles near you.',
           url: 'https://www.gopanda.in/shops',
           breadcrumb: {
             '@type': 'BreadcrumbList',
@@ -54,16 +71,17 @@ export default function Shops() {
           <div>
             <p className="text-xs font-display uppercase tracking-[0.3em] text-muted-foreground mb-2">Browse</p>
             <h1 className="font-display text-3xl md:text-5xl font-bold">
-              Verified Bike and Car Rental <span className="text-primary">Shops</span> Near You
+              Verified Vehicle Rental Shops in Guwahati
             </h1>
             <p className="text-muted-foreground mt-2 max-w-lg">
-              Real shops run by real people. Pick one near you, see what they have, and book a ride.
+              Explore local rental shops listed on GoPanda and find vehicles near you.
             </p>
           </div>
 
           <div className="relative max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              aria-label="Search shops"
               placeholder="Search shops by name or city..."
               className="pl-11 bg-card/80 border-border rounded-xl"
               value={search}
@@ -87,7 +105,20 @@ export default function Shops() {
             <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
               <Store className="h-8 w-8 text-primary" />
             </div>
-            <p className="text-muted-foreground">No shops found.</p>
+            <div className="space-y-2">
+              <h2 className="font-display text-xl font-bold">No shops found</h2>
+              <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                We are onboarding rental shops in this area. Chat with GoPanda on WhatsApp and we'll help you find availability.
+              </p>
+            </div>
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-xl bg-[#25D366] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[#1ebe5d]"
+            >
+              <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp GoPanda
+            </a>
           </motion.div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -179,25 +210,6 @@ export default function Shops() {
             ))}
           </div>
         )}
-        {/* ─── RENT BY CITY (SEO CROSS-LINKS) ─── */}
-        <div className="mt-16 pt-10 border-t border-border">
-          <h3 className="font-display text-lg font-bold text-foreground mb-4">Rent vehicles by city</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {['guwahati', 'jorhat', 'dibrugarh', 'tezpur', 'silchar', 'shillong'].map(city => (
-              <div key={city} className="space-y-1.5">
-                <h4 className="text-sm font-semibold text-foreground capitalize">{city}</h4>
-                <ul className="space-y-1 text-xs text-muted-foreground">
-                  <li><a href={`/rent/car/in/${city}`} className="hover:text-primary transition-colors">Car rental</a></li>
-                  <li><a href={`/rent/bike/in/${city}`} className="hover:text-primary transition-colors">Bike rental</a></li>
-                  <li><a href={`/rent/scooty/in/${city}`} className="hover:text-primary transition-colors">Scooty rental</a></li>
-                </ul>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4">
-            <a href="/search-vehicles" className="text-sm text-primary hover:underline font-medium">Search all vehicles →</a>
-          </div>
-        </div>
       </div>
     </div>
   );

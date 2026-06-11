@@ -11,11 +11,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { ArrowLeft, Gauge, Calendar, Info, MapPin, Shield, Clock, CheckCircle2, Star, MessageSquare, ChevronRight } from "lucide-react";
+import { ArrowLeft, Gauge, Calendar, Info, Shield, Clock, CheckCircle2, Star, MessageSquare, ChevronRight, Phone, MapPinned } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SEO } from "@/components/common/SEO";
 import { EmptyState } from "@/components/common/EmptyState";
 import VehicleCard from "@/features/vehicles/components/VehicleCard";
+import { buildWhatsAppUrl, cleanWhatsAppPhone } from "@/lib/phone";
 
 const TYPE_EMOJI: Record<string, string> = {
   scooty: "🛵", bike: "🏍️", car: "🚗", mountain: "🚵",
@@ -29,8 +30,13 @@ export default function VehicleDetail() {
   const [shop, setShop] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [activeImage, setActiveImage] = useState(0);
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [startTimeVal, setStartTimeVal] = useState("09:00");
+  const [endDate, setEndDate] = useState("");
+  const [endTimeVal, setEndTimeVal] = useState("09:00");
+
+  const startTime = startDate && startTimeVal ? `${startDate}T${startTimeVal}` : "";
+  const endTime = endDate && endTimeVal ? `${endDate}T${endTimeVal}` : "";
   const [utrNumber, setUtrNumber] = useState("");
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
@@ -85,6 +91,8 @@ export default function VehicleDetail() {
 
   const totalPrice = calculateTotalPrice();
   const tokenAmount = totalPrice > 0 ? Math.max(299, Math.floor(totalPrice * 0.10)) : 299;
+  const mapUrl = shop?.shop_location || shop?.googleMapsUrl || shop?.gmapLink || shop?.mapUrl || shop?.locationUrl || "";
+  const contactShopUrl = shop?.phone_number ? `tel:${shop.phone_number.replace(/\\D/g, '')}` : "";
 
   const handleWhatsAppRedirect = (booking: any, vehicleName: string, shopPhone: string, customerName: string, waWindow: Window | null) => {
     // Use your real backend URL for the magic links
@@ -116,9 +124,8 @@ ${confirmLink}
 [x] *TAP TO REJECT:*
 ${rejectLink}`;
 
-    const encodedMessage = encodeURIComponent(message);
-    const cleanPhone = shopPhone.replace(/[^\w\s]/gi, '').replace(/\s+/g, '');
-    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+    const cleanPhone = cleanWhatsAppPhone(shopPhone);
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 
     if (waWindow) {
       waWindow.location.href = whatsappUrl;
@@ -220,7 +227,7 @@ ${rejectLink}`;
   });
 
   return (
-    <div className="min-h-screen pt-24 pb-16">
+    <div className="overflow-x-hidden relative min-h-screen pt-24 pb-28 md:pb-16 w-full max-w-[100vw]">
       <SEO
         title={`Rent ${vehicle.name}${vehicle.model ? ` ${vehicle.model}` : ''} in ${shop?.city || 'Guwahati'} | GoPanda`}
         description={vehicle.description || `Rent ${vehicle.name} from ${shop?.name || 'a verified shop'} in ${shop?.city || 'Guwahati'}. ₹${vehicle.price_per_day || ''}/day. Book online with a small token.`}
@@ -253,7 +260,7 @@ ${rejectLink}`;
                 <img
                   src={heroImage}
                   alt={vehicle.name}
-                  fetchPriority="high"
+                  fetchpriority="high"
                   loading="eager"
                   decoding="sync"
                   className="h-full w-full object-cover"
@@ -352,18 +359,34 @@ ${rejectLink}`;
 
                 <Separator />
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl border border-border/60 bg-background/70 p-4 space-y-3">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Pay a small token to lock the booking. The remaining amount is paid directly to the rental shop at pickup.
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Need help choosing a vehicle? Chat with GoPanda on WhatsApp.
+                  </p>
+                  <div className="grid gap-2 text-xs font-display text-muted-foreground sm:grid-cols-3">
+                    <span className="rounded-lg bg-secondary/60 px-3 py-2 text-center">Token to confirm</span>
+                    <span className="rounded-lg bg-secondary/60 px-3 py-2 text-center">Balance at pickup</span>
+                    <span className="rounded-lg bg-secondary/60 px-3 py-2 text-center">Direct shop settlement</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-3 w-3" /> Start
+                    <Label htmlFor="booking-start-date" className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> Pickup
                     </Label>
-                    <Input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="bg-background rounded-xl" />
+                    <Input id="booking-start-date" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-background rounded-xl h-12 text-base px-4 w-full" />
+                    <Input id="booking-start-time" type="time" value={startTimeVal} onChange={(e) => setStartTimeVal(e.target.value)} className="bg-background rounded-xl h-10 text-sm px-4 w-full" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-3 w-3" /> End
+                    <Label htmlFor="booking-end-date" className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> Return
                     </Label>
-                    <Input type="datetime-local" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="bg-background rounded-xl" />
+                    <Input id="booking-end-date" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="bg-background rounded-xl h-12 text-base px-4 w-full" />
+                    <Input id="booking-end-time" type="time" value={endTimeVal} onChange={(e) => setEndTimeVal(e.target.value)} className="bg-background rounded-xl h-10 text-sm px-4 w-full" />
                   </div>
                 </div>
 
@@ -376,32 +399,44 @@ ${rejectLink}`;
                     </div>
                     <div className="flex items-center justify-between bg-background p-3 rounded-lg border border-border">
                       <span className="font-display font-bold text-lg text-primary">₹{tokenAmount}.00</span>
-                      <Button asChild size="sm" className="font-display glow">
-                        <a href={`upi://pay?pa=${shop?.upi_id || "default@upi"}&pn=${encodeURIComponent(shop?.name || "Shop Owner")}&am=${tokenAmount}.00&cu=INR&tn=${encodeURIComponent("RideWheel Token Advance")}`} target="_blank" rel="noreferrer">
+                      <Button asChild size="sm" className="font-display">
+                        <a href={`upi://pay?pa=${shop?.upi_id || "default@upi"}&pn=${encodeURIComponent(shop?.name || "Shop Owner")}&am=${tokenAmount}.00&cu=INR&tn=${encodeURIComponent("GoPanda Token Advance")}`} target="_blank" rel="noopener noreferrer">
                           Pay via UPI App
                         </a>
                       </Button>
                     </div>
                     <div className="space-y-2 pt-2">
-                      <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Step 2: Enter 12-Digit UTR</Label>
-                      <Input placeholder="e.g. 321456789012" value={utrNumber} onChange={(e) => setUtrNumber(e.target.value)} maxLength={12} className="bg-background font-mono text-sm tracking-widest" />
+                      <Label htmlFor="booking-utr-number" className="text-xs font-display uppercase tracking-wider text-muted-foreground">Step 2: Enter 12-Digit UTR</Label>
+                      <Input id="booking-utr-number" placeholder="e.g. 321456789012" value={utrNumber} onChange={(e) => setUtrNumber(e.target.value)} maxLength={12} className="bg-background font-mono text-sm tracking-widest" />
                     </div>
                   </div>
                 )}
 
                 <Button
-                  className="w-full font-display gap-2 rounded-xl glow"
+                  className={`w-full font-display gap-2 rounded-xl ${utrNumber.length === 12 ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}`}
                   size="lg"
                   onClick={handleBook}
                   disabled={booking || vehicle.is_available === false || utrNumber.length !== 12}
                 >
                   <Calendar className="h-4 w-4" />
-                  {booking ? "Booking..." : vehicle.is_available === false ? "Unavailable" : "Book Now"}
+                  {booking ? "Booking..." : vehicle.is_available === false ? "Unavailable" : !startTime || !endTime ? "Select dates to book" : utrNumber.length !== 12 ? "Enter UTR to book" : "Book"}
                 </Button>
 
-                <div className="flex items-center justify-center gap-4 text-[10px] text-muted-foreground font-display uppercase tracking-wider">
-                  <span className="flex items-center gap-1"><Shield className="h-3 w-3" /> Insured</span>
-                  <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3" /> Verified</span>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {contactShopUrl && (
+                    <Button asChild variant="outline" className="rounded-xl gap-2">
+                      <a href={contactShopUrl} target="_blank" rel="noopener noreferrer">
+                        <Phone className="h-4 w-4" /> Contact Shop
+                      </a>
+                    </Button>
+                  )}
+                  {mapUrl && (
+                    <Button asChild className="rounded-xl gap-2 bg-emerald-500 hover:bg-emerald-600 text-white">
+                      <a href={mapUrl} target="_blank" rel="noopener noreferrer">
+                        <MapPinned className="h-4 w-4" /> Locate Shop
+                      </a>
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -439,6 +474,38 @@ ${rejectLink}`;
                 </Card>
               ))}
             </div>
+          )}
+        </div>
+      </div>
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/95 p-3 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
+        <div className={`grid gap-2 ${contactShopUrl && mapUrl ? "grid-cols-3" : contactShopUrl || mapUrl ? "grid-cols-2" : "grid-cols-1"}`}>
+          <Button
+            className="h-11 rounded-xl font-bold"
+            onClick={handleBook}
+            disabled={booking || vehicle.is_available === false || utrNumber.length !== 12}
+          >
+            <Calendar className="mr-1 h-4 w-4" />
+            {booking ? "Booking..." : vehicle.is_available === false ? "Unavailable" : "Book"}
+          </Button>
+          {contactShopUrl && (
+            <a
+              href={contactShopUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-white px-2 text-xs font-bold text-foreground transition-colors hover:bg-secondary"
+            >
+              <Phone className="mr-1 h-4 w-4" /> Contact
+            </a>
+          )}
+          {mapUrl && (
+            <a
+              href={mapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 items-center justify-center rounded-xl bg-emerald-500 px-2 text-xs font-bold text-white transition-colors hover:bg-emerald-600"
+            >
+              <MapPinned className="mr-1 h-4 w-4" /> Locate
+            </a>
           )}
         </div>
       </div>

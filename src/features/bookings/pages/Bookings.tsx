@@ -156,7 +156,7 @@ export default function Bookings() {
             </h1>
           </div>
           <Button
-            onClick={() => navigate("/search")}
+            onClick={() => navigate("/search-vehicles")}
             className="font-display gap-2 glow"
           >
             <Bike className="h-4 w-4" /> Book a Ride
@@ -232,7 +232,7 @@ export default function Bookings() {
               </p>
             </div>
             <Button
-              onClick={() => navigate("/search")}
+              onClick={() => navigate("/search-vehicles")}
               size="lg"
               className="font-display gap-2 glow"
             >
@@ -367,6 +367,7 @@ export default function Bookings() {
                                     size="icon"
                                     className="h-8 w-8 text-muted-foreground"
                                     onClick={() => navigate(`/bookings/${b.id}`)}
+                                    aria-label={`View booking ${String(b.id).slice(0, 8)}`}
                                   >
                                     <ChevronRight className="h-4 w-4" />
                                   </Button>

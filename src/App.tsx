@@ -2,7 +2,6 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
-import WhatsAppButton from './components/common/WhatsAppButton';
 import { LoadingState } from './components/common/LoadingState';
 import { AuthProvider } from './features/auth/context/AuthContext';
 
@@ -37,7 +36,6 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Navbar />
-        <WhatsAppButton />
         <Suspense fallback={<LoadingState />}>
           <Routes>
             <Route path="/" element={<Index />} />

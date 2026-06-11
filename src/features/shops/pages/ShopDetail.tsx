@@ -14,15 +14,17 @@ import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, MapPin, Star, Send, Phone, Clock, Plus, Trash2, X,
-  Bike, Store, MessageSquare,
+  Bike, Store, MessageSquare, MapPinned,
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { formatIndianPhone } from "@/lib/phone";
+import { buildWhatsAppUrl, formatIndianPhone } from "@/lib/phone";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SEO } from "@/components/common/SEO";
 import { EmptyState } from "@/components/common/EmptyState";
 import { getShop } from "@/features/shops/services/shopService";
+
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "918011401900";
 
 export default function ShopDetail() {
   const { id } = useParams<{ id: string }>();
@@ -140,6 +142,12 @@ export default function ShopDetail() {
   const avgRating = reviews.length > 0
     ? (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length).toFixed(1)
     : null;
+  const mapUrl = shop.shop_location || shop.googleMapsUrl || shop.gmapLink || shop.mapUrl || shop.locationUrl || "";
+  const contactShopUrl = shop?.phone_number ? `tel:${shop.phone_number.replace(/\\D/g, '')}` : "";
+  const goPandaWhatsAppUrl = buildWhatsAppUrl(
+    WHATSAPP_NUMBER,
+    `Hi GoPanda, please help me check current availability for ${shop.name || "this shop"}.`
+  );
 
   // Build LocalBusiness schema for this shop
   const shopSchema = JSON.stringify({
@@ -228,10 +236,31 @@ export default function ShopDetail() {
                   {shop.description && (
                     <p className="text-sm text-muted-foreground/80 max-w-2xl leading-relaxed">{shop.description}</p>
                   )}
+                  <p className="text-xs text-muted-foreground max-w-2xl">
+                    GoPanda is built in Assam to make local vehicle rentals simpler, safer, and more transparent.
+                  </p>
                 </div>
 
                 {/* Stats sidebar */}
                 <div className="flex md:flex-col items-center gap-6 md:gap-4 md:text-right shrink-0">
+                  {(contactShopUrl || mapUrl) && (
+                    <div className="flex flex-col sm:flex-row md:flex-col gap-2 w-full md:w-auto">
+                      {contactShopUrl && (
+                        <Button asChild className="rounded-xl gap-2">
+                          <a href={contactShopUrl} target="_blank" rel="noopener noreferrer">
+                            <Phone className="h-4 w-4" /> Contact Shop
+                          </a>
+                        </Button>
+                      )}
+                      {mapUrl && (
+                        <Button asChild className="rounded-xl gap-2 bg-emerald-500 hover:bg-emerald-600 text-white">
+                          <a href={mapUrl} target="_blank" rel="noopener noreferrer">
+                            <MapPinned className="h-4 w-4" /> Locate Shop
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  )}
                   {avgRating && (
                     <div>
                       <div className="flex items-center gap-1 justify-end">
@@ -279,23 +308,23 @@ export default function ShopDetail() {
                   <CardContent className="p-6 space-y-4">
                     <div className="flex items-center justify-between">
                       <h3 className="font-display font-bold text-lg">New Vehicle</h3>
-                      <Button variant="ghost" size="icon" onClick={() => setShowAddVehicle(false)} className="h-8 w-8">
+                      <Button variant="ghost" size="icon" onClick={() => setShowAddVehicle(false)} className="h-8 w-8" aria-label="Close add vehicle form">
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Name *</Label>
-                        <Input value={vehicleForm.name} onChange={(e) => setVehicleForm((f) => ({ ...f, name: e.target.value }))} placeholder="Honda Activa" className="bg-background rounded-xl" />
+                        <Label htmlFor="vehicle-name" className="text-xs font-display uppercase tracking-wider text-muted-foreground">Name *</Label>
+                        <Input id="vehicle-name" value={vehicleForm.name} onChange={(e) => setVehicleForm((f) => ({ ...f, name: e.target.value }))} placeholder="Honda Activa" className="bg-background rounded-xl" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Model *</Label>
-                        <Input value={vehicleForm.model} onChange={(e) => setVehicleForm((f) => ({ ...f, model: e.target.value }))} placeholder="2024" className="bg-background rounded-xl" />
+                        <Label htmlFor="vehicle-model" className="text-xs font-display uppercase tracking-wider text-muted-foreground">Model *</Label>
+                        <Input id="vehicle-model" value={vehicleForm.model} onChange={(e) => setVehicleForm((f) => ({ ...f, model: e.target.value }))} placeholder="2024" className="bg-background rounded-xl" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Type</Label>
                         <Select value={vehicleForm.bike_type} onValueChange={(v) => setVehicleForm((f) => ({ ...f, bike_type: v }))}>
-                          <SelectTrigger className="bg-background rounded-xl"><SelectValue /></SelectTrigger>
+                          <SelectTrigger aria-label="Vehicle type" className="bg-background rounded-xl"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             {["scooty", "bike", "car", "mountain", "road", "hybrid", "electric"].map((t) => (
                               <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
@@ -304,21 +333,21 @@ export default function ShopDetail() {
                         </Select>
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Engine CC</Label>
-                        <Input type="number" value={vehicleForm.engine_cc} onChange={(e) => setVehicleForm((f) => ({ ...f, engine_cc: e.target.value }))} placeholder="150" className="bg-background rounded-xl" />
+                        <Label htmlFor="vehicle-engine-cc" className="text-xs font-display uppercase tracking-wider text-muted-foreground">Engine CC</Label>
+                        <Input id="vehicle-engine-cc" type="number" value={vehicleForm.engine_cc} onChange={(e) => setVehicleForm((f) => ({ ...f, engine_cc: e.target.value }))} placeholder="150" className="bg-background rounded-xl" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Price/Hour (₹) *</Label>
-                        <Input type="number" value={vehicleForm.price_per_hour} onChange={(e) => setVehicleForm((f) => ({ ...f, price_per_hour: e.target.value }))} placeholder="50" className="bg-background rounded-xl" />
+                        <Label htmlFor="vehicle-price-hour" className="text-xs font-display uppercase tracking-wider text-muted-foreground">Price/Hour (₹) *</Label>
+                        <Input id="vehicle-price-hour" type="number" value={vehicleForm.price_per_hour} onChange={(e) => setVehicleForm((f) => ({ ...f, price_per_hour: e.target.value }))} placeholder="50" className="bg-background rounded-xl" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Price/Day (₹) *</Label>
-                        <Input type="number" value={vehicleForm.price_per_day} onChange={(e) => setVehicleForm((f) => ({ ...f, price_per_day: e.target.value }))} placeholder="500" className="bg-background rounded-xl" />
+                        <Label htmlFor="vehicle-price-day" className="text-xs font-display uppercase tracking-wider text-muted-foreground">Price/Day (₹) *</Label>
+                        <Input id="vehicle-price-day" type="number" value={vehicleForm.price_per_day} onChange={(e) => setVehicleForm((f) => ({ ...f, price_per_day: e.target.value }))} placeholder="500" className="bg-background rounded-xl" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Condition</Label>
                         <Select value={vehicleForm.condition} onValueChange={(v: any) => setVehicleForm((f) => ({ ...f, condition: v }))}>
-                          <SelectTrigger className="bg-background rounded-xl"><SelectValue /></SelectTrigger>
+                          <SelectTrigger aria-label="Vehicle condition" className="bg-background rounded-xl"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="excellent">Excellent</SelectItem>
                             <SelectItem value="good">Good</SelectItem>
@@ -327,8 +356,9 @@ export default function ShopDetail() {
                         </Select>
                       </div>
                       <div className="space-y-1.5 md:col-span-2">
-                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Vehicle Photos (max 3)</Label>
+                        <Label htmlFor="vehicle-photos" className="text-xs font-display uppercase tracking-wider text-muted-foreground">Vehicle Photos (max 3)</Label>
                         <Input
+                          id="vehicle-photos"
                           type="file"
                           accept="image/*"
                           multiple
@@ -340,8 +370,8 @@ export default function ShopDetail() {
                         )}
                       </div>
                       <div className="space-y-1.5 md:col-span-2">
-                        <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">Description</Label>
-                        <Textarea value={vehicleForm.description} onChange={(e) => setVehicleForm((f) => ({ ...f, description: e.target.value }))} placeholder="Optional description..." className="bg-background rounded-xl" />
+                        <Label htmlFor="vehicle-description" className="text-xs font-display uppercase tracking-wider text-muted-foreground">Description</Label>
+                        <Textarea id="vehicle-description" value={vehicleForm.description} onChange={(e) => setVehicleForm((f) => ({ ...f, description: e.target.value }))} placeholder="Optional description..." className="bg-background rounded-xl" />
                       </div>
                     </div>
                     <Button onClick={handleAddVehicle} disabled={addingVehicle} className="font-display gap-2 rounded-xl glow">
@@ -357,11 +387,23 @@ export default function ShopDetail() {
             <Card className="border-dashed border-border/50 bg-transparent">
               <CardContent className="p-12 text-center space-y-3">
                 <Bike className="h-10 w-10 text-muted-foreground/30 mx-auto" />
-                <p className="text-muted-foreground text-sm">No vehicles at this shop yet.</p>
-                {isOwner && (
+                {isOwner ? (
                   <Button variant="outline" size="sm" onClick={() => setShowAddVehicle(true)} className="font-display gap-2 rounded-xl">
                     <Plus className="h-4 w-4" /> Add your first vehicle
                   </Button>
+                ) : (
+                  <>
+                    <p className="text-muted-foreground text-sm">
+                      Vehicles are being onboarded for this shop. Need help choosing a vehicle? Chat with GoPanda on WhatsApp.
+                    </p>
+                    {goPandaWhatsAppUrl && (
+                      <Button asChild variant="outline" size="sm" className="font-display gap-2 rounded-xl">
+                        <a href={goPandaWhatsAppUrl} target="_blank" rel="noopener noreferrer">
+                          <MessageSquare className="h-4 w-4" /> WhatsApp GoPanda
+                        </a>
+                      </Button>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -376,6 +418,7 @@ export default function ShopDetail() {
                       size="icon"
                       className="absolute top-3 right-3 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity z-10 rounded-xl"
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget(b); }}
+                      aria-label={`Delete ${b.name || "vehicle"}`}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
