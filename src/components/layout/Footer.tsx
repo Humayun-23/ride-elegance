@@ -12,12 +12,12 @@ const POPULAR_AREAS = [
 ];
 
 const CITIES = [
-  { name: "Guwahati", status: "Available Now" },
-  { name: "Shillong", status: "Limited Partners / Coming Soon" },
-  { name: "Jorhat", status: "Available Now" },
-  { name: "Silchar", status: "Coming Soon" },
-  { name: "Dibrugarh", status: "Coming Soon" },
-  { name: "Tezpur", status: "Coming Soon" },
+  { name: "Guwahati", slug: "guwahati", status: "Available Now" },
+  { name: "Shillong", slug: "shillong", status: "Coming Soon" },
+  { name: "Jorhat", slug: "jorhat", status: "Available Now" },
+  { name: "Silchar", slug: "silchar", status: "Coming Soon" },
+  { name: "Dibrugarh", slug: "dibrugarh", status: "Coming Soon" },
+  { name: "Tezpur", slug: "tezpur", status: "Coming Soon" },
 ];
 
 export default function Footer() {
@@ -36,7 +36,12 @@ export default function Footer() {
             <div className="space-y-1.5 pt-2">
               {CITIES.map((city) => (
                 <p key={city.name} className="text-xs text-muted-foreground">
-                  <span className="font-semibold text-foreground">{city.name}</span> - {city.status}
+                  <a
+                    href={`/rent/car/in/${city.slug}`}
+                    className="font-semibold text-foreground hover:text-primary transition-colors"
+                  >
+                    {city.name}
+                  </a> - {city.status}
                 </p>
               ))}
             </div>

@@ -3,7 +3,8 @@ import { SEO } from '@/components/common/SEO';
 import { useSearchVehicles } from '@/features/vehicles/hooks/useVehicles';
 import VehicleCard from '@/features/vehicles/components/VehicleCard';
 import { motion } from 'framer-motion';
-import { MessageCircle, Search } from 'lucide-react';
+import { MessageCircle, Search, Car, Bike } from 'lucide-react';
+import { TbScooter } from 'react-icons/tb';
 
 const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "918011401900";
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi GoPanda, please help me find rental availability for this category.")}`;
@@ -43,13 +44,12 @@ export default function DynamicLanding() {
   else if (vTypeLower.includes('scooty') || vTypeLower.includes('scooter')) apiType = 'scooty';
   else if (vTypeLower.includes('bike') || vTypeLower.includes('motorcycle')) apiType = 'bike';
 
-  const isGuwahati = parsedCity.toLowerCase().replace(/\s+/g, '-') === 'guwahati';
-  const exactH1 = isGuwahati && apiType === 'bike'
-    ? 'Bike Rental in Guwahati'
-    : isGuwahati && apiType === 'scooty'
-      ? 'Scooty Rental in Guwahati'
-      : isGuwahati && apiType === 'car'
-        ? 'Self-Drive Car Rental in Guwahati'
+  const exactH1 = apiType === 'car'
+    ? `Self Drive Car Rental in ${displayCity}`
+    : apiType === 'bike'
+      ? `Bike Rental in ${displayCity}`
+      : apiType === 'scooty'
+        ? `Scooty Rental in ${displayCity}`
         : '';
 
   // Compute canonical URL for this page — normalizes synonym slugs to canonical
@@ -74,6 +74,32 @@ export default function DynamicLanding() {
     .map((v) => Number(v.price_per_day))
     .filter((price) => Number.isFinite(price) && price > 0);
   const startingPrice = validPrices.length > 0 ? Math.min(...validPrices) : 0;
+  const introCopy = apiType === 'car'
+    ? `Find self-drive car rentals in ${displayCity} from verified local rental shops. Check available cars, daily prices, and booking details before confirming your ride.`
+    : apiType === 'bike'
+      ? `Looking for bike rental in ${displayCity}? Find bikes from local rental shops, check availability, and book for short trips, daily travel, or city rides.`
+      : apiType === 'scooty'
+        ? `Rent a scooty in ${displayCity} for easy local travel, college commutes, shopping, or short city rides. Check available scooties from local rental shops and confirm your ride easily.`
+        : '';
+  const faqVehicle = apiType === 'all' ? formattedVehicle : apiType;
+  const faqs = [
+    {
+      question: `How can I book a ${faqVehicle} rental in ${displayCity}?`,
+      answer: 'Choose a vehicle, check the price and availability, then follow the booking steps shown on GoPanda.',
+    },
+    {
+      question: `What documents are needed to rent a ${faqVehicle} in ${displayCity}?`,
+      answer: 'Most rental shops require a valid driving licence and an ID proof. Some shops may also ask for a refundable security deposit.',
+    },
+    {
+      question: 'Are the prices shown daily rental prices?',
+      answer: 'Most prices are shown as daily rental prices. Final pricing may depend on duration, vehicle type, availability, and shop policy.',
+    },
+    {
+      question: 'Can I contact the rental shop before booking?',
+      answer: 'Yes. You can contact the shop to confirm pickup time, documents, and other booking details.',
+    },
+  ];
 
   // Hyper-Local Context Dictionary
   const LOCAL_CONTEXT: Record<string, string> = {
@@ -85,7 +111,7 @@ export default function DynamicLanding() {
   const localContextText = LOCAL_CONTEXT[parsedCity.toLowerCase()] || 'Explore the local area with convenient pickups from local rental shops in your neighborhood.';
 
   // Generate Schema
-  const schema = JSON.stringify({
+  const collectionPageSchema = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: `Rent ${displayVehicle} in ${displayCity}`,
@@ -116,7 +142,20 @@ export default function DynamicLanding() {
         }
       }))
     }
-  });
+  };
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+  const schema = JSON.stringify([collectionPageSchema, faqSchema]);
 
   return (
     <main className="min-h-screen pt-24 pb-16 bg-background">
@@ -139,9 +178,9 @@ export default function DynamicLanding() {
             {exactH1 || <>Rent a <span className="text-primary">{displayVehicle}</span> in {displayCity}</>}
           </h1>
           <p className="text-lg text-muted-foreground">
-            {totalVehicles > 0 
+            {introCopy || (totalVehicles > 0
               ? `${displayVehicle}s from local rental shops in ${displayCity}${startingPrice ? `, starting at ₹${startingPrice}/day` : ""}.`
-              : `${displayVehicle}s from real shops in ${displayCity}. See what's available, lock it with a token, pick it up.`}
+              : `${displayVehicle}s from real shops in ${displayCity}. See what's available, lock it with a token, pick it up.`)}
           </p>
           <p className="text-sm text-muted-foreground">
             Built in Assam. Starting with Guwahati. Expanding across Northeast India.
@@ -193,6 +232,24 @@ export default function DynamicLanding() {
           )}
         </div>
 
+        <section className="mt-12 max-w-4xl mx-auto">
+          <h2 className="font-display text-2xl font-bold text-foreground mb-4">
+            Frequently Asked Questions
+          </h2>
+          <div className="grid gap-3">
+            {faqs.map((faq) => (
+              <div key={faq.question} className="rounded-xl border border-border bg-card p-4">
+                <h3 className="text-sm md:text-base font-semibold text-foreground">
+                  {faq.question}
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                  {faq.answer}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* ─── ON-PAGE TEXT DEPTH FOR SEO ─── */}
         <div className="mt-20 max-w-4xl mx-auto prose prose-slate">
           <h2 className="font-display text-2xl font-bold mb-4">About {displayVehicle} Rentals in {displayCity}</h2>
@@ -217,9 +274,10 @@ export default function DynamicLanding() {
                   <a
                     key={t}
                     href={`/rent/${t}/in/${parsedCity.toLowerCase().replace(/\s+/g, '-')}`}
-                    className="px-4 py-2 rounded-xl bg-card border border-border text-sm font-medium text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border text-sm font-medium text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors"
                   >
-                    {t === 'car' ? '🚗' : t === 'bike' ? '🏍️' : '🛵'} {t.charAt(0).toUpperCase() + t.slice(1)} rental in {displayCity}
+                    {t === 'car' ? <Car className="w-4 h-4" /> : t === 'scooty' ? <TbScooter className="w-4 h-4" /> : <Bike className="w-4 h-4" />}
+                    <span>{t.charAt(0).toUpperCase() + t.slice(1)} rental in {displayCity}</span>
                   </a>
                 ))}
               </div>

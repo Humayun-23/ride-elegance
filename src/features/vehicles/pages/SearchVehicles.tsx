@@ -4,7 +4,8 @@ import { useSearchVehicles } from "@/features/vehicles/hooks/useVehicles";
 import VehicleCard from "@/features/vehicles/components/VehicleCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, ArrowUpDown, MessageCircle } from "lucide-react";
+import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, ArrowUpDown, MessageCircle, Flame, Bike, Car } from "lucide-react";
+import { TbScooter } from "react-icons/tb";
 import { motion } from "framer-motion";
 import { SEO } from "@/components/common/SEO";
 
@@ -12,10 +13,10 @@ const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "918011401900";
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi GoPanda, please help me find an available rental vehicle.")}`;
 
 const TYPES = [
-  { value: "all", label: "All Vehicles", icon: "🔥" },
-  { value: "scooty", label: "Scooty", icon: "🛵" },
-  { value: "bike", label: "Bike", icon: "🏍️" },
-  { value: "car", label: "Car", icon: "🚗" },
+  { value: "all", label: "All Vehicles", icon: Flame },
+  { value: "scooty", label: "Scooty", icon: TbScooter },
+  { value: "bike", label: "Bike", icon: Bike },
+  { value: "car", label: "Car", icon: Car },
 ];
 
 const SORTS = [
@@ -130,7 +131,9 @@ export default function SearchVehicles() {
           </div>
 
           <div className="flex gap-2 flex-wrap">
-            {TYPES.map((t) => (
+            {TYPES.map((t) => {
+              const Icon = t.icon;
+              return (
               <button
                 key={t.value}
                 onClick={() => handleTypeChange(t.value)}
@@ -139,10 +142,11 @@ export default function SearchVehicles() {
                   : "bg-card/60 text-muted-foreground hover:text-foreground hover:bg-card border border-border"
                   }`}
               >
-                <span>{t.icon}</span>
+                <Icon className="w-4 h-4" />
                 {t.label}
               </button>
-            ))}
+              );
+            })}
           </div>
         </div>
 

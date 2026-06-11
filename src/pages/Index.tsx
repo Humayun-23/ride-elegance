@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Search, Zap, ArrowRight, MapPin, ChevronRight, ShieldCheck, Wallet, Car, Store, MessageCircle, CalendarDays, CheckCircle2, Star } from "lucide-react";
+import { Search, Zap, ArrowRight, MapPin, ChevronRight, ShieldCheck, Wallet, Car, Store, MessageCircle, CalendarDays, CheckCircle2, Star, Bike } from "lucide-react";
 import { useState, useMemo, useEffect, useRef } from "react";
 import VehicleCard from "@/features/vehicles/components/VehicleCard";
 import { useSearchVehicles } from "@/features/vehicles/hooks/useVehicles";
@@ -13,7 +13,7 @@ import { getOptimizedImageUrl } from "@/lib/imageUtils";
 import { Link } from "react-router-dom";
 import { PlatformStats } from "@/components/common/PlatformStats";
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "918011401900";
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER;
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi GoPanda, I need help finding a rental vehicle in Guwahati.")}`;
 
 const POPULAR_AREAS = [
@@ -30,15 +30,15 @@ const POPULAR_AREAS = [
 ];
 
 const HERO_VEHICLE_TYPES = [
-  { label: "Bike", value: "bike", icon: "🏍️" },
-  { label: "Scooty", value: "scooty", icon: "🛵" },
-  { label: "Car", value: "car", icon: "🚗" },
+  { label: "Bike", value: "bike" },
+  { label: "Scooty", value: "scooty" },
+  { label: "Car", value: "car" },
 ];
 
 const VEHICLE_TYPES = [
-  { label: "Bike Rental", icon: "🏍️", value: "bike", desc: "Manual bikes for city rides and weekend routes" },
-  { label: "Scooty Rental", icon: "🛵", value: "scooty", desc: "Easy daily rides around Guwahati" },
-  { label: "Self-Drive Car Rental", icon: "🚗", value: "car", desc: "Cars for family trips and longer drives" },
+  { label: "Bike Rental", icon: Bike, value: "bike", desc: "Manual bikes for city rides and weekend routes" },
+  { label: "Scooty Rental", icon: Bike, value: "scooty", desc: "Easy daily rides around Guwahati" },
+  { label: "Self-Drive Car Rental", icon: Car, value: "car", desc: "Cars for family trips and longer drives" },
 ];
 
 const TRUST_CARDS = [
@@ -91,10 +91,10 @@ export default function Index() {
   });
   const primaryHeroImageSrcSet = primaryHeroVehicle?.image_url
     ? [
-        `${getOptimizedImageUrl(primaryHeroVehicle.image_url, { width: 420, height: 300, crop: "fill" })} 420w`,
-        `${getOptimizedImageUrl(primaryHeroVehicle.image_url, { width: 640, height: 455, crop: "fill" })} 640w`,
-        `${primaryHeroImage} 760w`,
-      ].join(", ")
+      `${getOptimizedImageUrl(primaryHeroVehicle.image_url, { width: 420, height: 300, crop: "fill" })} 420w`,
+      `${getOptimizedImageUrl(primaryHeroVehicle.image_url, { width: 640, height: 455, crop: "fill" })} 640w`,
+      `${primaryHeroImage} 760w`,
+    ].join(", ")
     : "";
 
   const handleSearch = (e?: React.FormEvent) => {
@@ -312,20 +312,20 @@ export default function Index() {
               <div className="flex flex-col gap-2 pt-1">
                 <span className="text-xs text-muted-foreground">Pickup areas:</span>
                 <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 lg:justify-start [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                {POPULAR_AREAS.map((place) => (
-                  <button
-                    key={place}
-                    type="button"
-                    onClick={() => {
-                      const params = new URLSearchParams({ q: place });
-                      if (vehicleType) params.append("type", vehicleType);
-                      navigate(`/search-vehicles?${params.toString()}`);
-                    }}
-                    className="shrink-0 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-secondary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/10 hover:text-primary"
-                  >
-                    {place} <span aria-hidden="true">→</span>
-                  </button>
-                ))}
+                  {POPULAR_AREAS.map((place) => (
+                    <button
+                      key={place}
+                      type="button"
+                      onClick={() => {
+                        const params = new URLSearchParams({ q: place });
+                        if (vehicleType) params.append("type", vehicleType);
+                        navigate(`/search-vehicles?${params.toString()}`);
+                      }}
+                      className="shrink-0 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-secondary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/10 hover:text-primary"
+                    >
+                      {place} <span aria-hidden="true">→</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             </motion.div>
@@ -504,7 +504,7 @@ export default function Index() {
                 onScroll={(e) => {
                   const target = e.currentTarget;
                   const scrollLeft = target.scrollLeft; // Read only scrollLeft immediately
-                  
+
                   if (scrollTimeout.current === null) {
                     scrollTimeout.current = window.setTimeout(() => {
                       // Perform layout reads asynchronously and throttled
@@ -574,11 +574,11 @@ export default function Index() {
 
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
                 <motion.div whileHover={{ y: -5 }} className="card-elevated rounded-2xl p-6">
-                    <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
-                      <Search className="h-5 w-5" />
-                    </div>
-                    <h3 className="text-lg font-bold text-foreground mb-2">No More Calling Multiple Shops</h3>
-                    <p className="text-muted-foreground text-sm">Compare local rental options in one place.</p>
+                  <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
+                    <Search className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground mb-2">No More Calling Multiple Shops</h3>
+                  <p className="text-muted-foreground text-sm">Compare local rental options in one place.</p>
                 </motion.div>
 
                 <motion.div whileHover={{ y: -5 }} className="card-elevated rounded-2xl p-6">
@@ -618,16 +618,19 @@ export default function Index() {
                 </div>
               </div>
               <div className="grid md:grid-cols-3 gap-5">
-                {VEHICLE_TYPES.map((type) => (
-                  <a key={type.value} href={`/rent/${type.value}/in/guwahati`} className="rounded-2xl border border-border bg-background p-6 shadow-sm hover:shadow-md hover:border-primary/20 transition-all">
-                    <span className="text-3xl" aria-hidden="true">{type.icon}</span>
-                    <h3 className="mt-4 text-lg font-bold text-foreground">{type.label}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground">{type.desc}</p>
-                    <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-primary">
-                      Browse Guwahati <ChevronRight className="h-4 w-4" />
-                    </span>
-                  </a>
-                ))}
+                {VEHICLE_TYPES.map((type) => {
+                  const Icon = type.icon;
+                  return (
+                    <a key={type.value} href={`/rent/${type.value}/in/guwahati`} className="rounded-2xl border border-border bg-background p-6 shadow-sm hover:shadow-md hover:border-primary/20 transition-all">
+                      <Icon className="w-8 h-8 text-primary" aria-hidden="true" />
+                      <h3 className="mt-4 text-lg font-bold text-foreground">{type.label}</h3>
+                      <p className="mt-2 text-sm text-muted-foreground">{type.desc}</p>
+                      <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                        Browse Guwahati <ChevronRight className="h-4 w-4" />
+                      </span>
+                    </a>
+                  );
+                })}
               </div>
             </div>
           </section>
@@ -644,7 +647,7 @@ export default function Index() {
                   View All Shops <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
-              
+
               {isLoadingShops ? (
                 <div className="grid md:grid-cols-3 gap-5">
                   {[...Array(3)].map((_, i) => (
@@ -671,7 +674,7 @@ export default function Index() {
                               <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                             </div>
                           </div>
-                          
+
                           <div className="space-y-2 text-sm text-muted-foreground mb-4">
                             {(shop.address || shop.city) && (
                               <p className="flex items-start gap-2">
@@ -680,7 +683,7 @@ export default function Index() {
                               </p>
                             )}
                           </div>
-                          
+
                           <div className="mt-auto pt-4 border-t border-border/50">
                             {shop.rating ? (
                               <div className="flex items-center gap-1.5">
