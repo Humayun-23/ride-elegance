@@ -15,7 +15,7 @@ ${allRoutes
     (route) => `  <url>
     <loc>${BASE_URL}${route}</loc>
     <lastmod>${today}</lastmod>
-    <changefreq>${route === '/' ? 'daily' : route.includes('/rent/') ? 'hourly' : 'weekly'}</changefreq>
+    <changefreq>${route === '/' ? 'daily' : 'weekly'}</changefreq>
     <priority>${route === '/' ? '1.0' : route.includes('/rent/') ? '0.9' : '0.8'}</priority>
   </url>`
   )
