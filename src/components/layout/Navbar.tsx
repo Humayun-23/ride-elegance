@@ -1,9 +1,10 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Car, Menu, X, User, LogOut, Bookmark, LayoutDashboard, Store } from "lucide-react";
+import { Car, Menu, X, User, LogOut, Bookmark, LayoutDashboard, Store, Heart } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useFavorites } from "@/features/vehicles/context/FavoritesContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +26,9 @@ const NAV_LINKS = [
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { favorites } = useFavorites();
 
   const displayName = user ? `${user.firstname || ""} ${user.lastname || ""}`.trim() || user.email : "";
 
@@ -56,6 +59,14 @@ export default function Navbar() {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-3">
+          <Link to="/saved" className="relative p-2 text-slate-600 hover:text-red-500 transition-colors flex items-center justify-center" aria-label="Saved Vehicles">
+            <Heart className="h-5 w-5" />
+            {favorites.length > 0 && (
+              <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
+                {favorites.length}
+              </span>
+            )}
+          </Link>
           {user?.user_type === "shop_owner" && (
             <Button size="sm" onClick={() => navigate("/owner/dashboard?addShop=true")} className="rounded-full glow bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] text-white border-0 hover:scale-105 transition-all duration-300 font-semibold px-5 h-10">
               <Store className="h-4 w-4 mr-2" /> Add Shop
@@ -93,7 +104,7 @@ export default function Navbar() {
             </DropdownMenu>
           ) : (
             <div className="flex gap-2 items-center">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/login")} className="rounded-full text-slate-600 hover:text-slate-950 hover:bg-slate-100 font-semibold px-5 h-10">
+              <Button variant="ghost" size="sm" onClick={() => navigate("/login", { state: { from: location.pathname + location.search } })} className="rounded-full text-slate-600 hover:text-slate-950 hover:bg-slate-100 font-semibold px-5 h-10">
                 Login
               </Button>
               <Button size="sm" onClick={() => navigate("/register")} className="rounded-full glow bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] text-white border-0 hover:scale-105 transition-all duration-300 font-semibold px-6 h-10">
@@ -105,6 +116,14 @@ export default function Navbar() {
 
         {/* Mobile Toggle */}
         <div className="flex items-center gap-2 md:hidden">
+          <Link to="/saved" className="relative p-2 text-slate-600 hover:text-red-500 transition-colors flex items-center justify-center" aria-label="Saved Vehicles">
+            <Heart className="h-5 w-5" />
+            {favorites.length > 0 && (
+              <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
+                {favorites.length}
+              </span>
+            )}
+          </Link>
           {!user && (
             <Button size="sm" onClick={() => navigate("/register")} className="h-9 px-4 rounded-full text-xs font-semibold glow bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] text-white border-0">
               Register
@@ -139,8 +158,9 @@ export default function Navbar() {
                 <>
                   {NAV_LINKS.map((link) => {
                     if (user && link.label === "List Your Shop") return null;
+                    const isActive = location.pathname === link.to || (link.to !== "/" && location.pathname.startsWith(link.to));
                     return (
-                      <Link key={link.to} to={link.to} className="block px-4 py-3 text-sm font-medium text-foreground hover:bg-slate-100 rounded-xl transition-colors" onClick={() => setMobileOpen(false)}>
+                      <Link key={link.to} to={link.to} className={`block px-4 py-3 text-sm font-medium rounded-xl transition-colors ${isActive ? "bg-primary/10 text-primary font-bold" : "text-foreground hover:bg-slate-100"}`} onClick={() => setMobileOpen(false)}>
                         {link.label}
                       </Link>
                     );
@@ -174,7 +194,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <div className="pt-2">
-                  <Button variant="outline" className="w-full rounded-full border-primary text-primary hover:bg-primary/5 h-11" onClick={() => { setMobileOpen(false); navigate("/login"); }}>
+                  <Button variant="outline" className="w-full rounded-full border-primary text-primary hover:bg-primary/5 h-11" onClick={() => { setMobileOpen(false); navigate("/login", { state: { from: location.pathname + location.search } }); }}>
                     Login
                   </Button>
                 </div>

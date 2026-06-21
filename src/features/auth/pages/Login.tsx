@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Car, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { GoogleLogin } from "@react-oauth/google";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { SEO } from "@/components/common/SEO";
@@ -15,16 +16,31 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    try {
+      setLoading(true);
+      await googleLogin(credentialResponse.credential);
+      const from = location.state?.from || "/";
+      navigate(from);
+    } catch (err: any) {
+      toast({ title: "Google login failed", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
       await login(email, password);
-      navigate("/");
+      const from = location.state?.from || "/";
+      navigate(from);
     } catch (err: any) {
       if (String(err.message || "").toLowerCase().includes("email not verified")) {
         toast({ title: "Verify your email", description: "Check your inbox to activate your account." });
@@ -49,15 +65,34 @@ export default function Login() {
         className="w-full max-w-sm relative z-10"
       >
         <div className="text-center space-y-3 mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 font-display text-2xl font-bold">
-            <Car className="h-7 w-7 text-primary" />
-            <span><span className="text-primary">Go</span><span className="text-foreground">Panda</span></span>
+          <Link to="/" className="inline-flex items-center justify-center">
+            <img src="/wordmark.png" alt="GoPanda Logo" className="h-10 w-auto object-contain" onError={(e) => e.currentTarget.style.display = 'none'} />
           </Link>
           <p className="text-muted-foreground text-sm">Welcome back! Sign in to continue.</p>
         </div>
 
         <Card className="border-border/50 bg-card/60 backdrop-blur">
           <CardContent className="p-6">
+            <div className="mb-6 flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => toast({ title: "Google login failed", variant: "destructive" })}
+                shape="rectangular"
+                theme="outline"
+                text="signin_with"
+                size="large"
+              />
+            </div>
+            
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border/50" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="text-xs font-display uppercase tracking-wider text-muted-foreground">Email</Label>

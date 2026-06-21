@@ -26,9 +26,8 @@ export default function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5 mb-10">
           <div className="space-y-3">
-            <a href="/" className="font-display font-bold text-xl text-foreground tracking-tight flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-              <Car className="h-5 w-5 text-primary" />
-              <span className="text-primary">Go</span>Panda
+            <a href="/" className="flex items-center hover:opacity-80 transition-opacity">
+              <img src="/logo-green-black.png" alt="GoPanda Logo" className="h-8 w-auto" />
             </a>
             <p className="text-muted-foreground text-sm leading-relaxed">
               GoPanda helps users book bikes, scooties, and self-drive cars from verified local rental shops.

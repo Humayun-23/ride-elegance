@@ -32,6 +32,8 @@ export default function SearchVehicles() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get("q") || "");
   const activeType = searchParams.get("type") || "all";
+  const [pickupDate, setPickupDate] = useState(searchParams.get("pickup_date") || "");
+  const [returnDate, setReturnDate] = useState(searchParams.get("return_date") || "");
   const [sort, setSort] = useState("default");
   const [page, setPage] = useState(0);
 
@@ -41,6 +43,10 @@ export default function SearchVehicles() {
     if (activeType && activeType !== "all") p.vehicle_type = activeType;
     const searchQ = searchParams.get("q");
     if (searchQ) p.q = searchQ;
+    const pd = searchParams.get("pickup_date");
+    if (pd) p.pickup_date = pd;
+    const rd = searchParams.get("return_date");
+    if (rd) p.return_date = rd;
     return p;
   }, [activeType, searchParams]);
 
@@ -51,6 +57,9 @@ export default function SearchVehicles() {
   const handleSearch = () => {
     const newParams: Record<string, string> = {};
     if (query) newParams.q = query;
+    if (activeType !== "all") newParams.type = activeType;
+    if (pickupDate) newParams.pickup_date = pickupDate;
+    if (returnDate) newParams.return_date = returnDate;
     setSearchParams(newParams);
     setPage(0);
   };
@@ -59,6 +68,8 @@ export default function SearchVehicles() {
     const newParams: Record<string, string> = {};
     if (searchParams.get("q")) newParams.q = searchParams.get("q") as string;
     if (type !== "all") newParams.type = type;
+    if (pickupDate) newParams.pickup_date = pickupDate;
+    if (returnDate) newParams.return_date = returnDate;
     setSearchParams(newParams);
     setPage(0);
   };
@@ -113,7 +124,7 @@ export default function SearchVehicles() {
             </p>
           </div>
 
-          <div className="flex gap-2 max-w-2xl">
+          <div className="flex gap-2 max-w-4xl flex-col md:flex-row">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -125,7 +136,23 @@ export default function SearchVehicles() {
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               />
             </div>
-            <Button onClick={handleSearch} className="font-display h-12 px-6 rounded-xl gap-2">
+            <div className="flex gap-2">
+              <Input 
+                type="date" 
+                aria-label="Pickup date"
+                value={pickupDate}
+                onChange={(e) => setPickupDate(e.target.value)}
+                className="bg-card/80 border-border h-12 rounded-xl text-sm" 
+              />
+              <Input 
+                type="date" 
+                aria-label="Return date"
+                value={returnDate}
+                onChange={(e) => setReturnDate(e.target.value)}
+                className="bg-card/80 border-border h-12 rounded-xl text-sm" 
+              />
+            </div>
+            <Button onClick={handleSearch} className="font-display h-12 px-6 rounded-xl gap-2 md:w-auto w-full">
               <SlidersHorizontal className="h-4 w-4" /> Search
             </Button>
           </div>
@@ -134,17 +161,17 @@ export default function SearchVehicles() {
             {TYPES.map((t) => {
               const Icon = t.icon;
               return (
-              <button
-                key={t.value}
-                onClick={() => handleTypeChange(t.value)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-display transition-all ${activeType === t.value
-                  ? "bg-primary text-primary-foreground glow"
-                  : "bg-card/60 text-muted-foreground hover:text-foreground hover:bg-card border border-border"
-                  }`}
-              >
-                <Icon className="w-4 h-4" />
-                {t.label}
-              </button>
+                <button
+                  key={t.value}
+                  onClick={() => handleTypeChange(t.value)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-display transition-all ${activeType === t.value
+                    ? "bg-primary text-primary-foreground glow"
+                    : "bg-card/60 text-muted-foreground hover:text-foreground hover:bg-card border border-border"
+                    }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {t.label}
+                </button>
               );
             })}
           </div>

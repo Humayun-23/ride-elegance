@@ -22,10 +22,10 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { motion } from "framer-motion";
 import {
   ArrowLeft, Calendar, Clock, CreditCard, Trash2, Bike, Timer,
-  CheckCircle2, XCircle, RotateCcw, Star, Send, Pencil, Save,
+  CheckCircle2, XCircle, RotateCcw, Star, Send, Pencil, Save, ShieldCheck,
 } from "lucide-react";
 
-const STATUS_STEPS = ["pending", "confirmed", "paid", "completed"] as const;
+const STATUS_STEPS = ["pending", "confirmed", "completed"] as const;
 
 const STATUS_COLOR: Record<string, string> = {
   pending: "bg-amber-500/10 text-amber-400 border-amber-500/30",
@@ -172,15 +172,19 @@ export default function BookingDetails() {
 
               {/* Status timeline */}
               {stepIndex >= 0 && (
-                <div className="flex items-center gap-2">
-                  {STATUS_STEPS.map((s, i) => (
-                    <div key={s} className="flex-1 flex items-center gap-2">
-                      <div className={`h-2 flex-1 rounded-full ${i <= stepIndex ? "bg-primary" : "bg-secondary"}`} />
-                      {i === STATUS_STEPS.length - 1 && (
-                        <span className="text-[10px] text-muted-foreground font-display uppercase tracking-wider">{s}</span>
-                      )}
-                    </div>
-                  ))}
+                <div className="flex flex-col gap-2 pt-2">
+                  <div className="flex items-center gap-2">
+                    {STATUS_STEPS.map((s, i) => (
+                      <div key={`bar-${s}`} className={`h-2 flex-1 rounded-full ${i <= stepIndex ? "bg-primary shadow-[0_0_10px_rgba(34,197,94,0.4)]" : "bg-secondary"}`} />
+                    ))}
+                  </div>
+                  <div className="flex justify-between items-center px-1 text-center">
+                    {STATUS_STEPS.map((s, i) => (
+                      <span key={`label-${s}`} className={`text-[10px] font-display uppercase tracking-wider ${i <= stepIndex ? "text-primary font-bold" : "text-muted-foreground"}`}>
+                        {s}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -214,7 +218,7 @@ export default function BookingDetails() {
               </div>
 
               {booking.total_price != null && (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 rounded-xl bg-primary/5 border border-primary/10">
                     <span className="text-sm text-muted-foreground">Total Rental Cost</span>
                     <span className="font-display text-xl font-bold text-foreground">₹{booking.total_price}</span>
@@ -229,6 +233,16 @@ export default function BookingDetails() {
                       <p className="text-[10px] text-muted-foreground font-display uppercase tracking-wider mb-1">Balance at Shop</p>
                       <p className="font-display text-lg font-bold text-primary">₹{Math.max(0, (booking.total_price || 0) - (booking.token_amount || 299))}</p>
                       <p className="text-[10px] text-muted-foreground mt-1">To be paid on pickup</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex gap-3 items-start">
+                    <ShieldCheck className="h-5 w-5 text-emerald-500 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-sm font-semibold text-emerald-700 dark:text-emerald-400 font-display">GoPanda Payment Protection Guarantee</h4>
+                      <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80 mt-1">
+                        Your token amount is 100% protected. If the shop denies your booking or the vehicle is unavailable, you receive an instant full refund.
+                      </p>
                     </div>
                   </div>
                 </div>

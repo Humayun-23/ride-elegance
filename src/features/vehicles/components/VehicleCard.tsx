@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
-import { MapPin, Store, ArrowRight, Bike, Car, Zap } from "lucide-react";
+import { MapPin, Store, ArrowRight, Bike, Car, Zap, CheckCircle, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { getOptimizedImageUrl } from "@/lib/imageUtils";
 import { getShop } from "@/features/shops/services/shopService";
+import { useFavorites } from "@/features/vehicles/context/FavoritesContext";
 
 interface VehicleCardProps {
   vehicle: {
@@ -71,10 +72,22 @@ export default function VehicleCard({
     staleTime: 1000 * 60 * 5, // 5 minutes cache
   });
 
+  const { favorites, toggleFavorite, isFavorite } = useFavorites();
+  const isSaved = isFavorite(vehicle.id);
+
   const displayShopName = vehicle.shop_name || fetchedShopName || "Partner Shop";
 
+  const searchParams = new URLSearchParams(window.location.search);
+  const pickupDate = searchParams.get("pickup_date");
+  const returnDate = searchParams.get("return_date");
+  const linkParams = new URLSearchParams();
+  if (pickupDate) linkParams.append("pickup_date", pickupDate);
+  if (returnDate) linkParams.append("return_date", returnDate);
+  
+  const targetHref = href ?? `/bikes/${vehicle.id}${linkParams.toString() ? `?${linkParams.toString()}` : ""}`;
+
   return (
-    <Link to={href ?? `/bikes/${vehicle.id}`} className="group block h-full">
+    <Link to={targetHref} className="group block h-full">
       <div className="overflow-hidden rounded-3xl card-elevated h-full flex flex-col relative z-10">
         {/* Image — bigger, cleaner */}
         <div className={`${compact ? "aspect-[16/9]" : "aspect-[3/2]"} bg-muted relative overflow-hidden`}>
@@ -114,6 +127,18 @@ export default function VehicleCard({
             </div>
           )}
 
+          {/* Favorite Button */}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              toggleFavorite(vehicle.id);
+            }}
+            className="absolute top-2.5 right-2.5 z-20 p-2 rounded-full bg-background/50 backdrop-blur-md border border-white/20 shadow-sm hover:scale-110 hover:bg-background/80 transition-all"
+            aria-label={isSaved ? "Remove from saved" : "Save for later"}
+          >
+            <Heart className={`h-4 w-4 ${isSaved ? "fill-red-500 text-red-500" : "text-foreground"}`} />
+          </button>
+
           {/* Price overlay — bottom right of image */}
           {!hidePrice && vehicle.price_per_day != null && (
             <div className="absolute bottom-2.5 right-2.5 bg-background/90 backdrop-blur-md border border-white/20 rounded-xl px-3 py-1 shadow-glow transition-transform group-hover:scale-105">
@@ -139,6 +164,10 @@ export default function VehicleCard({
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Store className="h-3 w-3 shrink-0" />
             <span className="truncate">{displayShopName}</span>
+            <span className="inline-flex items-center gap-0.5 text-green-600 bg-green-500/10 px-1.5 py-0.5 rounded text-[10px] font-medium border border-green-500/20">
+              <CheckCircle className="h-2.5 w-2.5" />
+              Verified
+            </span>
           </div>
 
           {vehicle.location && (

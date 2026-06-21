@@ -36,7 +36,8 @@ export default function VerifyEmail() {
         setMessage(data.message || "Email verified successfully.");
         if (data.access_token) {
           setAuthToken(data.access_token);
-          setTimeout(() => navigate("/", { replace: true }), 900);
+          const from = location.state?.from || "/";
+          setTimeout(() => navigate(from, { replace: true }), 900);
         }
       })
       .catch((err: any) => {

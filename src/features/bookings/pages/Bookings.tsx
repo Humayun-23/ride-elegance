@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/context/AuthContext";
-import { cancelBookingById, getUserBookings } from "@/features/bookings/services/bookingService";
+import { cancelBookingById, getUserBookings, getBookingBike } from "@/features/bookings/services/bookingService";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -72,7 +72,7 @@ const STATUS_CONFIG: Record<string, { color: string; icon: React.ReactNode; labe
   },
 };
 
-const FILTER_TABS = ["all", "pending", "confirmed", "paid", "completed", "refunded"] as const;
+const FILTER_TABS = ["all", "pending", "confirmed", "completed", "refunded"] as const;
 
 export default function Bookings() {
   const [bookings, setBookings] = useState<any[]>([]);
@@ -88,10 +88,32 @@ export default function Bookings() {
       navigate("/login");
       return;
     }
-    getUserBookings({ limit: 50 })
-      .then((res) => setBookings(Array.isArray(res.data) ? res.data : []))
-      .catch(() => setBookings([]))
-      .finally(() => setLoading(false));
+    const load = async () => {
+      try {
+        const res = await getUserBookings({ limit: 50 });
+        const data = Array.isArray(res.data) ? res.data : [];
+        
+        // Fetch missing bike details for UI
+        const enriched = await Promise.all(data.map(async (b) => {
+          try {
+            const bikeRes = await getBookingBike(b.bike_id);
+            return {
+              ...b,
+              bike_name: bikeRes.data.name,
+              image_url: bikeRes.data.image_url || null,
+            };
+          } catch {
+            return b;
+          }
+        }));
+        setBookings(enriched);
+      } catch {
+        setBookings([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, [user]);
 
   const cancelBooking = async (id: string) => {
@@ -282,8 +304,19 @@ export default function Bookings() {
 
                           <div className="flex-1 p-5">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                              {/* Booking info */}
-                              <div className="space-y-3 flex-1">
+                              {/* Thumbnail & Booking info */}
+                              <div className="flex flex-1 gap-4 items-center">
+                                {b.image_url ? (
+                                  <div className="h-16 w-16 md:h-20 md:w-24 shrink-0 rounded-xl overflow-hidden border border-border/50">
+                                    <img src={b.image_url} alt={b.bike_name} className="h-full w-full object-cover" />
+                                  </div>
+                                ) : (
+                                  <div className="h-16 w-16 md:h-20 md:w-24 shrink-0 rounded-xl bg-secondary flex items-center justify-center">
+                                    <Bike className="h-6 w-6 text-muted-foreground/50" />
+                                  </div>
+                                )}
+                                
+                                <div className="space-y-3 flex-1">
                                 <div className="flex items-center gap-3 flex-wrap">
                                   <h3 className="font-display font-bold text-lg">
                                     {b.bike_name || `Booking #${String(b.id).slice(0, 8)}`}
@@ -318,6 +351,7 @@ export default function Bookings() {
                                   )}
                                 </div>
                               </div>
+                            </div>
 
                               {/* Right side: Price + Actions */}
                               <div className="flex items-center gap-4">
@@ -334,33 +368,39 @@ export default function Bookings() {
 
                                 <Separator orientation="vertical" className="h-10 hidden md:block" />
 
-                                <div className="flex items-center gap-2">
-                                  {b.status === "pending" && (
-                                    <Badge variant="outline" className="bg-amber-500/10 text-amber-400 border-amber-500/30 font-display text-[10px] uppercase tracking-wider">
-                                      Awaiting approval
-                                    </Badge>
-                                  )}
-                                  {b.status === "pending" && (
+                                <div className="flex items-center gap-2 w-full md:w-auto">
+                                  {["completed", "returned"].includes(b.status) && (
                                     <Button
                                       variant="outline"
-                                      size="sm"
-                                      className="gap-1.5 text-xs text-destructive border-destructive/30 hover:bg-destructive/10 font-display"
-                                      onClick={() => cancelBooking(b.id)}
-                                      disabled={cancellingId === b.id}
+                                      className="flex-1 md:flex-none border-primary/20 text-primary hover:bg-primary/10 rounded-xl"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/bikes/${b.bike_id}`);
+                                      }}
                                     >
-                                      <Trash2 className="h-3.5 w-3.5" />
-                                      {cancellingId === b.id ? "..." : "Cancel"}
+                                      <RotateCcw className="h-4 w-4 mr-2" /> Book Again
                                     </Button>
                                   )}
                                   <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-muted-foreground"
                                     onClick={() => navigate(`/bookings/${b.id}`)}
-                                    aria-label={`View booking ${String(b.id).slice(0, 8)}`}
+                                    variant="outline"
+                                    className="flex-1 md:flex-none rounded-xl"
                                   >
-                                    <ChevronRight className="h-4 w-4" />
+                                    View Details
                                   </Button>
+                                  {b.status === "pending" && (
+                                    <Button
+                                      variant="destructive"
+                                      className="flex-1 md:flex-none rounded-xl"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        cancelBooking(b.id);
+                                      }}
+                                      disabled={cancellingId === b.id}
+                                    >
+                                      {cancellingId === b.id ? "Cancelling..." : "Cancel"}
+                                    </Button>
+                                  )}
                                 </div>
                               </div>
                             </div>

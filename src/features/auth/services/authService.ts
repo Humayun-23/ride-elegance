@@ -5,6 +5,14 @@ export const loginUser = (formData: URLSearchParams | any, config?: any) => {
   return api.post("/login", formData, config);
 };
 
+export const login = (data: URLSearchParams) => {
+  return api.post("/auth/login", data);
+};
+
+export const googleLogin = (credential: string) => {
+  return api.post("/google", { credential });
+};
+
 export const registerUser = (data: any) => {
   return api.post("/users/", data);
 };

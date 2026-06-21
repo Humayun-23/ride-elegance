@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Car, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import { GoogleLogin } from "@react-oauth/google";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { stripIndianPrefix } from "@/lib/phone";
@@ -20,9 +21,23 @@ export default function Register() {
   const [userType, setUserType] = useState<"customer" | "shop_owner">("customer");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, googleLogin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    try {
+      setLoading(true);
+      await googleLogin(credentialResponse.credential);
+      const from = location.state?.from || "/";
+      navigate(from);
+    } catch (err: any) {
+      toast({ title: "Google login failed", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +60,8 @@ export default function Register() {
     setLoading(true);
     try {
       await register({ firstname, lastname, email, password, phone_number: phone, user_type: userType });
-      navigate(`/verify-email?email=${encodeURIComponent(email)}`, { state: { justRegistered: true } });
+      const from = location.state?.from || "/";
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`, { state: { justRegistered: true, from } });
     } catch (err: any) {
       toast({ title: "Registration failed", description: err.message, variant: "destructive" });
     } finally {
@@ -65,15 +81,34 @@ export default function Register() {
         className="w-full max-w-md relative z-10"
       >
         <div className="text-center space-y-3 mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 font-display text-2xl font-bold">
-            <Car className="h-7 w-7 text-primary" />
-            <span><span className="text-primary">Go</span><span className="text-foreground">Panda</span></span>
+          <Link to="/" className="inline-flex items-center justify-center">
+            <img src="/wordmark.png" alt="GoPanda Logo" className="h-10 w-auto object-contain" onError={(e) => e.currentTarget.style.display = 'none'} />
           </Link>
           <p className="text-muted-foreground text-sm">Create your account to get started</p>
         </div>
 
         <Card className="border-border/50 bg-card/60 backdrop-blur">
           <CardContent className="p-6">
+            <div className="mb-6 flex justify-center">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => toast({ title: "Google login failed", variant: "destructive" })}
+                shape="rectangular"
+                theme="outline"
+                text="signup_with"
+                size="large"
+              />
+            </div>
+            
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border/50" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">Or continue with email</span>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Account type toggle */}
               <div className="space-y-1.5">

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { createBooking } from "@/features/bookings/services/bookingService";
 import { getVehicleFullDetails } from "@/features/vehicles/services/vehicleService";
@@ -9,6 +9,15 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { ArrowLeft, Gauge, Calendar, Info, Shield, Clock, CheckCircle2, Star, MessageSquare, ChevronRight, Phone, MapPinned, Bike, Car, Zap } from "lucide-react";
@@ -17,6 +26,7 @@ import { SEO } from "@/components/common/SEO";
 import { EmptyState } from "@/components/common/EmptyState";
 import VehicleCard from "@/features/vehicles/components/VehicleCard";
 import { buildWhatsAppUrl, cleanWhatsAppPhone } from "@/lib/phone";
+import { QRCodeSVG } from "qrcode.react";
 
 const TYPE_ICON: Record<string, any> = {
   scooty: Bike,
@@ -35,9 +45,10 @@ export default function VehicleDetail() {
   const [shop, setShop] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [activeImage, setActiveImage] = useState(0);
-  const [startDate, setStartDate] = useState("");
+  const searchParams = new URLSearchParams(window.location.search);
+  const [startDate, setStartDate] = useState(searchParams.get("pickup_date") || "");
   const [startTimeVal, setStartTimeVal] = useState("09:00");
-  const [endDate, setEndDate] = useState("");
+  const [endDate, setEndDate] = useState(searchParams.get("return_date") || "");
   const [endTimeVal, setEndTimeVal] = useState("09:00");
 
   const startTime = startDate && startTimeVal ? `${startDate}T${startTimeVal}` : "";
@@ -47,6 +58,7 @@ export default function VehicleDetail() {
   const [booking, setBooking] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -96,8 +108,12 @@ export default function VehicleDetail() {
 
   const totalPrice = calculateTotalPrice();
   const tokenAmount = totalPrice > 0 ? Math.max(299, Math.floor(totalPrice * 0.10)) : 299;
+  const balanceAmount = totalPrice > 0 ? totalPrice - tokenAmount : 0;
   const mapUrl = shop?.shop_location || shop?.googleMapsUrl || shop?.gmapLink || shop?.mapUrl || shop?.locationUrl || "";
-  const contactShopUrl = shop?.phone_number ? `tel:${shop.phone_number.replace(/\\D/g, '')}` : "";
+  const contactShopUrl = shop?.phone_number ? `tel:${shop.phone_number.replace(/\D/g, '')}` : "";
+  
+  const formattedStart = startTime ? new Date(startTime).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
+  const formattedEnd = endTime ? new Date(endTime).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
 
   const handleWhatsAppRedirect = (booking: any, vehicleName: string, shopPhone: string, customerName: string, waWindow: Window | null) => {
     // Use your real backend URL for the magic links
@@ -140,7 +156,10 @@ ${rejectLink}`;
   };
 
   const handleBook = async () => {
-    if (!user) { navigate("/login"); return; }
+    if (!user) { 
+      navigate("/login", { state: { from: location.pathname + location.search } }); 
+      return; 
+    }
     if (!startTime || !endTime) { toast({ title: "Select dates", variant: "destructive" }); return; }
     if (utrNumber.length !== 12) { toast({ title: "Please enter your 12-digit UTR number", variant: "destructive" }); return; }
 
@@ -155,14 +174,14 @@ ${rejectLink}`;
 
       if (shop?.phone_number) {
         handleWhatsAppRedirect(newBooking, vehicle.name, shop.phone_number, user.firstname || "Customer", waWindow);
-      } else if (waWindow) {
-        waWindow.close();
-      }
-
-      if (waWindow) {
-        navigate("/bookings");
+        if (!waWindow) {
+          setTimeout(() => navigate("/bookings/confirmation", { state: { booking: newBooking, vehicle, shop } }), 2500);
+        } else {
+          navigate("/bookings/confirmation", { state: { booking: newBooking, vehicle, shop } });
+        }
       } else {
-        setTimeout(() => navigate("/bookings"), 500);
+        if (waWindow) waWindow.close();
+        navigate("/bookings/confirmation", { state: { booking: newBooking, vehicle, shop } });
       }
     } catch (err: any) {
       if (waWindow) waWindow.close();
@@ -291,7 +310,7 @@ ${rejectLink}`;
                   <button
                     key={img}
                     onClick={() => setActiveImage(i)}
-                    className={`rounded-xl overflow-hidden border ${i === activeImage ? "border-primary" : "border-border/50"} bg-card/60 aspect-[4/3] hover:border-primary/50 transition-colors`}
+                    className={`rounded-xl overflow-hidden border ${i === activeImage ? "border-primary" : "border-border/50"} bg-card/60 aspect-square md:aspect-[4/3] min-h-[44px] hover:border-primary/50 transition-colors`}
                     aria-label={`View image ${i + 1}`}
                     type="button"
                   >
@@ -324,6 +343,11 @@ ${rejectLink}`;
               </div>
               <h1 className="font-display text-3xl md:text-4xl font-bold">{vehicle.name}</h1>
               {vehicle.model && <p className="text-lg text-muted-foreground">{vehicle.model}</p>}
+              
+              <div className="flex flex-wrap gap-2 pt-1 pb-2">
+                 <button onClick={() => document.getElementById('booking-form-section')?.scrollIntoView({behavior: 'smooth'})} className="text-[11px] text-primary bg-primary/10 px-3 py-1.5 rounded-full font-semibold hover:bg-primary/20 transition-colors border border-primary/20">Jump to Booking</button>
+                 <button onClick={() => document.getElementById('reviews-section')?.scrollIntoView({behavior: 'smooth'})} className="text-[11px] text-muted-foreground bg-secondary/80 px-3 py-1.5 rounded-full font-semibold hover:bg-secondary transition-colors border border-border">Jump to Reviews</button>
+              </div>
 
               <div className="flex items-center gap-4 flex-wrap">
                 {vehicle.engine_cc && (
@@ -369,21 +393,27 @@ ${rejectLink}`;
 
                 <Separator />
 
-                <div className="rounded-xl border border-border/60 bg-background/70 p-4 space-y-3">
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Pay a small token to lock the booking. The remaining amount is paid directly to the rental shop at pickup.
-                  </p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Need help choosing a vehicle? Chat with GoPanda on WhatsApp.
-                  </p>
-                  <div className="grid gap-2 text-xs font-display text-muted-foreground sm:grid-cols-3">
-                    <span className="rounded-lg bg-secondary/60 px-3 py-2 text-center">Token to confirm</span>
-                    <span className="rounded-lg bg-secondary/60 px-3 py-2 text-center">Balance at pickup</span>
-                    <span className="rounded-lg bg-secondary/60 px-3 py-2 text-center">Direct shop settlement</span>
+                <div className="rounded-xl border border-border/60 bg-background/70 p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-foreground">Estimated Total</span>
+                    <span className="text-xl font-display font-bold text-primary">₹{totalPrice}</span>
                   </div>
+                  <div className="grid gap-2 text-xs font-display text-muted-foreground sm:grid-cols-2">
+                    <div className="rounded-lg bg-secondary/60 px-3 py-2 flex items-center justify-between">
+                      <span>Token Advance:</span>
+                      <span className="font-bold text-foreground">₹{tokenAmount}</span>
+                    </div>
+                    <div className="rounded-lg bg-secondary/60 px-3 py-2 flex items-center justify-between">
+                      <span>Balance at Shop:</span>
+                      <span className="font-bold text-foreground">₹{balanceAmount}</span>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed text-center px-2">
+                    Pay the token now to lock your dates. The balance is paid directly to the rental shop at pickup.
+                  </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div id="booking-form-section" className="grid grid-cols-1 sm:grid-cols-2 gap-3 scroll-mt-28">
                   <div className="space-y-1.5">
                     <Label htmlFor="booking-start-date" className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                       <Clock className="h-3 w-3" /> Pickup
@@ -400,37 +430,136 @@ ${rejectLink}`;
                   </div>
                 </div>
 
-                {/* Direct UPI Payment Section */}
-                {startTime && endTime && (
-                  <div className="bg-secondary/30 border border-border/50 rounded-xl p-4 space-y-4 mt-2">
-                    <div className="space-y-1">
-                      <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Shield className="h-3 w-3" /> Step 1: Pay Token Advance</Label>
-                      <p className="text-[11px] text-muted-foreground">Secure your booking by paying a ₹{tokenAmount} token directly to the shop owner.</p>
-                    </div>
-                    <div className="flex items-center justify-between bg-background p-3 rounded-lg border border-border">
-                      <span className="font-display font-bold text-lg text-primary">₹{tokenAmount}.00</span>
-                      <Button asChild size="sm" className="font-display">
-                        <a href={`upi://pay?pa=${shop?.upi_id || "default@upi"}&pn=${encodeURIComponent(shop?.name || "Shop Owner")}&am=${tokenAmount}.00&cu=INR&tn=${encodeURIComponent("GoPanda Token Advance")}`} target="_blank" rel="noopener noreferrer">
-                          Pay via UPI App
-                        </a>
-                      </Button>
-                    </div>
-                    <div className="space-y-2 pt-2">
-                      <Label htmlFor="booking-utr-number" className="text-xs font-display uppercase tracking-wider text-muted-foreground">Step 2: Enter 12-Digit UTR</Label>
-                      <Input id="booking-utr-number" placeholder="e.g. 321456789012" value={utrNumber} onChange={(e) => setUtrNumber(e.target.value)} maxLength={12} className="bg-background font-mono text-sm tracking-widest" />
-                    </div>
-                  </div>
-                )}
+                {/* Modal Trigger & Payment Flow */}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      className="w-full font-display gap-2 rounded-xl"
+                      size="lg"
+                      disabled={booking || vehicle.is_available === false || !startTime || !endTime}
+                    >
+                      <Calendar className="h-4 w-4" />
+                      {vehicle.is_available === false ? "Unavailable" : !startTime || !endTime ? "Select dates to book" : "Review Booking"}
+                    </Button>
+                  </DialogTrigger>
+                  
+                  {startTime && endTime && (
+                    <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle className="font-display text-2xl">Review Booking</DialogTitle>
+                        <DialogDescription>
+                          Verify your dates and complete the token payment to confirm your ride.
+                        </DialogDescription>
+                      </DialogHeader>
+                      
+                      <div className="space-y-4 py-2">
+                        {/* Summary Box */}
+                        <div className="bg-secondary/40 rounded-xl p-3 text-sm border border-border/50">
+                          <div className="font-semibold text-foreground mb-2 flex items-center justify-between">
+                            <span>{vehicle.name}</span>
+                            <span className="text-primary font-bold">₹{totalPrice} Total</span>
+                          </div>
+                          <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                            <span className="font-medium text-foreground">Pickup:</span>
+                            <span>{formattedStart}</span>
+                            <span className="font-medium text-foreground">Return:</span>
+                            <span>{formattedEnd}</span>
+                            <span className="font-medium text-foreground">Token:</span>
+                            <span className="text-foreground font-bold">₹{tokenAmount} (Pay Now)</span>
+                            <span className="font-medium text-foreground">Balance:</span>
+                            <span>₹{balanceAmount} (Pay at Shop)</span>
+                          </div>
+                        </div>
+                        
+                        {/* Payment Box */}
+                        <div className="bg-secondary/30 border border-border/50 rounded-xl p-3 space-y-4">
+                          {shop?.upi_id ? (
+                            <>
+                              <div className="space-y-1">
+                                <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Shield className="h-3 w-3" /> Step 1: Pay Token</Label>
+                              </div>
+                              
+                              <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-background p-3 rounded-lg border border-border">
+                                <div className="flex flex-col gap-1 items-center md:items-start text-center md:text-left">
+                                  <span className="font-display font-bold text-2xl text-primary">₹{tokenAmount}.00</span>
+                                  <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Scan or Click to Pay</span>
+                                </div>
+                                
+                                {/* Desktop QR Code */}
+                                <div className="hidden md:block bg-white p-2 rounded-xl shadow-sm border border-slate-100 shrink-0">
+                                  <QRCodeSVG 
+                                    value={`upi://pay?pa=${shop.upi_id}&pn=${encodeURIComponent(shop.name || "Shop Owner")}&am=${tokenAmount}.00&cu=INR&tn=${encodeURIComponent("GoPanda Token Advance")}`} 
+                                    size={90}
+                                    level="L"
+                                  />
+                                </div>
 
-                <Button
-                  className={`w-full font-display gap-2 rounded-xl ${utrNumber.length === 12 ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}`}
-                  size="lg"
-                  onClick={handleBook}
-                  disabled={booking || vehicle.is_available === false || utrNumber.length !== 12}
-                >
-                  <Calendar className="h-4 w-4" />
-                  {booking ? "Booking..." : vehicle.is_available === false ? "Unavailable" : !startTime || !endTime ? "Select dates to book" : utrNumber.length !== 12 ? "Enter UTR to book" : "Book"}
-                </Button>
+                                {/* Mobile Deep Link */}
+                                <div className="md:hidden w-full">
+                                  <Button asChild size="lg" className="w-full font-display">
+                                    <a href={`upi://pay?pa=${shop.upi_id}&pn=${encodeURIComponent(shop.name || "Shop Owner")}&am=${tokenAmount}.00&cu=INR&tn=${encodeURIComponent("GoPanda Token Advance")}`} target="_blank" rel="noopener noreferrer">
+                                      Pay via UPI App
+                                    </a>
+                                  </Button>
+                                </div>
+                              </div>
+
+                              <div className="space-y-2 pt-2">
+                                <div className="flex items-center justify-between">
+                                  <Label htmlFor="booking-utr-number" className="text-xs font-display uppercase tracking-wider text-muted-foreground">Step 2: Enter 12-Digit UTR</Label>
+                                  <div className="group relative">
+                                    <span className="text-[10px] text-primary underline decoration-primary/30 underline-offset-2 cursor-help">Where to find UTR?</span>
+                                    <div className="absolute right-0 bottom-full mb-2 hidden group-hover:block w-64 p-3 bg-slate-900 text-white text-[11px] rounded-xl shadow-xl z-50">
+                                      <p className="font-bold mb-1 border-b border-white/20 pb-1">Where is my 12-digit UTR/Ref Number?</p>
+                                      <ul className="list-disc pl-4 space-y-1 mt-1 text-slate-300">
+                                        <li><strong className="text-white">GPay:</strong> Open transaction history → "UPI transaction ID"</li>
+                                        <li><strong className="text-white">PhonePe:</strong> Open history → "UTR" under transfer details</li>
+                                        <li><strong className="text-white">Paytm:</strong> Open history → "UPI Ref No"</li>
+                                      </ul>
+                                      <div className="absolute -bottom-1 right-4 w-2 h-2 bg-slate-900 rotate-45"></div>
+                                    </div>
+                                  </div>
+                                </div>
+                                <Input id="booking-utr-number" placeholder="e.g. 321456789012" value={utrNumber} onChange={(e) => setUtrNumber(e.target.value)} maxLength={12} className="bg-background font-mono text-sm tracking-widest" />
+                              </div>
+                            </>
+                          ) : (
+                            <div className="text-center p-4">
+                              <Phone className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
+                              <h4 className="font-bold text-foreground mb-1">Online Booking Unavailable</h4>
+                              <p className="text-xs text-muted-foreground mb-4">This shop hasn't set up their UPI payment ID yet. Please contact them directly to reserve this vehicle.</p>
+                              {contactShopUrl && (
+                                <Button asChild className="w-full rounded-xl" variant="outline">
+                                  <a href={contactShopUrl} target="_blank" rel="noopener noreferrer">
+                                    Contact Shop via WhatsApp
+                                  </a>
+                                </Button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <p className="text-[10px] text-muted-foreground text-center">
+                          By confirming, you agree to our <a href="/terms" target="_blank" className="underline">Cancellation Policy</a> (Full refund if canceled 24hrs before pickup).
+                        </p>
+                      </div>
+
+                      <DialogFooter>
+                        {shop?.upi_id && (
+                          <Button
+                            className={`w-full font-display gap-2 rounded-xl ${utrNumber.length === 12 ? "bg-primary text-primary-foreground" : ""}`}
+                            size="lg"
+                            onClick={handleBook}
+                            disabled={booking || utrNumber.length !== 12}
+                          >
+                            <CheckCircle2 className="h-4 w-4" />
+                            {booking ? "Confirming..." : utrNumber.length !== 12 ? "Enter UTR to confirm" : "Confirm Booking"}
+                          </Button>
+                        )}
+                      </DialogFooter>
+                    </DialogContent>
+                  )}
+                </Dialog>
 
                 <div className="grid gap-2 sm:grid-cols-2">
                   {contactShopUrl && (
@@ -454,7 +583,7 @@ ${rejectLink}`;
         </motion.div>
 
         {/* Reviews */}
-        <div className="mt-12 space-y-5">
+        <div id="reviews-section" className="mt-12 space-y-5 scroll-mt-28">
           <div className="flex items-center gap-3">
             <MessageSquare className="h-5 w-5 text-primary" />
             <h2 className="font-display text-xl md:text-2xl font-bold">Reviews</h2>
@@ -491,11 +620,14 @@ ${rejectLink}`;
         <div className={`grid gap-2 ${contactShopUrl && mapUrl ? "grid-cols-3" : contactShopUrl || mapUrl ? "grid-cols-2" : "grid-cols-1"}`}>
           <Button
             className="h-11 rounded-xl font-bold"
-            onClick={handleBook}
-            disabled={booking || vehicle.is_available === false || utrNumber.length !== 12}
+            onClick={() => {
+              const el = document.getElementById('booking-form-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
+            disabled={vehicle.is_available === false}
           >
             <Calendar className="mr-1 h-4 w-4" />
-            {booking ? "Booking..." : vehicle.is_available === false ? "Unavailable" : "Book"}
+            {vehicle.is_available === false ? "Unavailable" : "Book Now"}
           </Button>
           {contactShopUrl && (
             <a

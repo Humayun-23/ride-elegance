@@ -11,7 +11,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Calendar, ArrowLeft, CheckCircle2, XCircle, Flag, RotateCcw } from "lucide-react";
 
-const FILTERS = ["all", "pending", "confirmed", "paid", "completed", "returned", "refunded", "cancelled"] as const;
+const FILTERS = ["all", "pending", "confirmed", "completed", "refunded", "cancelled"] as const;
 
 const STATUS_COLOR: Record<string, string> = {
   pending: "bg-amber-500/10 text-amber-400 border-amber-500/30",
@@ -119,7 +119,7 @@ export default function AdminBookings() {
                       {["pending", "confirmed"].includes(b.status) && (
                         <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" title="Reject / Flag Fake Payment" disabled={busyId === b.id} onClick={() => act(b.id, "reject")}><XCircle className="h-4 w-4" /></Button>
                       )}
-                      {["confirmed", "paid"].includes(b.status) && (
+                      {b.status === "confirmed" && (
                         <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" disabled={busyId === b.id} onClick={() => act(b.id, "complete")}><Flag className="h-4 w-4" /></Button>
                       )}
                       {b.status === "completed" && (

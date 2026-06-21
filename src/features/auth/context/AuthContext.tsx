@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { LoadingState } from "@/components/common/LoadingState";
-import { getUserById, loginUser, registerUser } from "@/features/auth/services/authService";
+import { getUserById, loginUser, registerUser, googleLogin as googleLoginApi } from "@/features/auth/services/authService";
 
 interface User {
   id: string;
@@ -17,6 +17,7 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  googleLogin: (credential: string) => Promise<void>;
   adminLogin: (email: string, password: string) => Promise<void>;
   register: (data: { firstname: string; lastname: string; email: string; password: string; phone_number?: string; user_type: string }) => Promise<void>;
   setAuthToken: (accessToken: string) => Promise<void>;
@@ -80,6 +81,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(accessToken);
   };
 
+  const googleLogin = async (credential: string) => {
+    const res = await googleLoginApi(credential);
+    const accessToken = res.data.access_token;
+    localStorage.setItem("auth_token", accessToken);
+    
+    const payload = JSON.parse(atob(accessToken.split(".")[1]));
+    const userId = payload.sub || payload.user_id || payload.id;
+    const userRes = await getUserById(userId, {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    
+    setUser(userRes.data);
+    localStorage.setItem("user_data", JSON.stringify(userRes.data));
+    setToken(accessToken);
+  };
 
   const setAuthToken = useCallback(async (accessToken: string) => {
     localStorage.setItem("auth_token", accessToken);
@@ -113,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, setAuthToken, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, googleLogin, register, setAuthToken, logout }}>
       {children}
     </AuthContext.Provider>
   );
