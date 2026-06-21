@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Car, Menu, X, User, LogOut, Bookmark, LayoutDashboard } from "lucide-react";
+import { Car, Menu, X, User, LogOut, Bookmark, LayoutDashboard, Store } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -32,23 +32,23 @@ export default function Navbar() {
   return (
     <nav className="fixed top-4 inset-x-0 z-50 flex justify-center px-4 md:px-6 pointer-events-none">
       <div className="w-full max-w-6xl flex h-[3.75rem] items-center justify-between rounded-full border border-slate-200/80 bg-white/[0.88] px-4 shadow-[0_18px_45px_rgba(15,23,42,0.14)] ring-1 ring-white/70 backdrop-blur-xl md:px-5 pointer-events-auto transition-all duration-300">
-        
+
         {/* Brand */}
         <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold group">
-          <div className="relative flex items-center justify-center w-9 h-9 rounded-full bg-primary/15 border border-primary/30 overflow-hidden">
-            <div className="absolute inset-0 bg-primary/25 blur-md group-hover:bg-primary/40 transition-colors duration-500" />
-            <Car className="h-4 w-4 text-primary relative z-10 transition-transform duration-300 group-hover:scale-110" />
-          </div>
-          <span className="tracking-tight"><span className="text-gradient">Go</span><span className="text-foreground">Panda</span></span>
+          <img src="/logo.png" alt="GoPanda Logo" className="h-10 object-contain transition-transform duration-300 group-hover:scale-105" />
+          <span className="sr-only">GoPanda</span>
         </Link>
 
         {/* Desktop Links - Nested Pill */}
         <div className="hidden md:flex items-center gap-1 rounded-full border border-slate-200/80 bg-slate-100/80 p-0.5 shadow-sm">
-          {NAV_LINKS.map((link) => (
-            <Link key={link.to} to={link.to} className="px-3.5 lg:px-4 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-950 hover:bg-white transition-all rounded-full">
-              {link.label}
-            </Link>
-          ))}
+          {NAV_LINKS.map((link) => {
+            if (user && link.label === "List Your Shop") return null;
+            return (
+              <Link key={link.to} to={link.to} className="px-3.5 lg:px-4 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-950 hover:bg-white transition-all rounded-full">
+                {link.label}
+              </Link>
+            );
+          })}
           <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="px-3.5 lg:px-4 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-950 hover:bg-white transition-all rounded-full">
             Contact
           </a>
@@ -56,6 +56,11 @@ export default function Navbar() {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-3">
+          {user?.user_type === "shop_owner" && (
+            <Button size="sm" onClick={() => navigate("/owner/dashboard?addShop=true")} className="rounded-full glow bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] text-white border-0 hover:scale-105 transition-all duration-300 font-semibold px-5 h-10">
+              <Store className="h-4 w-4 mr-2" /> Add Shop
+            </Button>
+          )}
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -105,8 +110,13 @@ export default function Navbar() {
               Register
             </Button>
           )}
-          <button 
-            className="text-foreground p-2 rounded-full hover:bg-slate-100 transition-colors pointer-events-auto" 
+          {user?.user_type === "shop_owner" && (
+            <Button size="sm" onClick={() => navigate("/owner/dashboard?addShop=true")} className="h-9 px-4 rounded-full text-xs font-semibold glow bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] text-white border-0">
+              Add Shop
+            </Button>
+          )}
+          <button
+            className="text-foreground p-2 rounded-full hover:bg-slate-100 transition-colors pointer-events-auto"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -125,20 +135,25 @@ export default function Navbar() {
             className="absolute top-20 left-4 right-4 md:hidden rounded-2xl border border-slate-200 bg-white/[0.96] shadow-elevated overflow-hidden pointer-events-auto"
           >
             <div className="p-4 space-y-1 backdrop-blur-xl">
-              {!user && (
+              {user?.user_type !== "shop_owner" && (
                 <>
-                  {NAV_LINKS.map((link) => (
-                    <Link key={link.to} to={link.to} className="block px-4 py-3 text-sm font-medium text-foreground hover:bg-slate-100 rounded-xl transition-colors" onClick={() => setMobileOpen(false)}>
-                      {link.label}
-                    </Link>
-                  ))}
+                  {NAV_LINKS.map((link) => {
+                    if (user && link.label === "List Your Shop") return null;
+                    return (
+                      <Link key={link.to} to={link.to} className="block px-4 py-3 text-sm font-medium text-foreground hover:bg-slate-100 rounded-xl transition-colors" onClick={() => setMobileOpen(false)}>
+                        {link.label}
+                      </Link>
+                    );
+                  })}
                   <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="block px-4 py-3 text-sm font-medium text-foreground hover:bg-slate-100 rounded-xl transition-colors" onClick={() => setMobileOpen(false)}>
                     Contact
                   </a>
                 </>
               )}
+
               {user ? (
                 <>
+                  <div className="h-px bg-slate-200 my-2 mx-4" />
                   <Link to="/bookings" className="block px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground rounded-xl hover:bg-slate-100 transition-colors" onClick={() => setMobileOpen(false)}>
                     My Bookings
                   </Link>

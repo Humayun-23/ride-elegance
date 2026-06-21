@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { MapPin, Store, ArrowRight } from "lucide-react";
+import { MapPin, Store, ArrowRight, Bike, Car, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { getOptimizedImageUrl } from "@/lib/imageUtils";
@@ -30,15 +30,15 @@ interface VehicleCardProps {
   priority?: boolean;
 }
 
-const TYPE_EMOJI: Record<string, string> = {
-  scooty: "🛵",
-  bike: "🏍️",
-  car: "🚗",
-  mountain: "🚵",
-  road: "🚴",
-  hybrid: "⚡",
-  electric: "🔋",
-  shop: "🏪",
+const TYPE_ICON: Record<string, any> = {
+  scooty: Bike,
+  bike: Bike,
+  car: Car,
+  mountain: Bike,
+  road: Bike,
+  hybrid: Zap,
+  electric: Zap,
+  shop: Store,
 };
 
 const TYPE_LABEL: Record<string, string> = {
@@ -89,16 +89,21 @@ export default function VehicleCard({
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-gradient-to-br from-muted to-background">
-              <span className="text-5xl opacity-25">
-                {TYPE_EMOJI[vehicle.bike_type || ""] || "🚗"}
-              </span>
+              {(() => {
+                const Icon = TYPE_ICON[vehicle.bike_type || ""] || Car;
+                return <Icon className="h-16 w-16 opacity-25" />;
+              })()}
             </div>
           )}
 
           {/* Type badge — top left */}
           {!hideTypeBadge && vehicle.bike_type && (
-            <Badge className="absolute top-2.5 left-2.5 bg-white/80 backdrop-blur-md text-foreground font-display text-[10px] uppercase tracking-wider border border-white/40 shadow-sm transition-transform group-hover:scale-105">
-              {TYPE_EMOJI[vehicle.bike_type] || ""} {TYPE_LABEL[vehicle.bike_type] || vehicle.bike_type}
+            <Badge className="absolute top-2.5 left-2.5 bg-white/80 backdrop-blur-md text-foreground font-display text-[10px] uppercase tracking-wider border border-white/40 shadow-sm transition-transform group-hover:scale-105 flex items-center gap-1.5 px-2 py-1">
+              {(() => {
+                const Icon = TYPE_ICON[vehicle.bike_type];
+                return Icon ? <Icon className="h-3.5 w-3.5" /> : null;
+              })()}
+              <span>{TYPE_LABEL[vehicle.bike_type] || vehicle.bike_type}</span>
             </Badge>
           )}
 

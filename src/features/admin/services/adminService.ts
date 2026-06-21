@@ -12,6 +12,10 @@ export const getShopDashboardMetrics = () => {
   return api.get("/shops/dashboard-metrics");
 };
 
+export const getAdminAnalytics = () => {
+  return api.get("/shops/analytics");
+};
+
 export const createAdminShop = (payload: any) => {
   return api.post("/shops/", payload);
 };
@@ -52,6 +56,19 @@ export const deleteAdminBike = (id: string | number) => {
 
 export const uploadAdminBikeImages = (id: string | number, formData: FormData, config?: any) => {
   return api.post(`/bikes/${id}/images`, formData, config);
+};
+
+// Service Logs
+export const getServiceLogs = (bikeId: string | number) => {
+  return api.get(`/bikes/${bikeId}/service-logs`);
+};
+
+export const createServiceLog = (bikeId: string | number, payload: any) => {
+  return api.post(`/bikes/${bikeId}/service-logs`, payload);
+};
+
+export const deleteServiceLog = (bikeId: string | number, logId: string | number) => {
+  return api.delete(`/bikes/${bikeId}/service-logs/${logId}`);
 };
 
 // Bookings

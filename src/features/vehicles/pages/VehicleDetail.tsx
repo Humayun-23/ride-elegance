@@ -11,16 +11,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { ArrowLeft, Gauge, Calendar, Info, Shield, Clock, CheckCircle2, Star, MessageSquare, ChevronRight, Phone, MapPinned } from "lucide-react";
+import { ArrowLeft, Gauge, Calendar, Info, Shield, Clock, CheckCircle2, Star, MessageSquare, ChevronRight, Phone, MapPinned, Bike, Car, Zap } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SEO } from "@/components/common/SEO";
 import { EmptyState } from "@/components/common/EmptyState";
 import VehicleCard from "@/features/vehicles/components/VehicleCard";
 import { buildWhatsAppUrl, cleanWhatsAppPhone } from "@/lib/phone";
 
-const TYPE_EMOJI: Record<string, string> = {
-  scooty: "🛵", bike: "🏍️", car: "🚗", mountain: "🚵",
-  road: "🚴", hybrid: "⚡", electric: "🔋",
+const TYPE_ICON: Record<string, any> = {
+  scooty: Bike,
+  bike: Bike,
+  car: Car,
+  mountain: Bike,
+  road: Bike,
+  hybrid: Zap,
+  electric: Zap,
 };
 
 export default function VehicleDetail() {
@@ -267,9 +272,10 @@ ${rejectLink}`;
                 />
               ) : (
                 <div className="flex h-full items-center justify-center bg-gradient-to-br from-secondary to-background">
-                  <span className="text-8xl opacity-20">
-                    {TYPE_EMOJI[vehicle.bike_type || ""] || "🚗"}
-                  </span>
+                  {(() => {
+                    const Icon = TYPE_ICON[vehicle.bike_type || ""] || Car;
+                    return <Icon className="h-32 w-32 opacity-20" />;
+                  })()}
                 </div>
               )}
               {images.length > 1 && (
@@ -301,8 +307,12 @@ ${rejectLink}`;
             <div className="space-y-3">
               <div className="flex items-center gap-2 flex-wrap">
                 {vehicle.bike_type && (
-                  <Badge className="bg-primary/10 text-primary border border-primary/20 font-display text-[10px] uppercase tracking-wider">
-                    {TYPE_EMOJI[vehicle.bike_type] || ""} {vehicle.bike_type}
+                  <Badge className="bg-primary/10 text-primary border border-primary/20 font-display text-[10px] uppercase tracking-wider flex items-center gap-1.5 px-2 py-1">
+                    {(() => {
+                      const Icon = TYPE_ICON[vehicle.bike_type];
+                      return Icon ? <Icon className="h-3.5 w-3.5" /> : null;
+                    })()}
+                    <span>{vehicle.bike_type}</span>
                   </Badge>
                 )}
                 {vehicle.condition && (
