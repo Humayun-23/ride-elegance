@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,6 +89,27 @@ export default function Register() {
 
         <Card className="border-border/50 bg-card/60 backdrop-blur">
           <CardContent className="p-6">
+            {/* Account type toggle */}
+            <div className="space-y-1.5 mb-6">
+              <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">I am a</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {(["customer", "shop_owner"] as const).map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setUserType(type)}
+                    className={`p-3 rounded-xl border-2 text-sm font-display transition-all ${
+                      userType === type
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "border-border bg-background text-muted-foreground hover:border-muted-foreground/30"
+                    }`}
+                  >
+                    {type === "customer" ? "🏍️ Customer" : "🏪 Shop Owner"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="mb-6 flex justify-center">
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
@@ -110,26 +131,7 @@ export default function Register() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Account type toggle */}
-              <div className="space-y-1.5">
-                <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground">I am a</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(["customer", "shop_owner"] as const).map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => setUserType(type)}
-                      className={`p-3 rounded-xl border-2 text-sm font-display transition-all ${
-                        userType === type
-                          ? "border-primary bg-primary/5 text-primary"
-                          : "border-border bg-background text-muted-foreground hover:border-muted-foreground/30"
-                      }`}
-                    >
-                      {type === "customer" ? "🏍️ Customer" : "🏪 Shop Owner"}
-                    </button>
-                  ))}
-                </div>
-              </div>
+
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">

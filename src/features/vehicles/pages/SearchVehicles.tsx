@@ -35,6 +35,7 @@ export default function SearchVehicles() {
   const [pickupDate, setPickupDate] = useState(searchParams.get("pickup_date") || "");
   const [returnDate, setReturnDate] = useState(searchParams.get("return_date") || "");
   const [sort, setSort] = useState("default");
+  const [priceRange, setPriceRange] = useState("all");
   const [page, setPage] = useState(0);
 
   // Setup API parameters driven by the URL state (memoized to keep reference stable)
@@ -75,12 +76,18 @@ export default function SearchVehicles() {
   };
 
   const sorted = useMemo(() => {
-    const arr = [...vehicles];
+    let arr = [...vehicles];
+    
+    if (priceRange === "under_1000") arr = arr.filter((v) => (v.price_per_day || 0) < 1000);
+    else if (priceRange === "1000_3000") arr = arr.filter((v) => (v.price_per_day || 0) >= 1000 && (v.price_per_day || 0) <= 3000);
+    else if (priceRange === "over_3000") arr = arr.filter((v) => (v.price_per_day || 0) > 3000);
+
     if (sort === "price_asc") arr.sort((a, b) => (a.price_per_day || 0) - (b.price_per_day || 0));
     else if (sort === "price_desc") arr.sort((a, b) => (b.price_per_day || 0) - (a.price_per_day || 0));
     else if (sort === "rating") arr.sort((a, b) => (b.avg_rating || b.rating || 0) - (a.avg_rating || a.rating || 0));
+    
     return arr;
-  }, [vehicles, sort]);
+  }, [vehicles, sort, priceRange]);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const pageItems = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -183,7 +190,21 @@ export default function SearchVehicles() {
               Showing <span className="text-foreground font-display font-bold">{pageItems.length}</span> of <span className="text-foreground font-display font-bold">{sorted.length}</span>
             </p>
             <div className="flex items-center gap-2">
-              <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+              <select
+                aria-label="Price Range"
+                value={priceRange}
+                onChange={(e) => { setPriceRange(e.target.value); setPage(0); }}
+                className="bg-card border border-border rounded-lg px-3 py-1.5 text-sm font-display text-muted-foreground"
+              >
+                <option value="all">Any Price</option>
+                <option value="under_1000">Under ₹1,000/day</option>
+                <option value="1000_3000">₹1,000 - ₹3,000/day</option>
+                <option value="over_3000">Over ₹3,000/day</option>
+              </select>
+              
+              <div className="h-4 w-px bg-border hidden sm:block mx-1"></div>
+
+              <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground hidden sm:block" />
               <select
                 aria-label="Sort vehicles"
                 value={sort}

@@ -15,7 +15,7 @@ import DynamicLanding from './pages/DynamicLanding';
 
 // Lazy load the rest to reduce bundle size for subsequent navigations
 const SearchVehicles = lazy(() => import('./features/vehicles/pages/SearchVehicles'));
-const Login = lazy(() => import('./features/auth/pages/Login'));
+const AuthPage = lazy(() => import('./pages/AuthPage'));
 const VehicleDetail = lazy(() => import('./features/vehicles/pages/VehicleDetail'));
 const SavedVehicles = lazy(() => import('./pages/SavedVehicles'));
 
@@ -27,7 +27,7 @@ const Bookings = lazy(() => import('./features/bookings/pages/Bookings'));
 const BookingDetails = lazy(() => import('./features/bookings/pages/BookingDetails'));
 const BookingConfirmation = lazy(() => import('./features/bookings/pages/BookingConfirmation'));
 const Profile = lazy(() => import('./pages/Profile'));
-const Register = lazy(() => import('./features/auth/pages/Register'));
+
 const ForgotPassword = lazy(() => import('./features/auth/pages/ForgotPassword'));
 const PasswordReset = lazy(() => import('./features/auth/pages/PasswordReset'));
 const VerifyEmail = lazy(() => import('./features/auth/pages/VerifyEmail'));
@@ -62,8 +62,8 @@ function App() {
                 <Route path="/bookings/confirmation" element={<BookingConfirmation />} />
                 <Route path="/bookings/:id" element={<BookingDetails />} />
                 <Route path="/profile" element={<Profile />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
+                <Route path="/login" element={<AuthPage />} />
+                <Route path="/register" element={<AuthPage />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/password-reset" element={<PasswordReset />} />
                 <Route path="/verify-email" element={<VerifyEmail />} />

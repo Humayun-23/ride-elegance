@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Car, Menu, X, User, LogOut, Bookmark, LayoutDashboard, Store, Heart } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFavorites } from "@/features/vehicles/context/FavoritesContext";
 import {
@@ -28,12 +28,42 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const { favorites } = useFavorites();
 
   const displayName = user ? `${user.firstname || ""} ${user.lastname || ""}`.trim() || user.email : "";
 
+  useEffect(() => {
+    const handleScroll = () => {
+      // Don't apply this effect on desktop sizes
+      if (window.innerWidth >= 768) {
+        if (!isVisible) setIsVisible(true);
+        return;
+      }
+
+      const currentScrollY = window.scrollY;
+      
+      // Always show at the very top
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        // Scrolling down past 50px - hide it
+        setIsVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        // Scrolling up - show it
+        setIsVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY, isVisible]);
+
   return (
-    <nav className="fixed top-4 inset-x-0 z-50 flex justify-center px-4 md:px-6 pointer-events-none">
+    <nav className={`fixed top-4 inset-x-0 z-50 flex justify-center px-4 md:px-6 pointer-events-none transition-transform duration-300 ${!isVisible ? "-translate-y-[150%] md:translate-y-0" : "translate-y-0"}`}>
       <div className="w-full max-w-6xl flex h-[3.75rem] items-center justify-between rounded-full border border-slate-200/80 bg-white/[0.88] px-4 shadow-[0_18px_45px_rgba(15,23,42,0.14)] ring-1 ring-white/70 backdrop-blur-xl md:px-5 pointer-events-auto transition-all duration-300">
 
         {/* Brand */}
@@ -116,14 +146,6 @@ export default function Navbar() {
 
         {/* Mobile Toggle */}
         <div className="flex items-center gap-2 md:hidden">
-          <Link to="/saved" className="relative p-2 text-slate-600 hover:text-red-500 transition-colors flex items-center justify-center" aria-label="Saved Vehicles">
-            <Heart className="h-5 w-5" />
-            {favorites.length > 0 && (
-              <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow-sm">
-                {favorites.length}
-              </span>
-            )}
-          </Link>
           {!user && (
             <Button size="sm" onClick={() => navigate("/register")} className="h-9 px-4 rounded-full text-xs font-semibold glow bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] text-white border-0">
               Register
