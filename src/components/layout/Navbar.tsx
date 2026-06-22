@@ -13,11 +13,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "918011401900";
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "918638578854";
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi GoPanda, I need help with a vehicle rental booking.")}`;
 
 const NAV_LINKS = [
   { label: "Rent Vehicles", to: "/search-vehicles" },
+  { label: "For Businesses", to: "/business-rental-network" },
   { label: "How It Works", to: "/#how-it-works" },
   { label: "Rental Shops", to: "/shops" },
   { label: "List Your Shop", to: "/register" },
@@ -73,22 +74,22 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Links - Nested Pill */}
-        <div className="hidden md:flex items-center gap-1 rounded-full border border-slate-200/80 bg-slate-100/80 p-0.5 shadow-sm">
+        <div className="hidden lg:flex items-center gap-1 rounded-full border border-slate-200/80 bg-slate-100/80 p-0.5 shadow-sm">
           {NAV_LINKS.map((link) => {
             if (user && link.label === "List Your Shop") return null;
             return (
-              <Link key={link.to} to={link.to} className="px-3.5 lg:px-4 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-950 hover:bg-white transition-all rounded-full">
+              <Link key={link.to} to={link.to} className="whitespace-nowrap px-3 lg:px-3.5 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-950 hover:bg-white transition-all rounded-full">
                 {link.label}
               </Link>
             );
           })}
-          <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="px-3.5 lg:px-4 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-950 hover:bg-white transition-all rounded-full">
+          <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="whitespace-nowrap px-3 lg:px-3.5 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-950 hover:bg-white transition-all rounded-full">
             Contact
           </a>
         </div>
 
         {/* Desktop Actions */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-3">
           <Link to="/saved" className="relative p-2 text-slate-600 hover:text-red-500 transition-colors flex items-center justify-center" aria-label="Saved Vehicles">
             <Heart className="h-5 w-5" />
             {favorites.length > 0 && (
@@ -145,7 +146,7 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Toggle */}
-        <div className="flex items-center gap-2 md:hidden">
+        <div className="flex items-center gap-2 lg:hidden">
           {!user && (
             <Button size="sm" onClick={() => navigate("/register")} className="h-9 px-4 rounded-full text-xs font-semibold glow bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--primary-glow))] text-white border-0">
               Register
@@ -173,7 +174,7 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-20 left-4 right-4 md:hidden rounded-2xl border border-slate-200 bg-white/[0.96] shadow-elevated overflow-hidden pointer-events-auto"
+            className="absolute top-20 left-4 right-4 lg:hidden rounded-2xl border border-slate-200 bg-white/[0.96] shadow-elevated overflow-hidden pointer-events-auto"
           >
             <div className="p-4 space-y-1 backdrop-blur-xl">
               {user?.user_type !== "shop_owner" && (

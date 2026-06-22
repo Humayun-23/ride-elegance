@@ -1,7 +1,7 @@
 import { MessageCircle } from "lucide-react";
 import { useState } from "react";
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "918011401900";
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "918638578854";
 const DEFAULT_MESSAGE = "Hi! I'd like to know more about renting a vehicle on GoPanda.";
 
 export default function WhatsAppButton() {

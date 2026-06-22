@@ -20,6 +20,7 @@ const VehicleDetail = lazy(() => import('./features/vehicles/pages/VehicleDetail
 const SavedVehicles = lazy(() => import('./pages/SavedVehicles'));
 
 // Lazy load the remaining pages
+const BusinessRentalNetwork = lazy(() => import('./pages/BusinessRentalNetwork'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Shops = lazy(() => import('./features/shops/pages/Shops'));
 const ShopDetail = lazy(() => import('./features/shops/pages/ShopDetail'));
@@ -51,6 +52,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/search-vehicles" element={<SearchVehicles />} />
+                <Route path="/business-rental-network" element={<BusinessRentalNetwork />} />
                 <Route path="/search/:seoSlug" element={<DynamicLanding />} />
                 <Route path="/rent/:vehicleType/in/:city" element={<DynamicLanding />} />
                 <Route path="/rent/:vehicleType" element={<DynamicLanding />} />
