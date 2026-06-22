@@ -12,7 +12,7 @@ import {
   Building2, Bed, Map, CalendarDays, Briefcase, Stethoscope, HardHat, GraduationCap,
   PhoneCall, UserX, Clock, CarFront, AlertCircle, Receipt,
   Send, Search, CheckCircle2, Car, ShieldCheck, Store, MessageCircle, Handshake,
-  Check, ArrowRight
+  Check, ArrowRight, ArrowDown
 } from "lucide-react";
 import { toast } from "sonner"; // Assuming sonner is used based on package.json
 
@@ -68,25 +68,31 @@ export default function BusinessRentalNetwork() {
           </div>
 
           {/* Hero Visual Concept */}
-          <div className="mt-16 mx-auto max-w-4xl rounded-2xl bg-white p-4 sm:p-8 shadow-xl border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex flex-col items-center p-4 bg-slate-50 rounded-xl w-full sm:w-1/4">
-              <Briefcase className="h-8 w-8 text-slate-700 mb-2" />
-              <span className="text-sm font-semibold text-slate-900">Your Business</span>
+          <div className="mt-16 mx-auto max-w-4xl rounded-3xl bg-white p-5 sm:p-8 shadow-xl border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+            <div className="flex flex-col items-center justify-center p-4 sm:p-5 bg-slate-50 rounded-2xl w-full sm:w-1/4 min-h-[120px]">
+              <Briefcase className="h-8 w-8 text-slate-700 mb-3" />
+              <span className="text-sm font-bold text-slate-900">Your Business</span>
             </div>
-            <ArrowRight className="hidden sm:block h-6 w-6 text-slate-300" />
-            <div className="flex flex-col items-center p-4 bg-primary/10 rounded-xl w-full sm:w-1/4 ring-2 ring-primary/20">
-              <img src="/logo.png" alt="GoPanda" className="h-8 object-contain mb-2" />
-              <span className="text-sm font-semibold text-primary">GoPanda Network</span>
+            <ArrowRight className="hidden sm:block h-6 w-6 text-slate-300 flex-shrink-0" />
+            <ArrowDown className="sm:hidden h-6 w-6 text-slate-300 flex-shrink-0 my-1" />
+            
+            <div className="flex flex-col items-center justify-center p-4 sm:p-5 bg-primary/5 rounded-2xl w-full sm:w-1/4 ring-2 ring-primary/20 min-h-[120px]">
+              <img src="/logo.png" alt="GoPanda" className="h-8 object-contain mb-3" />
+              <span className="text-sm font-bold text-primary">GoPanda Network</span>
             </div>
-            <ArrowRight className="hidden sm:block h-6 w-6 text-slate-300" />
-            <div className="flex flex-col items-center p-4 bg-slate-50 rounded-xl w-full sm:w-1/4">
-              <Store className="h-8 w-8 text-slate-700 mb-2" />
-              <span className="text-sm font-semibold text-slate-900 text-center">Verified Partners</span>
+            <ArrowRight className="hidden sm:block h-6 w-6 text-slate-300 flex-shrink-0" />
+            <ArrowDown className="sm:hidden h-6 w-6 text-slate-300 flex-shrink-0 my-1" />
+            
+            <div className="flex flex-col items-center justify-center p-4 sm:p-5 bg-slate-50 rounded-2xl w-full sm:w-1/4 min-h-[120px]">
+              <Store className="h-8 w-8 text-slate-700 mb-3" />
+              <span className="text-sm font-bold text-slate-900 text-center leading-tight">Verified Partners</span>
             </div>
-            <ArrowRight className="hidden sm:block h-6 w-6 text-slate-300" />
-            <div className="flex flex-col items-center p-4 bg-green-50 rounded-xl w-full sm:w-1/4 border border-green-100">
-              <CheckCircle2 className="h-8 w-8 text-green-600 mb-2" />
-              <span className="text-sm font-semibold text-green-700 text-center">Confirmed Vehicle</span>
+            <ArrowRight className="hidden sm:block h-6 w-6 text-slate-300 flex-shrink-0" />
+            <ArrowDown className="sm:hidden h-6 w-6 text-slate-300 flex-shrink-0 my-1" />
+            
+            <div className="flex flex-col items-center justify-center p-4 sm:p-5 bg-green-50 rounded-2xl w-full sm:w-1/4 border border-green-100 min-h-[120px]">
+              <CheckCircle2 className="h-8 w-8 text-green-600 mb-3" />
+              <span className="text-sm font-bold text-green-700 text-center leading-tight">Confirmed Vehicle</span>
             </div>
           </div>
         </section>
@@ -94,12 +100,12 @@ export default function BusinessRentalNetwork() {
         {/* Trust Strip */}
         <section className="border-y border-slate-200 bg-white py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-wrap justify-center gap-x-8 gap-y-6 sm:gap-x-12 text-center text-sm font-medium text-slate-600">
-              <div className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" /> Verified local rental partners</div>
-              <div className="flex items-center gap-2"><Store className="h-5 w-5 text-primary" /> 5 rental shops onboard</div>
-              <div className="flex items-center gap-2"><Car className="h-5 w-5 text-primary" /> 17 vehicles available in Guwahati</div>
-              <div className="flex items-center gap-2"><MessageCircle className="h-5 w-5 text-primary" /> WhatsApp-first coordination</div>
-              <div className="flex items-center gap-2"><Handshake className="h-5 w-5 text-primary" /> Building with local businesses</div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:flex lg:flex-wrap justify-center gap-4 sm:gap-x-12 text-center text-sm font-medium text-slate-600">
+              <div className="flex items-center justify-center gap-2 bg-slate-50 py-2 px-4 rounded-lg lg:bg-transparent lg:p-0"><ShieldCheck className="h-5 w-5 text-primary flex-shrink-0" /> Verified local rental partners</div>
+              <div className="flex items-center justify-center gap-2 bg-slate-50 py-2 px-4 rounded-lg lg:bg-transparent lg:p-0"><Store className="h-5 w-5 text-primary flex-shrink-0" /> 5 rental shops onboard</div>
+              <div className="flex items-center justify-center gap-2 bg-slate-50 py-2 px-4 rounded-lg lg:bg-transparent lg:p-0"><Car className="h-5 w-5 text-primary flex-shrink-0" /> 17 vehicles available in Guwahati</div>
+              <div className="flex items-center justify-center gap-2 bg-slate-50 py-2 px-4 rounded-lg lg:bg-transparent lg:p-0 sm:col-span-1 lg:col-span-auto"><MessageCircle className="h-5 w-5 text-primary flex-shrink-0" /> WhatsApp-first coordination</div>
+              <div className="flex items-center justify-center gap-2 bg-slate-50 py-2 px-4 rounded-lg lg:bg-transparent lg:p-0 sm:col-span-2 lg:col-span-auto"><Handshake className="h-5 w-5 text-primary flex-shrink-0" /> Building with local businesses</div>
             </div>
           </div>
         </section>
@@ -178,6 +184,7 @@ export default function BusinessRentalNetwork() {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
             <div className="hidden md:block absolute top-12 left-[10%] right-[10%] h-0.5 bg-slate-200 -z-10"></div>
+            <div className="md:hidden absolute top-[10%] bottom-[10%] left-1/2 -translate-x-1/2 w-0.5 bg-slate-100 -z-10"></div>
 
             {[
               { icon: Send, title: "1. Send requirement", desc: "Vehicle type, quantity, date, pickup location, and duration." },
@@ -273,7 +280,7 @@ export default function BusinessRentalNetwork() {
                 <img
                   src="https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&q=80&w=1000"
                   alt="Rental Shop Owner"
-                  className="rounded-3xl shadow-xl object-cover h-[500px] w-full"
+                  className="rounded-3xl shadow-xl object-cover h-[300px] md:h-[500px] w-full"
                 />
               </div>
             </div>
@@ -323,10 +330,10 @@ export default function BusinessRentalNetwork() {
             <Card className="shadow-lg border-slate-200">
               <Tabs defaultValue="businesses" className="w-full">
                 <TabsList className="w-full grid grid-cols-2 p-1 bg-slate-100 rounded-t-xl rounded-b-none border-b h-auto">
-                  <TabsTrigger value="businesses" className="py-3 text-sm font-semibold data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg">
+                  <TabsTrigger value="businesses" className="py-2 sm:py-3 text-[13px] sm:text-sm font-semibold data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg whitespace-nowrap">
                     For Businesses
                   </TabsTrigger>
-                  <TabsTrigger value="shops" className="py-3 text-sm font-semibold data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg">
+                  <TabsTrigger value="shops" className="py-2 sm:py-3 text-[13px] sm:text-sm font-semibold data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg whitespace-nowrap">
                     For Rental Shops
                   </TabsTrigger>
                 </TabsList>
