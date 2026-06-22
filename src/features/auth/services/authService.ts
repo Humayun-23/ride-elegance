@@ -9,8 +9,8 @@ export const login = (data: URLSearchParams) => {
   return api.post("/auth/login", data);
 };
 
-export const googleLogin = (credential: string) => {
-  return api.post("/google", { credential });
+export const googleLogin = (credential: string, user_type?: string) => {
+  return api.post("/google", { credential, user_type });
 };
 
 export const registerUser = (data: any) => {

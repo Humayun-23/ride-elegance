@@ -29,7 +29,7 @@ export default function Register() {
   const handleGoogleSuccess = async (credentialResponse: any) => {
     try {
       setLoading(true);
-      await googleLogin(credentialResponse.credential);
+      await googleLogin(credentialResponse.credential, userType);
       const from = location.state?.from || "/";
       navigate(from);
     } catch (err: any) {

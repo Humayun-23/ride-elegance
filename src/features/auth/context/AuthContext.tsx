@@ -17,7 +17,7 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  googleLogin: (credential: string) => Promise<void>;
+  googleLogin: (credential: string, user_type?: string) => Promise<void>;
   adminLogin: (email: string, password: string) => Promise<void>;
   register: (data: { firstname: string; lastname: string; email: string; password: string; phone_number?: string; user_type: string }) => Promise<void>;
   setAuthToken: (accessToken: string) => Promise<void>;
@@ -81,8 +81,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(accessToken);
   };
 
-  const googleLogin = async (credential: string) => {
-    const res = await googleLoginApi(credential);
+  const googleLogin = async (credential: string, user_type?: string) => {
+    const res = await googleLoginApi(credential, user_type);
     const accessToken = res.data.access_token;
     localStorage.setItem("auth_token", accessToken);
     

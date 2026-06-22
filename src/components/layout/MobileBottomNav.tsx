@@ -1,4 +1,4 @@
-import { Home, Search, Bookmark, User } from "lucide-react";
+import { Home, Search, Bookmark, User, Heart } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/context/AuthContext";
 
@@ -9,6 +9,7 @@ export default function MobileBottomNav() {
   const NAV_ITEMS = [
     { label: "Home", to: "/", icon: Home },
     { label: "Search", to: "/search-vehicles", icon: Search },
+    { label: "Saved", to: "/saved", icon: Heart },
     { label: "Bookings", to: "/bookings", icon: Bookmark, requiresAuth: true },
     { label: "Profile", to: user ? "/profile" : "/login", icon: User },
   ];

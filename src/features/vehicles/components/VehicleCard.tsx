@@ -131,6 +131,7 @@ export default function VehicleCard({
           <button
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               toggleFavorite(vehicle.id);
             }}
             className="absolute top-2.5 right-2.5 z-20 p-2 rounded-full bg-background/50 backdrop-blur-md border border-white/20 shadow-sm hover:scale-110 hover:bg-background/80 transition-all"
