@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
-import { Store, ArrowRight, Bike, Car, Zap, CheckCircle, Heart } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { MapPin, Store, ArrowRight, Bike, Car, Zap, CheckCircle, Heart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { getOptimizedImageUrl } from "@/lib/imageUtils";
@@ -32,7 +31,7 @@ interface VehicleCardProps {
   priority?: boolean;
 }
 
-const TYPE_ICON: Record<string, LucideIcon> = {
+const TYPE_ICON: Record<string, any> = {
   scooty: Bike,
   bike: Bike,
   car: Car,
@@ -77,12 +76,6 @@ export default function VehicleCard({
   const isSaved = isFavorite(vehicle.id);
 
   const displayShopName = vehicle.shop_name || fetchedShopName || "Partner Shop";
-  const displayName = vehicle.name || "Rental Vehicle";
-  const displayModel = vehicle.model || vehicle.description || "Available for rent";
-  const imageAlt = `Rent ${displayName} ${vehicle.model || ""}`.trim() + ` in ${vehicle.location || "Guwahati"}`;
-  const optimizedImageUrl = vehicle.image_url ? getOptimizedImageUrl(vehicle.image_url) : "";
-  const TypeIcon = TYPE_ICON[vehicle.bike_type || ""] || Car;
-  const typeLabel = vehicle.bike_type ? TYPE_LABEL[vehicle.bike_type] || vehicle.bike_type : "Vehicle";
 
   const searchParams = new URLSearchParams(window.location.search);
   const pickupDate = searchParams.get("pickup_date");
@@ -95,104 +88,115 @@ export default function VehicleCard({
 
   return (
     <Link to={targetHref} className="group block h-full">
-      <div className="relative z-10 flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-100 transition duration-300 hover:-translate-y-1 hover:shadow-xl">
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
-          {optimizedImageUrl ? (
-            <>
-              <img
-                src={optimizedImageUrl}
-                alt=""
-                aria-hidden="true"
-                loading={priority ? "eager" : "lazy"}
-                fetchpriority={priority ? "high" : "auto"}
-                decoding="async"
-                className="absolute inset-0 h-full w-full scale-110 object-cover opacity-35 blur-2xl"
-              />
-              <img
-                src={optimizedImageUrl}
-                alt={imageAlt}
-                loading={priority ? "eager" : "lazy"}
-                fetchpriority={priority ? "high" : "auto"}
-                decoding="async"
-                className="relative z-10 h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-[1.03]"
-              />
-            </>
+      <div className="overflow-hidden rounded-3xl card-elevated h-full flex flex-col relative z-10">
+        {/* Image — bigger, cleaner */}
+        <div className={`${compact ? "aspect-[16/9]" : "aspect-[3/2]"} bg-muted relative overflow-hidden`}>
+          {vehicle.image_url ? (
+            <img
+              src={getOptimizedImageUrl(vehicle.image_url)}
+              alt={`Rent ${vehicle.name} ${vehicle.model || ''}`.trim() + ` in ${vehicle.location || 'Guwahati'}`}
+              loading={priority ? "eager" : "lazy"}
+              fetchpriority={priority ? "high" : "auto"}
+              decoding="async"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
           ) : (
-            <div className="flex h-full items-center justify-center bg-gradient-to-br from-slate-100 to-white">
-              <TypeIcon className="h-16 w-16 text-gray-300" aria-hidden="true" />
+            <div className="flex h-full items-center justify-center bg-gradient-to-br from-muted to-background">
+              {(() => {
+                const Icon = TYPE_ICON[vehicle.bike_type || ""] || Car;
+                return <Icon className="h-16 w-16 opacity-25" />;
+              })()}
             </div>
           )}
 
-          {!hideTypeBadge && (
-            <Badge className="absolute left-4 top-4 z-20 flex items-center gap-1.5 rounded-full border border-white/60 bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-normal text-gray-700 shadow-sm backdrop-blur hover:bg-white">
-              <TypeIcon className="h-3.5 w-3.5" aria-hidden="true" />
-              <span>{typeLabel}</span>
+          {/* Type badge — top left */}
+          {!hideTypeBadge && vehicle.bike_type && (
+            <Badge className="absolute top-2.5 left-2.5 bg-white/80 backdrop-blur-md text-foreground font-display text-[10px] uppercase tracking-wider border border-white/40 shadow-sm transition-transform group-hover:scale-105 flex items-center gap-1.5 px-2 py-1">
+              {(() => {
+                const Icon = TYPE_ICON[vehicle.bike_type];
+                return Icon ? <Icon className="h-3.5 w-3.5" /> : null;
+              })()}
+              <span>{TYPE_LABEL[vehicle.bike_type] || vehicle.bike_type}</span>
             </Badge>
           )}
 
+          {/* Unavailable overlay */}
           {vehicle.is_available === false && (
-            <div className="absolute inset-0 z-30 flex items-center justify-center bg-gray-950/35 backdrop-blur-sm">
+            <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm flex items-center justify-center">
               <Badge variant="destructive" className="font-display text-xs">Unavailable</Badge>
             </div>
           )}
 
+          {/* Favorite Button */}
           <button
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               toggleFavorite(vehicle.id);
             }}
-            className="absolute right-4 top-4 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-sm backdrop-blur transition hover:scale-110 hover:bg-white"
+            className="absolute top-2.5 right-2.5 z-20 p-2 rounded-full bg-background/50 backdrop-blur-md border border-white/20 shadow-sm hover:scale-110 hover:bg-background/80 transition-all"
             aria-label={isSaved ? "Remove from saved" : "Save for later"}
           >
-            <Heart className={`h-4 w-4 ${isSaved ? "fill-red-500 text-red-500" : "text-gray-700"}`} aria-hidden="true" />
+            <Heart className={`h-4 w-4 ${isSaved ? "fill-red-500 text-red-500" : "text-foreground"}`} />
           </button>
 
+          {/* Price overlay — bottom right of image */}
           {!hidePrice && vehicle.price_per_day != null && (
-            <div className="absolute bottom-4 right-4 z-20 rounded-2xl bg-white px-4 py-2 text-sm font-bold text-orange-500 shadow-md">
-              ₹{vehicle.price_per_day}
-              <span className="ml-0.5 text-xs font-semibold text-gray-500">/day</span>
+            <div className="absolute bottom-2.5 right-2.5 bg-background/90 backdrop-blur-md border border-white/20 rounded-xl px-3 py-1 shadow-glow transition-transform group-hover:scale-105">
+              <span className="text-foreground font-display font-extrabold text-sm text-gradient-warm">₹{vehicle.price_per_day}</span>
+              <span className="text-muted-foreground text-[10px] ml-0.5 font-bold">/day</span>
             </div>
           )}
         </div>
 
-        <div className={`${compact ? "p-4" : "p-5"} flex flex-1 flex-col`}>
+        {/* Content — streamlined */}
+        <div className={`${compact ? "px-3 py-2.5" : "p-4"} flex-1 flex flex-col gap-2`}>
+          {/* Title */}
           <div className="min-w-0">
-            <h3 className={`truncate font-display font-bold text-gray-950 ${compact ? "text-base" : "text-xl"} leading-tight transition-colors group-hover:text-primary`}>
-              {displayName}
+            <h3 className={`font-display font-bold text-foreground ${compact ? "text-sm" : "text-lg"} leading-tight group-hover:text-primary transition-colors truncate`}>
+              {vehicle.name}
             </h3>
-            <p className="mt-1 truncate text-sm text-gray-500">{displayModel}</p>
+            {vehicle.model && (
+              <p className="text-xs text-muted-foreground mt-0.5 truncate">{vehicle.model}</p>
+            )}
           </div>
 
-          <div className="mt-4 flex min-w-0 items-center gap-2 text-sm text-gray-600">
-            <Store className="h-4 w-4 shrink-0" aria-hidden="true" />
+          {/* Shop name — simple and clean */}
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Store className="h-3 w-3 shrink-0" />
             <span className="truncate">{displayShopName}</span>
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-600 ring-1 ring-emerald-100">
-              <CheckCircle className="h-3 w-3" aria-hidden="true" />
+            <span className="inline-flex items-center gap-0.5 text-green-600 bg-green-500/10 px-1.5 py-0.5 rounded text-[10px] font-medium border border-green-500/20">
+              <CheckCircle className="h-2.5 w-2.5" />
               Verified
             </span>
           </div>
 
+          {vehicle.location && (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <MapPin className="h-3 w-3 shrink-0" />
+              <span className="truncate">{vehicle.location}</span>
+            </div>
+          )}
+
+          {/* Footer: custom text or CTA */}
           {footerText ? (
-            <div className="mt-auto pt-5">
-              <span className="font-display text-sm font-semibold text-primary">{footerText}</span>
+            <div className="pt-2 border-t border-border mt-auto">
+              <span className="text-primary font-display text-sm">{footerText}</span>
             </div>
           ) : (
-            <div className="mt-auto pt-5">
-              <div className="flex items-center justify-between gap-3">
+            <div className="pt-2 mt-auto">
+              <div className="flex items-center justify-between">
                 {!hidePrice && (
-                  <p className="min-w-0 text-sm text-gray-500">
+                  <div>
                     {vehicle.price_per_day != null ? (
-                      <>
-                        from <strong className="font-bold text-gray-950">₹{vehicle.price_per_day}</strong>/day
-                      </>
+                      <span className="text-xs text-muted-foreground">from <strong className="text-foreground">₹{vehicle.price_per_day}</strong>/day</span>
                     ) : (
-                      "Contact for price"
+                      <span className="text-xs text-muted-foreground">Contact for price</span>
                     )}
-                  </p>
+                  </div>
                 )}
-                <span className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-emerald-500 transition hover:text-emerald-600 group-hover:text-emerald-600">
-                  Check Availability <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                  Check Availability <ArrowRight className="h-3 w-3" />
                 </span>
               </div>
             </div>
