@@ -1,17 +1,30 @@
 const INDIA_PREFIX = "+91";
-const INDIA_PREFIX_PATTERN = /^\s*\+?91[\s-]*/;
+
+const stripIndianCountryCode = (value: string) => {
+  const raw = value.trimStart();
+  if (raw.startsWith(INDIA_PREFIX)) {
+    return raw.slice(INDIA_PREFIX.length).replace(/^[\s-]+/, "");
+  }
+
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length > 10 && /^91[\s-]*/.test(raw)) {
+    return raw.replace(/^91[\s-]*/, "");
+  }
+
+  return raw;
+};
 
 export const formatIndianPhone = (value?: string | null) => {
   const raw = String(value ?? "").trim();
   if (!raw) return "";
-  const stripped = raw.replace(INDIA_PREFIX_PATTERN, "").trimStart();
+  const stripped = stripIndianCountryCode(raw).trimStart();
   if (!stripped) return INDIA_PREFIX;
   return `${INDIA_PREFIX} ${stripped}`;
 };
 
 export const stripIndianPrefix = (value?: string | null) => {
   const raw = String(value ?? "");
-  return raw.replace(INDIA_PREFIX_PATTERN, "").trimStart();
+  return stripIndianCountryCode(raw).trimStart();
 };
 
 export const cleanWhatsAppPhone = (value?: string | null) => {
