@@ -106,12 +106,25 @@ export default function VehicleDetail() {
     return Math.floor((fullDays * (vehicle.price_per_day || 0)) + (remainingHours * (vehicle.price_per_hour || 0)));
   };
 
+  const getBookingRangeError = () => {
+    if (!startTime || !endTime) return "";
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return "Select valid pickup and return times.";
+    if (start < new Date()) return "Pickup time must be in the future.";
+    if (end <= start) return "Return time must be after pickup time.";
+    if (end.getTime() - start.getTime() < 60 * 60 * 1000) return "Booking must be at least 1 hour.";
+    if (end.getTime() - start.getTime() > 30 * 24 * 60 * 60 * 1000) return "Booking cannot exceed 30 days.";
+    return "";
+  };
+
   const totalPrice = calculateTotalPrice();
+  const bookingRangeError = getBookingRangeError();
   const tokenAmount = totalPrice > 0 ? Math.max(299, Math.floor(totalPrice * 0.10)) : 299;
   const balanceAmount = totalPrice > 0 ? totalPrice - tokenAmount : 0;
   const mapUrl = shop?.shop_location || shop?.googleMapsUrl || shop?.gmapLink || shop?.mapUrl || shop?.locationUrl || "";
   const contactShopUrl = shop?.phone_number ? `tel:${shop.phone_number.replace(/\D/g, '')}` : "";
-  
+
   const formattedStart = startTime ? new Date(startTime).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
   const formattedEnd = endTime ? new Date(endTime).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
 
@@ -149,12 +162,18 @@ ${rejectLink}`;
   };
 
   const handleBook = async () => {
-    if (!user) { 
-      navigate("/login", { state: { from: location.pathname + location.search } }); 
-      return; 
+    const showBookingError = (message: string) => {
+      window.alert(message);
+      toast({ title: message, variant: "destructive" });
+    };
+
+    if (!user) {
+      navigate("/login", { state: { from: location.pathname + location.search } });
+      return;
     }
-    if (!startTime || !endTime) { toast({ title: "Select dates", variant: "destructive" }); return; }
-    if (utrNumber.length !== 12) { toast({ title: "Please enter your 12-digit UTR number", variant: "destructive" }); return; }
+    if (!startTime || !endTime) { showBookingError("Select pickup and return dates."); return; }
+    if (bookingRangeError) { showBookingError(bookingRangeError); return; }
+    if (utrNumber.length !== 12) { showBookingError("Please enter your 12-digit UTR number."); return; }
 
     setBooking(true);
     try {
@@ -175,6 +194,7 @@ ${rejectLink}`;
       }
     } catch (err: any) {
       const detail = err.response?.data?.detail || err.message;
+      window.alert(`Booking failed: ${detail}`);
       toast({ title: "Booking failed", description: detail, variant: "destructive" });
     } finally {
       setBooking(false);
@@ -333,10 +353,10 @@ ${rejectLink}`;
               </div>
               <h1 className="font-display text-3xl md:text-4xl font-bold">{vehicle.name}</h1>
               {vehicle.model && <p className="text-lg text-muted-foreground">{vehicle.model}</p>}
-              
+
               <div className="flex flex-wrap gap-2 pt-1 pb-2">
-                 <button onClick={() => document.getElementById('booking-form-section')?.scrollIntoView({behavior: 'smooth'})} className="text-[11px] text-primary bg-primary/10 px-3 py-1.5 rounded-full font-semibold hover:bg-primary/20 transition-colors border border-primary/20">Jump to Booking</button>
-                 <button onClick={() => document.getElementById('reviews-section')?.scrollIntoView({behavior: 'smooth'})} className="text-[11px] text-muted-foreground bg-secondary/80 px-3 py-1.5 rounded-full font-semibold hover:bg-secondary transition-colors border border-border">Jump to Reviews</button>
+                <button onClick={() => document.getElementById('booking-form-section')?.scrollIntoView({ behavior: 'smooth' })} className="text-[11px] text-primary bg-primary/10 px-3 py-1.5 rounded-full font-semibold hover:bg-primary/20 transition-colors border border-primary/20">Jump to Booking</button>
+                <button onClick={() => document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' })} className="text-[11px] text-muted-foreground bg-secondary/80 px-3 py-1.5 rounded-full font-semibold hover:bg-secondary transition-colors border border-border">Jump to Reviews</button>
               </div>
 
               <div className="flex items-center gap-4 flex-wrap">
@@ -419,6 +439,9 @@ ${rejectLink}`;
                     <Input id="booking-end-time" type="time" value={endTimeVal} onChange={(e) => setEndTimeVal(e.target.value)} className="bg-background rounded-xl h-10 text-sm px-4 w-full" />
                   </div>
                 </div>
+                {bookingRangeError && (
+                  <p className="text-xs font-medium text-destructive">{bookingRangeError}</p>
+                )}
 
                 {/* Modal Trigger & Payment Flow */}
                 <Dialog>
@@ -426,13 +449,13 @@ ${rejectLink}`;
                     <Button
                       className="w-full font-display gap-2 rounded-xl"
                       size="lg"
-                      disabled={booking || vehicle.is_available === false || !startTime || !endTime}
+                      disabled={booking || vehicle.is_available === false || !startTime || !endTime || Boolean(bookingRangeError)}
                     >
                       <Calendar className="h-4 w-4" />
-                      {vehicle.is_available === false ? "Unavailable" : !startTime || !endTime ? "Select dates to book" : "Review Booking"}
+                      {vehicle.is_available === false ? "Unavailable" : !startTime || !endTime ? "Select dates to book" : bookingRangeError ? "Fix booking time" : "Review Booking"}
                     </Button>
                   </DialogTrigger>
-                  
+
                   {startTime && endTime && (
                     <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
@@ -441,7 +464,7 @@ ${rejectLink}`;
                           Verify your dates and complete the token payment to confirm your ride.
                         </DialogDescription>
                       </DialogHeader>
-                      
+
                       <div className="space-y-4 py-2">
                         {/* Summary Box */}
                         <div className="bg-secondary/40 rounded-xl p-3 text-sm border border-border/50">
@@ -460,7 +483,7 @@ ${rejectLink}`;
                             <span>₹{balanceAmount} (Pay at Shop)</span>
                           </div>
                         </div>
-                        
+
                         {/* Payment Box */}
                         <div className="bg-secondary/30 border border-border/50 rounded-xl p-3 space-y-4">
                           {shop?.upi_id ? (
@@ -468,17 +491,17 @@ ${rejectLink}`;
                               <div className="space-y-1">
                                 <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Shield className="h-3 w-3" /> Step 1: Pay Token</Label>
                               </div>
-                              
+
                               <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-background p-3 rounded-lg border border-border">
                                 <div className="flex flex-col gap-1 items-center md:items-start text-center md:text-left">
                                   <span className="font-display font-bold text-2xl text-primary">₹{tokenAmount}.00</span>
                                   <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Scan or Click to Pay</span>
                                 </div>
-                                
+
                                 {/* Desktop QR Code */}
                                 <div className="hidden md:block bg-white p-2 rounded-xl shadow-sm border border-slate-100 shrink-0">
-                                  <QRCodeSVG 
-                                    value={`upi://pay?pa=${shop.upi_id}&pn=${encodeURIComponent(shop.name || "Shop Owner")}&am=${tokenAmount}.00&cu=INR&tn=${encodeURIComponent("GoPanda Token Advance")}`} 
+                                  <QRCodeSVG
+                                    value={`upi://pay?pa=${shop.upi_id}&pn=${encodeURIComponent(shop.name || "Shop Owner")}&am=${tokenAmount}.00&cu=INR&tn=${encodeURIComponent("GoPanda Token Advance")}`}
                                     size={90}
                                     level="L"
                                   />
@@ -528,7 +551,7 @@ ${rejectLink}`;
                             </div>
                           )}
                         </div>
-                        
+
                         <p className="text-[10px] text-muted-foreground text-center">
                           By confirming, you agree to our <a href="/terms" target="_blank" className="underline">Cancellation Policy</a> (Full refund if canceled 24hrs before pickup).
                         </p>
