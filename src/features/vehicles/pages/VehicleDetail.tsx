@@ -38,6 +38,32 @@ const TYPE_ICON: Record<string, any> = {
   electric: Zap,
 };
 
+const getDefaultPickupDateTime = () => {
+  const now = new Date();
+  now.setSeconds(0, 0);
+  now.setMinutes(now.getMinutes() + 1);
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+
+  return {
+    date: `${year}-${month}-${day}`,
+    time: `${hours}:${minutes}`,
+  };
+};
+
+const formatTime12 = (time: string) => {
+  const [hourText, minuteText] = time.split(":");
+  const hour = Number(hourText);
+  if (!time || Number.isNaN(hour) || !minuteText) return "";
+  const period = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minuteText} ${period}`;
+};
+
 export default function VehicleDetail() {
   const { id } = useParams<{ id: string }>();
   const [vehicle, setVehicle] = useState<any>(null);
@@ -46,16 +72,22 @@ export default function VehicleDetail() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [activeImage, setActiveImage] = useState(0);
   const searchParams = new URLSearchParams(window.location.search);
-  const [startDate, setStartDate] = useState(searchParams.get("pickup_date") || "");
-  const [startTimeVal, setStartTimeVal] = useState("09:00");
+  const [defaultPickup] = useState(getDefaultPickupDateTime);
+  const [startDate, setStartDate] = useState(searchParams.get("pickup_date") || defaultPickup.date);
+  const [startTimeVal, setStartTimeVal] = useState(defaultPickup.time);
   const [endDate, setEndDate] = useState(searchParams.get("return_date") || "");
-  const [endTimeVal, setEndTimeVal] = useState("09:00");
+  const [endTimeVal, setEndTimeVal] = useState(defaultPickup.time);
 
   const startTime = startDate && startTimeVal ? `${startDate}T${startTimeVal}` : "";
   const endTime = endDate && endTimeVal ? `${endDate}T${endTimeVal}` : "";
   const [utrNumber, setUtrNumber] = useState("");
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
+  const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState<{
+    confirmationState: { booking: any; vehicle: any; shop: any };
+    whatsappUrl: string;
+  } | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -180,18 +212,13 @@ ${rejectLink}`;
       const response = await createBooking({ bike_id: Number(id), start_time: startTime, end_time: endTime, utr_number: utrNumber });
       const newBooking = response.data;
       const confirmationState = { booking: newBooking, vehicle, shop };
+      const whatsappUrl = shop?.phone_number
+        ? buildBookingWhatsAppUrl(newBooking, vehicle.name, shop.phone_number, user.firstname || "Customer")
+        : "";
       sessionStorage.setItem("latest_booking_confirmation", JSON.stringify(confirmationState));
-      toast({ title: "Booking created!", description: "Opening WhatsApp for shop verification." });
-
-      if (shop?.phone_number) {
-        const whatsappUrl = buildBookingWhatsAppUrl(newBooking, vehicle.name, shop.phone_number, user.firstname || "Customer");
-        navigate("/bookings/confirmation", { state: confirmationState });
-        if (whatsappUrl) {
-          window.location.assign(whatsappUrl);
-        }
-      } else {
-        navigate("/bookings/confirmation", { state: confirmationState });
-      }
+      setBookingDialogOpen(false);
+      setBookingSuccess({ confirmationState, whatsappUrl });
+      toast({ title: "Booking confirmed!", description: "Send the details to the shop owner for faster verification." });
     } catch (err: any) {
       const detail = err.response?.data?.detail || err.message;
       window.alert(`Booking failed: ${detail}`);
@@ -199,6 +226,15 @@ ${rejectLink}`;
     } finally {
       setBooking(false);
     }
+  };
+
+  const sendBookingDetailsToShop = () => {
+    if (!bookingSuccess) return;
+    if (bookingSuccess.whatsappUrl) {
+      window.location.assign(bookingSuccess.whatsappUrl);
+      return;
+    }
+    navigate("/bookings/confirmation", { state: bookingSuccess.confirmationState });
   };
 
   if (loading) return (
@@ -270,6 +306,56 @@ ${rejectLink}`;
         image={heroImage || undefined}
         schema={vehicleSchema}
       />
+      <Dialog open={Boolean(bookingSuccess)} onOpenChange={(open) => { if (!open) setBookingSuccess(null); }}>
+        <DialogContent className="sm:max-w-md overflow-hidden border-border/60 bg-background p-0 shadow-2xl">
+          <div className="bg-gradient-to-br from-emerald-50 via-background to-primary/10 px-6 pt-7 pb-5 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/25">
+              <CheckCircle2 className="h-8 w-8" />
+            </div>
+            <DialogHeader className="space-y-2 text-center">
+              <DialogTitle className="font-display text-2xl text-foreground">Booking confirmed</DialogTitle>
+              <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
+                Your booking is confirmed. Send your details to the shop owner to speed up verification.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+
+          <div className="space-y-4 px-6 pb-6">
+            <div className="rounded-xl border border-border/60 bg-card/70 p-4">
+              <div className="flex items-start gap-3">
+                <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                  <Shield className="h-5 w-5" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-foreground">Faster shop verification</p>
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    The message includes your booking details, UTR, and the reject link for fake-payment protection.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <Button
+              className="h-12 w-full rounded-xl bg-emerald-600 font-display text-sm font-bold text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-700"
+              onClick={sendBookingDetailsToShop}
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Send details to shop owner
+            </Button>
+
+            <Button
+              variant="ghost"
+              className="h-10 w-full rounded-xl text-xs font-semibold text-muted-foreground"
+              onClick={() => {
+                if (!bookingSuccess) return;
+                navigate("/bookings/confirmation", { state: bookingSuccess.confirmationState });
+              }}
+            >
+              View booking confirmation
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <div className="container px-4 max-w-6xl">
         {/* Breadcrumbs */}
         <nav className="flex items-center gap-1.5 text-[11px] md:text-xs font-display text-muted-foreground mb-6 uppercase tracking-wider overflow-x-auto whitespace-nowrap pb-2 scrollbar-none">
@@ -429,14 +515,20 @@ ${rejectLink}`;
                       <Clock className="h-3 w-3" /> Pickup
                     </Label>
                     <Input id="booking-start-date" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-background rounded-xl h-12 text-base px-4 w-full" />
-                    <Input id="booking-start-time" type="time" value={startTimeVal} onChange={(e) => setStartTimeVal(e.target.value)} className="bg-background rounded-xl h-10 text-sm px-4 w-full" />
+                    <div className="relative">
+                      <Input id="booking-start-time" type="time" value={startTimeVal} onChange={(e) => setStartTimeVal(e.target.value)} className="bg-background rounded-xl h-10 text-sm px-4 w-full text-transparent caret-transparent" />
+                      <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm text-foreground">{formatTime12(startTimeVal)}</span>
+                    </div>
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="booking-end-date" className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                       <Clock className="h-3 w-3" /> Return
                     </Label>
                     <Input id="booking-end-date" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="bg-background rounded-xl h-12 text-base px-4 w-full" />
-                    <Input id="booking-end-time" type="time" value={endTimeVal} onChange={(e) => setEndTimeVal(e.target.value)} className="bg-background rounded-xl h-10 text-sm px-4 w-full" />
+                    <div className="relative">
+                      <Input id="booking-end-time" type="time" value={endTimeVal} onChange={(e) => setEndTimeVal(e.target.value)} className="bg-background rounded-xl h-10 text-sm px-4 w-full text-transparent caret-transparent" />
+                      <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm text-foreground">{formatTime12(endTimeVal)}</span>
+                    </div>
                   </div>
                 </div>
                 {bookingRangeError && (
@@ -444,7 +536,7 @@ ${rejectLink}`;
                 )}
 
                 {/* Modal Trigger & Payment Flow */}
-                <Dialog>
+                <Dialog open={bookingDialogOpen} onOpenChange={setBookingDialogOpen}>
                   <DialogTrigger asChild>
                     <Button
                       className="w-full font-display gap-2 rounded-xl"
