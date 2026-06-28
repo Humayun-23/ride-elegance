@@ -8,9 +8,17 @@ import confetti from "canvas-confetti";
 export default function BookingConfirmation() {
   const location = useLocation();
   const navigate = useNavigate();
-  const booking = location.state?.booking;
-  const vehicle = location.state?.vehicle;
-  const shop = location.state?.shop;
+  const savedState = (() => {
+    if (typeof window === "undefined") return null;
+    try {
+      return JSON.parse(sessionStorage.getItem("latest_booking_confirmation") || "null");
+    } catch {
+      return null;
+    }
+  })();
+  const booking = location.state?.booking || savedState?.booking;
+  const vehicle = location.state?.vehicle || savedState?.vehicle;
+  const shop = location.state?.shop || savedState?.shop;
 
   useEffect(() => {
     if (!booking) {
@@ -103,8 +111,8 @@ export default function BookingConfirmation() {
             <ol className="relative border-l border-primary/30 ml-3 space-y-6">                  
               <li className="pl-6">
                 <span className="absolute flex items-center justify-center w-6 h-6 bg-primary/20 rounded-full -left-3 ring-4 ring-background text-primary text-xs font-bold">1</span>
-                <h4 className="font-semibold text-foreground text-sm">Shop Confirmation</h4>
-                <p className="text-xs text-muted-foreground mt-1">The shop owner has been notified and will confirm your booking shortly.</p>
+                <h4 className="font-semibold text-foreground text-sm">Shop Notified</h4>
+                <p className="text-xs text-muted-foreground mt-1">The shop owner has received your UTR and booking details. They only need to reject if the payment was not received.</p>
               </li>
               <li className="pl-6">
                 <span className="absolute flex items-center justify-center w-6 h-6 bg-primary/20 rounded-full -left-3 ring-4 ring-background text-primary text-xs font-bold">2</span>

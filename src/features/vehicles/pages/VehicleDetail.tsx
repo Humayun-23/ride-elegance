@@ -25,7 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SEO } from "@/components/common/SEO";
 import { EmptyState } from "@/components/common/EmptyState";
 import VehicleCard from "@/features/vehicles/components/VehicleCard";
-import { buildWhatsAppUrl, cleanWhatsAppPhone } from "@/lib/phone";
+import { buildWhatsAppUrl } from "@/lib/phone";
 import { QRCodeSVG } from "qrcode.react";
 
 const TYPE_ICON: Record<string, any> = {
@@ -115,11 +115,10 @@ export default function VehicleDetail() {
   const formattedStart = startTime ? new Date(startTime).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
   const formattedEnd = endTime ? new Date(endTime).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
 
-  const handleWhatsAppRedirect = (booking: any, vehicleName: string, shopPhone: string, customerName: string, waWindow: Window | null) => {
-    // Use your real backend URL for the magic links
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || "https://gopanda.in/api/v1";
+  const buildBookingWhatsAppUrl = (booking: any, vehicleName: string, shopPhone: string, customerName: string) => {
+    const apiUrl = (import.meta.env.VITE_API_BASE_URL || "https://gopanda.in/api/v1").replace(/\/$/, "");
 
-    const confirmLink = `${apiUrl}/bookings/${booking.id}/magic-action?action=confirm&token=${booking.magic_token}`;
+    const confirmLink = `${apiUrl}/bookings/${booking.id}/magic-action?action=accept&token=${booking.magic_token}`;
     const rejectLink = `${apiUrl}/bookings/${booking.id}/magic-action?action=reject&token=${booking.magic_token}`;
 
     const fromDate = new Date(booking.start_time).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -137,22 +136,16 @@ Token Received: *Rs.${booking.token_amount || 299}*
 Customer UTR Number: *${booking.utr_number}*
 Balance to Collect at Shop: *Rs.${Math.max(0, (booking.total_price || 0) - (booking.token_amount || 299))}*
 
-Please tap a link below to instantly Accept or Reject this booking:
+This booking is already confirmed. The accept link is only a placeholder.
+If the UTR is fake or the payment was not received, tap reject to cancel it:
 
-[+] *TAP TO ACCEPT:*
+[+] *ACCEPT PLACEHOLDER:*
 ${confirmLink}
 
 [x] *TAP TO REJECT:*
 ${rejectLink}`;
 
-    const cleanPhone = cleanWhatsAppPhone(shopPhone);
-    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-
-    if (waWindow) {
-      waWindow.location.href = whatsappUrl;
-    } else {
-      window.location.href = whatsappUrl;
-    }
+    return buildWhatsAppUrl(shopPhone, message);
   };
 
   const handleBook = async () => {
@@ -163,29 +156,26 @@ ${rejectLink}`;
     if (!startTime || !endTime) { toast({ title: "Select dates", variant: "destructive" }); return; }
     if (utrNumber.length !== 12) { toast({ title: "Please enter your 12-digit UTR number", variant: "destructive" }); return; }
 
-    // Safari Popup Blocker Workaround: Open window synchronously *before* the await
-    const waWindow = window.open('', '_blank');
-
     setBooking(true);
     try {
       const response = await createBooking({ bike_id: Number(id), start_time: startTime, end_time: endTime, utr_number: utrNumber });
       const newBooking = response.data;
-      toast({ title: "Booking created!", description: "Check your bookings for status." });
+      const confirmationState = { booking: newBooking, vehicle, shop };
+      sessionStorage.setItem("latest_booking_confirmation", JSON.stringify(confirmationState));
+      toast({ title: "Booking created!", description: "Opening WhatsApp for shop verification." });
 
       if (shop?.phone_number) {
-        handleWhatsAppRedirect(newBooking, vehicle.name, shop.phone_number, user.firstname || "Customer", waWindow);
-        if (!waWindow) {
-          setTimeout(() => navigate("/bookings/confirmation", { state: { booking: newBooking, vehicle, shop } }), 2500);
-        } else {
-          navigate("/bookings/confirmation", { state: { booking: newBooking, vehicle, shop } });
+        const whatsappUrl = buildBookingWhatsAppUrl(newBooking, vehicle.name, shop.phone_number, user.firstname || "Customer");
+        navigate("/bookings/confirmation", { state: confirmationState });
+        if (whatsappUrl) {
+          window.location.assign(whatsappUrl);
         }
       } else {
-        if (waWindow) waWindow.close();
-        navigate("/bookings/confirmation", { state: { booking: newBooking, vehicle, shop } });
+        navigate("/bookings/confirmation", { state: confirmationState });
       }
     } catch (err: any) {
-      if (waWindow) waWindow.close();
-      toast({ title: "Booking failed", description: err.message, variant: "destructive" });
+      const detail = err.response?.data?.detail || err.message;
+      toast({ title: "Booking failed", description: detail, variant: "destructive" });
     } finally {
       setBooking(false);
     }
