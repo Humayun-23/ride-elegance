@@ -6,6 +6,7 @@ import BookingsPage from '../pages/BookingsPage';
 import CustomersPage from '../pages/CustomersPage';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
+import CatalogueModal from './CatalogueModal';
 import { getMe } from '../services/rentalosService';
 import type { CatalogVehicle, RentalBooking, RentalOSAccessShop, RentalOSMe } from '../types';
 
@@ -24,6 +25,10 @@ interface RentalOSContextType {
   setSelectedBooking: (booking: RentalBooking | null) => void;
   refreshKey: number;
   refreshBookings: () => void;
+  // Global catalogue overlay (reachable from anywhere via the Topbar).
+  catalogueOpen: boolean;
+  openCatalogue: () => void;
+  closeCatalogue: () => void;
 }
 
 export const RentalOSContext = createContext<RentalOSContextType>({
@@ -40,6 +45,9 @@ export const RentalOSContext = createContext<RentalOSContextType>({
   setSelectedBooking: () => undefined,
   refreshKey: 0,
   refreshBookings: () => undefined,
+  catalogueOpen: false,
+  openCatalogue: () => undefined,
+  closeCatalogue: () => undefined,
 });
 
 export const useRentalOS = () => useContext(RentalOSContext);
@@ -55,6 +63,9 @@ export default function RentalOSLayout() {
   const [selectedBooking, setSelectedBooking] = useState<RentalBooking | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const refreshBookings = () => setRefreshKey((key) => key + 1);
+  const [catalogueOpen, setCatalogueOpen] = useState(false);
+  const openCatalogue = () => setCatalogueOpen(true);
+  const closeCatalogue = () => setCatalogueOpen(false);
 
   useEffect(() => {
     getMe().then((res) => {
@@ -126,6 +137,9 @@ export default function RentalOSLayout() {
         setSelectedBooking,
         refreshKey,
         refreshBookings,
+        catalogueOpen,
+        openCatalogue,
+        closeCatalogue,
       }}
     >
       <div className="flex h-screen bg-gray-50 text-gray-900 font-sans">
@@ -146,6 +160,8 @@ export default function RentalOSLayout() {
             </div>
           </main>
         </div>
+
+        <CatalogueModal />
       </div>
     </RentalOSContext.Provider>
   );

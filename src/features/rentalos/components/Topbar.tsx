@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom';
-import { Bell, Menu } from 'lucide-react';
+import { Bell, Menu, LayoutGrid } from 'lucide-react';
 import { useRentalOS } from './RentalOSLayout';
 
 interface TopbarProps {
@@ -14,7 +14,7 @@ const TITLES: Record<string, string> = {
 
 export default function Topbar({ onMenuClick }: TopbarProps) {
   const location = useLocation();
-  const { activeShop, shops, isOwner, setActiveShopId } = useRentalOS();
+  const { activeShop, shops, isOwner, setActiveShopId, openCatalogue } = useRentalOS();
   const last = location.pathname.split('/').pop() || '';
   const pageTitle = TITLES[last] || 'Dashboard';
 
@@ -33,6 +33,16 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
+        <button
+          type="button"
+          onClick={openCatalogue}
+          className="inline-flex items-center gap-2 h-9 px-3 rounded-lg bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700 transition-colors"
+          aria-label="Open vehicle catalogue"
+        >
+          <LayoutGrid className="w-4 h-4" />
+          <span className="hidden sm:inline">Catalogue</span>
+        </button>
+
         {shops.length > 0 && (
           <select
             value={activeShop?.shop_id || ''}
