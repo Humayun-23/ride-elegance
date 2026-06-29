@@ -24,6 +24,10 @@ export const getCatalogVehicles = (shopId: number | string, startTime?: string, 
   return api.get<CatalogVehicle[]>('/rentalos/catalog/vehicles', { params });
 };
 
+export const createVehicle = (payload: any) => {
+  return api.post('/bikes/', payload);
+};
+
 export const searchCustomer = (shopId: number | string, phone: string) => {
   return api.get<RentalCustomerSearch>('/rentalos/customers/search', { params: { shop_id: shopId, phone } });
 };

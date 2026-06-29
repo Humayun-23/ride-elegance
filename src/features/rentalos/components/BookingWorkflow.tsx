@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, FileUp, Flag, NotebookPen, RefreshCcw, Wallet, XCircle } from 'lucide-react';
+import { CheckCircle2, FileUp, Flag, NotebookPen, RefreshCcw, Wallet, XCircle, Image as ImageIcon } from 'lucide-react';
 import {
   addBookingNote,
   addCustomerFlag,
@@ -15,6 +15,7 @@ import {
   uploadBookingDocument,
   uploadHandoverPhoto,
 } from '../services/rentalosService';
+import { inputClass, EmptyState } from './ui';
 import type {
   RentalBooking,
   RentalBookingNote,
@@ -39,6 +40,10 @@ const flagTypes = [
   'watchlist',
   'blocked',
 ];
+
+const sectionClass = 'border border-gray-200 rounded-lg p-4 space-y-3';
+const sectionTitleClass = 'text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2';
+const actionButtonClass = 'w-full h-9 rounded-lg bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700 transition-colors disabled:opacity-50';
 
 export default function BookingWorkflow({ booking, onChanged }: BookingWorkflowProps) {
   const [detail, setDetail] = useState<RentalBooking | null>(booking);
@@ -97,13 +102,15 @@ export default function BookingWorkflow({ booking, onChanged }: BookingWorkflowP
   useEffect(() => {
     setDetail(booking);
     loadWorkflow();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingId]);
 
   if (!booking) {
     return (
-      <div className="text-center py-10 text-gray-400 border-2 border-dashed rounded-xl">
-        Select a booking to upload documents, record payments, add notes, or complete the trip.
-      </div>
+      <EmptyState
+        icon={<NotebookPen className="w-6 h-6" />}
+        message="Select a booking to upload documents, record payments, add notes, or complete the trip."
+      />
     );
   }
 
@@ -203,78 +210,78 @@ export default function BookingWorkflow({ booking, onChanged }: BookingWorkflowP
     );
   };
 
+  const isError = message.includes('failed') || message.includes('Choose') || message.includes('Enter');
+
   return (
     <div className="space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100">
         <div>
-          <h4 className="text-sm font-bold text-gray-800">
-            Booking #{booking.id} • {detail?.customer?.firstname || 'Walk-in'} {detail?.customer?.lastname}
+          <h4 className="text-sm font-semibold text-gray-900">
+            Booking #{booking.id} · {detail?.customer?.firstname || 'Walk-in'} {detail?.customer?.lastname}
           </h4>
-          <p className="text-xs text-gray-500">
-            {detail?.bike?.name || `Bike ${booking.bike_id}`} • {detail?.status} • Balance ₹{detail?.balance_due ?? booking.balance_due}
+          <p className="text-xs text-gray-500 mt-0.5">
+            {detail?.bike?.name || `Bike ${booking.bike_id}`} · {detail?.status} · Balance ₹{detail?.balance_due ?? booking.balance_due}
           </p>
         </div>
         <div className="flex gap-2">
-          <button type="button" onClick={loadWorkflow} className="h-9 px-3 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold flex items-center gap-2">
+          <button type="button" onClick={loadWorkflow} className="h-9 px-3 rounded-lg bg-gray-100 text-gray-700 text-xs font-semibold flex items-center gap-1.5 hover:bg-gray-200 transition-colors">
             <RefreshCcw className="w-4 h-4" /> Refresh
           </button>
-          <button type="button" onClick={() => runAction(() => cancelBooking(booking.id), 'Booking cancelled')} className="h-9 px-3 rounded-lg bg-red-50 text-red-700 text-xs font-bold flex items-center gap-2">
+          <button type="button" onClick={() => runAction(() => cancelBooking(booking.id), 'Booking cancelled')} className="h-9 px-3 rounded-lg bg-red-50 text-red-700 text-xs font-semibold flex items-center gap-1.5 hover:bg-red-100 transition-colors">
             <XCircle className="w-4 h-4" /> Cancel
           </button>
         </div>
       </div>
 
       {message && (
-        <div className={`text-sm ${message.includes('failed') || message.includes('Choose') || message.includes('Enter') ? 'text-red-500' : 'text-green-600'}`}>
-          {message}
-        </div>
+        <div className={`text-sm ${isError ? 'text-red-600' : 'text-green-600'}`}>{message}</div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <section className="border border-gray-100 rounded-xl p-4 space-y-3">
-          <h5 className="text-xs font-bold text-gray-500 uppercase flex items-center gap-2"><FileUp className="w-4 h-4" /> Documents</h5>
-          <select value={documentType} onChange={(e) => setDocumentType(e.target.value)} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm">
+        <section className={sectionClass}>
+          <h5 className={sectionTitleClass}><FileUp className="w-4 h-4" /> Documents</h5>
+          <select value={documentType} onChange={(e) => setDocumentType(e.target.value)} className={inputClass}>
             <option value="driving_license">Driving license</option>
             <option value="id_proof">ID proof</option>
           </select>
-          <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setDocumentFile(e.target.files?.[0] || null)} className="w-full text-sm" />
-          <button type="button" disabled={loading} onClick={handleDocumentUpload} className="w-full h-9 rounded-lg bg-teal-500 text-white text-xs font-bold disabled:opacity-50">
-            Upload Document
+          <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => setDocumentFile(e.target.files?.[0] || null)} className="w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-gray-700" />
+          <button type="button" disabled={loading} onClick={handleDocumentUpload} className={actionButtonClass}>
+            Upload document
           </button>
           <ul className="space-y-1">
             {documents.map((doc) => (
               <li key={doc.id} className="text-xs text-gray-500">
-                {doc.document_type.replace(/_/g, ' ')} • {doc.file_name || 'Uploaded file'}
+                {doc.document_type.replace(/_/g, ' ')} · {doc.file_name || 'Uploaded file'}
               </li>
             ))}
           </ul>
         </section>
 
-        <section className="border border-gray-100 rounded-xl p-4 space-y-3">
-          <h5 className="text-xs font-bold text-gray-500 uppercase flex items-center gap-2"><FileUp className="w-4 h-4" /> Handover Photo</h5>
-          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setHandoverFile(e.target.files?.[0] || null)} className="w-full text-sm" />
-          <input value={locationAddress} onChange={(e) => setLocationAddress(e.target.value)} placeholder="Optional handover location" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+        <section className={sectionClass}>
+          <h5 className={sectionTitleClass}><ImageIcon className="w-4 h-4" /> Handover photo</h5>
+          <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setHandoverFile(e.target.files?.[0] || null)} className="w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-gray-700" />
+          <input value={locationAddress} onChange={(e) => setLocationAddress(e.target.value)} placeholder="Optional handover location" className={inputClass} />
           <div className="grid grid-cols-2 gap-2">
-            <input value={latitude} onChange={(e) => setLatitude(e.target.value)} placeholder="Latitude" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-            <input value={longitude} onChange={(e) => setLongitude(e.target.value)} placeholder="Longitude" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+            <input value={latitude} onChange={(e) => setLatitude(e.target.value)} placeholder="Latitude" className={inputClass} />
+            <input value={longitude} onChange={(e) => setLongitude(e.target.value)} placeholder="Longitude" className={inputClass} />
           </div>
-          <button type="button" disabled={loading} onClick={handleHandoverUpload} className="w-full h-9 rounded-lg bg-teal-500 text-white text-xs font-bold disabled:opacity-50">
-            Upload Handover Photo
+          <button type="button" disabled={loading} onClick={handleHandoverUpload} className={actionButtonClass}>
+            Upload handover photo
           </button>
           <p className="text-xs text-gray-500">{photos.length} handover photo(s) uploaded</p>
         </section>
 
-        <section className="border border-gray-100 rounded-xl p-4 space-y-3">
-          <h5 className="text-xs font-bold text-gray-500 uppercase flex items-center gap-2"><Wallet className="w-4 h-4" /> Offline Payment</h5>
+        <section className={sectionClass}>
+          <h5 className={sectionTitleClass}><Wallet className="w-4 h-4" /> Offline payment</h5>
           <div className="grid grid-cols-2 gap-2">
-            <select value={paymentType} onChange={(e) => setPaymentType(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <select value={paymentType} onChange={(e) => setPaymentType(e.target.value)} className={inputClass}>
               <option value="advance">Advance</option>
               <option value="balance">Balance</option>
               <option value="security_deposit">Security deposit</option>
               <option value="refund">Refund</option>
               <option value="extra_charge">Extra charge</option>
             </select>
-            <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className={inputClass}>
               <option value="cash">Cash</option>
               <option value="upi">UPI</option>
               <option value="card">Card</option>
@@ -282,19 +289,19 @@ export default function BookingWorkflow({ booking, onChanged }: BookingWorkflowP
               <option value="other">Other</option>
             </select>
           </div>
-          <input type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="Amount" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <input value={referenceNumber} onChange={(e) => setReferenceNumber(e.target.value)} placeholder="Optional reference number" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <button type="button" disabled={loading} onClick={handlePayment} className="w-full h-9 rounded-lg bg-teal-500 text-white text-xs font-bold disabled:opacity-50">
-            Record Payment
+          <input type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="Amount" className={inputClass} />
+          <input value={referenceNumber} onChange={(e) => setReferenceNumber(e.target.value)} placeholder="Optional reference number" className={inputClass} />
+          <button type="button" disabled={loading} onClick={handlePayment} className={actionButtonClass}>
+            Record payment
           </button>
           <p className="text-xs text-gray-500">{payments.length} payment(s) recorded</p>
         </section>
 
-        <section className="border border-gray-100 rounded-xl p-4 space-y-3">
-          <h5 className="text-xs font-bold text-gray-500 uppercase flex items-center gap-2"><NotebookPen className="w-4 h-4" /> Notes</h5>
-          <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional customer or trip note" className="w-full min-h-[76px] border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <button type="button" disabled={loading} onClick={handleNote} className="w-full h-9 rounded-lg bg-teal-500 text-white text-xs font-bold disabled:opacity-50">
-            Add Note
+        <section className={sectionClass}>
+          <h5 className={sectionTitleClass}><NotebookPen className="w-4 h-4" /> Notes</h5>
+          <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional customer or trip note" className={`${inputClass} min-h-[76px]`} />
+          <button type="button" disabled={loading} onClick={handleNote} className={actionButtonClass}>
+            Add note
           </button>
           <ul className="space-y-1">
             {notes.slice(0, 3).map((item) => (
@@ -303,30 +310,30 @@ export default function BookingWorkflow({ booking, onChanged }: BookingWorkflowP
           </ul>
         </section>
 
-        <section className="border border-gray-100 rounded-xl p-4 space-y-3">
-          <h5 className="text-xs font-bold text-gray-500 uppercase flex items-center gap-2"><Flag className="w-4 h-4" /> Customer Flag</h5>
+        <section className={sectionClass}>
+          <h5 className={sectionTitleClass}><Flag className="w-4 h-4" /> Customer flag</h5>
           <div className="grid grid-cols-2 gap-2">
-            <select value={flagType} onChange={(e) => setFlagType(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <select value={flagType} onChange={(e) => setFlagType(e.target.value)} className={inputClass}>
               {flagTypes.map((type) => <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>)}
             </select>
-            <select value={flagSeverity} onChange={(e) => setFlagSeverity(e.target.value)} className="border border-gray-200 rounded-lg px-3 py-2 text-sm">
+            <select value={flagSeverity} onChange={(e) => setFlagSeverity(e.target.value)} className={inputClass}>
               <option value="info">Info</option>
               <option value="warning">Warning</option>
               <option value="blocked">Blocked</option>
             </select>
           </div>
-          <textarea value={flagNote} onChange={(e) => setFlagNote(e.target.value)} placeholder="Required flag note" className="w-full min-h-[76px] border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <button type="button" disabled={loading} onClick={handleFlag} className="w-full h-9 rounded-lg bg-teal-500 text-white text-xs font-bold disabled:opacity-50">
-            Save Customer Flag
+          <textarea value={flagNote} onChange={(e) => setFlagNote(e.target.value)} placeholder="Required flag note" className={`${inputClass} min-h-[76px]`} />
+          <button type="button" disabled={loading} onClick={handleFlag} className={actionButtonClass}>
+            Save customer flag
           </button>
           <p className="text-xs text-gray-500">{flags.length} customer flag(s)</p>
         </section>
 
-        <section className="border border-gray-100 rounded-xl p-4 space-y-3">
-          <h5 className="text-xs font-bold text-gray-500 uppercase flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Trip Completion</h5>
-          <textarea value={completionNote} onChange={(e) => setCompletionNote(e.target.value)} placeholder="Optional completion note" className="w-full min-h-[76px] border border-gray-200 rounded-lg px-3 py-2 text-sm" />
-          <button type="button" disabled={loading || detail?.status === 'completed'} onClick={handleComplete} className="w-full h-9 rounded-lg bg-green-600 text-white text-xs font-bold disabled:opacity-50">
-            Complete Trip
+        <section className={sectionClass}>
+          <h5 className={sectionTitleClass}><CheckCircle2 className="w-4 h-4" /> Trip completion</h5>
+          <textarea value={completionNote} onChange={(e) => setCompletionNote(e.target.value)} placeholder="Optional completion note" className={`${inputClass} min-h-[76px]`} />
+          <button type="button" disabled={loading || detail?.status === 'completed'} onClick={handleComplete} className="w-full h-9 rounded-lg bg-green-600 text-white text-sm font-semibold hover:bg-green-700 transition-colors disabled:opacity-50">
+            Complete trip
           </button>
         </section>
       </div>
