@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Calendar, ArrowLeft, CheckCircle2, XCircle, Flag, RotateCcw } from "lucide-react";
 
 const FILTERS = ["all", "pending", "confirmed", "completed", "refunded", "cancelled"] as const;
-
+//blank comment
 const STATUS_COLOR: Record<string, string> = {
   pending: "bg-amber-500/10 text-amber-400 border-amber-500/30",
   confirmed: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
@@ -42,7 +42,7 @@ export default function AdminBookings() {
     try {
       const fresh = (await getAdminBookingById(id)).data;
       setBookings((p) => p.map((b) => (b.id === fresh.id ? fresh : b)));
-    } catch {}
+    } catch { }
   };
 
   const act = async (id: string, action: "confirm" | "reject" | "complete" | "return") => {
@@ -75,9 +75,8 @@ export default function AdminBookings() {
             <button
               key={t}
               onClick={() => setFilter(t)}
-              className={`px-3 py-1.5 rounded-full text-xs font-display uppercase tracking-wider transition-all whitespace-nowrap ${
-                filter === t ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
-              }`}
+              className={`px-3 py-1.5 rounded-full text-xs font-display uppercase tracking-wider transition-all whitespace-nowrap ${filter === t ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground"
+                }`}
             >
               {t}
             </button>
