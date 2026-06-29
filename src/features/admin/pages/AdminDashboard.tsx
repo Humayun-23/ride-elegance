@@ -177,7 +177,7 @@ export default function AdminDashboard() {
           </h1>
           <Button onClick={() => window.open("/rentalos", "_blank")} className="bg-teal-500 hover:bg-teal-600 text-white font-bold gap-2">
             <LayoutDashboard className="w-4 h-4" />
-            Open POS Terminal
+            Open RentalOS
           </Button>
         </div>
 
