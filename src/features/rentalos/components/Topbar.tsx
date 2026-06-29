@@ -36,18 +36,18 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
         <button
           type="button"
           onClick={openCatalogue}
-          className="inline-flex items-center gap-2 h-9 px-3 rounded-lg bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700 transition-colors"
+          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-teal-600 text-white text-xs sm:text-sm font-semibold hover:bg-teal-700 transition-colors"
           aria-label="Open vehicle catalogue"
         >
           <LayoutGrid className="w-4 h-4" />
-          <span className="hidden sm:inline">Catalogue</span>
+          <span>Catalogue</span>
         </button>
 
         {shops.length > 0 && (
           <select
             value={activeShop?.shop_id || ''}
             onChange={(event) => setActiveShopId(Number(event.target.value))}
-            className="max-w-[150px] sm:max-w-none bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500"
+            className="hidden sm:block max-w-[150px] sm:max-w-none bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500"
           >
             {shops.map((shop) => (
               <option key={`${shop.role}-${shop.shop_id}`} value={shop.shop_id}>

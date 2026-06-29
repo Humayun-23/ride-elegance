@@ -11,7 +11,6 @@ import type {
   RentalOSMe,
   RentalPayment,
   RentalStaff,
-  ShopBike,
 } from '../types';
 
 export const getMe = () => {
@@ -25,9 +24,8 @@ export const getCatalogVehicles = (shopId: number | string, startTime?: string, 
   return api.get<CatalogVehicle[]>('/rentalos/catalog/vehicles', { params });
 };
 
-// Full shop catalogue (all bikes regardless of availability window).
-export const getShopBikes = (shopId: number | string) => {
-  return api.get<ShopBike[]>(`/bikes/shop/${shopId}`);
+export const createVehicle = (payload: any) => {
+  return api.post('/bikes/', payload);
 };
 
 export const searchCustomer = (shopId: number | string, phone: string) => {

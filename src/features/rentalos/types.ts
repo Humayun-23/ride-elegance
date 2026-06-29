@@ -30,20 +30,6 @@ export interface CatalogVehicle {
   rentalos_availability_status: 'available' | 'booked' | 'maintenance' | 'unavailable';
 }
 
-export interface ShopBike {
-  id: number;
-  shop_id: number;
-  name: string;
-  model: string;
-  bike_type: string;
-  price_per_hour: number;
-  price_per_day: number;
-  condition: string;
-  maintenance_status: string | null;
-  is_available: boolean;
-  image_url: string | null;
-}
-
 export interface RentalCustomerSearch {
   found: boolean;
   phone_number: string;

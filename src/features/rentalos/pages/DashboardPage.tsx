@@ -5,6 +5,7 @@ import { useRentalOS } from '../components/RentalOSLayout';
 import { Card } from '../components/ui';
 import { getBookings } from '../services/rentalosService';
 import type { RentalBooking } from '../types';
+import AddVehicleModal from '../components/AddVehicleModal';
 
 function isDueToday(dateStr: string) {
   const d = new Date(dateStr);
@@ -113,7 +114,10 @@ export default function DashboardPage() {
         </Card>
 
         <Card className="p-5">
-          <h3 className="text-base font-semibold text-gray-900 mb-4">Quick actions</h3>
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <h3 className="text-base font-semibold text-gray-900">Quick actions</h3>
+            {isOwner && <AddVehicleModal />}
+          </div>
           <div className="space-y-2">
             {QUICK_LINKS.map((link) => (
               <Link
