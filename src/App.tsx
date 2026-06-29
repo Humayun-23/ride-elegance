@@ -1,8 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Navbar from './components/layout/Navbar';
-import MobileBottomNav from './components/layout/MobileBottomNav';
-import Footer from './components/layout/Footer';
+import MainLayout from './components/layout/MainLayout';
 import { LoadingState } from './components/common/LoadingState';
 import ScrollToTop from './components/common/ScrollToTop';
 import { AuthProvider } from './features/auth/context/AuthContext';
@@ -12,6 +10,9 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 // Eagerly load the main entry pages to preserve the index.html Skeleton Shell and protect LCP/CLS
 import Index from './pages/Index';
 import DynamicLanding from './pages/DynamicLanding';
+
+// Lazy load RentalOS
+const RentalOSLayout = lazy(() => import('./features/rentalos/components/RentalOSLayout'));
 
 // Lazy load the rest to reduce bundle size for subsequent navigations
 const SearchVehicles = lazy(() => import('./features/vehicles/pages/SearchVehicles'));
@@ -47,9 +48,16 @@ function App() {
         <FavoritesProvider>
           <BrowserRouter>
             <ScrollToTop />
-            <Navbar />
-            <Suspense fallback={<LoadingState />}>
-              <Routes>
+            <Routes>
+              {/* RentalOS Sub-App */}
+              <Route path="/rentalos/*" element={
+                <Suspense fallback={<LoadingState />}>
+                  <RentalOSLayout />
+                </Suspense>
+              } />
+
+              {/* Public Sub-App */}
+              <Route element={<MainLayout />}>
                 <Route path="/" element={<Index />} />
                 <Route path="/search-vehicles" element={<SearchVehicles />} />
                 <Route path="/business-rental-network" element={<BusinessRentalNetwork />} />
@@ -82,10 +90,8 @@ function App() {
 
                 {/* Catch-all 404 */}
                 <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-            <Footer />
-            <MobileBottomNav />
+              </Route>
+            </Routes>
           </BrowserRouter>
         </FavoritesProvider>
       </GoogleOAuthProvider>

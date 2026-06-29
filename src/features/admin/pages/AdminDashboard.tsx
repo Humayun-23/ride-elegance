@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { motion } from "framer-motion";
-import { Plus, Store, Bike, Package, Calendar, TrendingUp, Star, Activity, Code, ActivitySquare, Percent } from "lucide-react";
+import { Plus, Store, Bike, Package, Calendar, TrendingUp, Star, Activity, Code, ActivitySquare, Percent, LayoutDashboard } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 import { getAdminAnalytics } from "@/features/admin/services/adminService";
@@ -171,9 +171,15 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen pt-24 pb-16">
       <div className="container px-4 space-y-8">
-        <h1 className="font-display text-3xl md:text-4xl font-bold">
-          Shop Owner <span className="text-gradient">Dashboard</span>
-        </h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h1 className="font-display text-3xl md:text-4xl font-bold">
+            Shop Owner <span className="text-gradient">Dashboard</span>
+          </h1>
+          <Button onClick={() => window.open("/rentalos", "_blank")} className="bg-teal-500 hover:bg-teal-600 text-white font-bold gap-2">
+            <LayoutDashboard className="w-4 h-4" />
+            Open POS Terminal
+          </Button>
+        </div>
 
         {/* Quick nav */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">

@@ -21,7 +21,7 @@ export function SEO({
   type = 'website',
   name = 'GoPanda',
   url = 'https://www.gopanda.in',
-  image = 'https://www.gopanda.in/og-image.png',
+  image = 'https://www.gopanda.in/og-image-1.png',
   schema,
   noindex = false,
 }: SEOProps) {
@@ -61,7 +61,7 @@ export function SEO({
         'url': 'https://www.gopanda.in',
         'logo': {
           '@type': 'ImageObject',
-          'url': 'https://www.gopanda.in/og-image.png'
+          'url': 'https://www.gopanda.in/og-image-1.png'
         },
         'description': 'GoPanda is a digital marketplace platform connecting travelers and locals with rental bikes, scooties, and cars from verified local shops in Guwahati and Assam.',
         'sameAs': [
