@@ -41,20 +41,27 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (firstname.length < 1 || firstname.length > 50) {
-      toast({ title: "First name must be 1-50 characters", variant: "destructive" });
+    if (!firstname.trim() || firstname.length > 50) {
+      toast({ title: "First name is required (max 50 characters)", variant: "destructive" });
       return;
     }
-    if (lastname.length < 1 || lastname.length > 50) {
-      toast({ title: "Last name must be 1-50 characters", variant: "destructive" });
+    if (!lastname.trim() || lastname.length > 50) {
+      toast({ title: "Last name is required (max 50 characters)", variant: "destructive" });
       return;
     }
-    if (phone.length < 10 || phone.length > 20) {
-      toast({ title: "Phone number must be 10-20 characters", variant: "destructive" });
+    
+    // Validate phone number digits
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (phoneDigits.length < 10 || phoneDigits.length > 20) {
+      toast({ title: "Please enter a valid 10-digit phone number", variant: "destructive" });
       return;
     }
-    if (password.length < 8 || password.length > 128) {
-      toast({ title: "Password must be 8-128 characters", variant: "destructive" });
+    if (password.length < 8) {
+      toast({ title: "Password must be at least 8 characters long", variant: "destructive" });
+      return;
+    }
+    if (password.length > 128) {
+      toast({ title: "Password cannot exceed 128 characters", variant: "destructive" });
       return;
     }
     setLoading(true);

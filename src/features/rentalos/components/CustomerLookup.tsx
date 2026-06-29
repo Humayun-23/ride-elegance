@@ -29,7 +29,12 @@ export default function CustomerLookup() {
   const [loadingHistory, setLoadingHistory] = useState(false);
 
   const handleSearch = () => {
-    if (!shopId || !phone) return;
+    if (!shopId) return;
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (phoneDigits.length < 10 || phoneDigits.length > 20) {
+      setError('Please enter a valid 10-digit phone number');
+      return;
+    }
     setLoading(true);
     setError('');
     setNotFound(false);
@@ -45,7 +50,7 @@ export default function CustomerLookup() {
         setCustomer(customerResult);
         if (!customerResult.found) {
           setNotFound(true);
-          setError('Customer not found. Please provide a name to create a new profile.');
+          setError('Customer not found. Add name and create a new customer or create a booking by phone.');
         } else if (customerResult.id) {
           setLoadingHistory(true);
           queryClient
@@ -67,17 +72,23 @@ export default function CustomerLookup() {
   };
 
   const handleCreate = () => {
-    if (!phone || !shopId) {
-      setError('Phone and active shop are required');
+    if (!shopId) return;
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (phoneDigits.length < 10 || phoneDigits.length > 20) {
+      setError('Please enter a valid 10-digit phone number');
+      return;
+    }
+    if (!firstname.trim()) {
+      setError('First name is required');
       return;
     }
     setLoading(true);
     setError('');
     createCustomer({
       shop_id: shopId,
-      phone_number: phone,
-      firstname: firstname || undefined,
-      lastname: lastname || undefined,
+      phone_number: phoneDigits,
+      firstname: firstname.trim(),
+      lastname: lastname.trim() || undefined,
       document_consent: true,
       marketing_consent: false,
     })

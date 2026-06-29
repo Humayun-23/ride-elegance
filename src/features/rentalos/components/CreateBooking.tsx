@@ -68,6 +68,16 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
       setMessage('Bike, phone, start time, and end time are required.');
       return;
     }
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (phoneDigits.length < 10 || phoneDigits.length > 20) {
+      setMessage('Please enter a valid 10-digit phone number');
+      return;
+    }
+    if (total < 0 || advance < 0 || securityDeposit < 0) {
+      setMessage('Amounts cannot be negative');
+      return;
+    }
+
     setLoading(true);
     setMessage('');
 

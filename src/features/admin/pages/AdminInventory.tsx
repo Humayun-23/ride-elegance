@@ -124,12 +124,31 @@ export default function AdminInventory() {
   };
 
   const submit = async () => {
+    if (!form.name.trim()) {
+      toast({ title: "Vehicle name is required", variant: "destructive" });
+      return;
+    }
+    if (!form.model.trim()) {
+      toast({ title: "Vehicle model is required", variant: "destructive" });
+      return;
+    }
+    const pph = Number(form.price_per_hour);
+    const ppd = Number(form.price_per_day);
+    if (isNaN(pph) || pph <= 0) {
+      toast({ title: "Price per hour must be a valid number greater than 0", variant: "destructive" });
+      return;
+    }
+    if (isNaN(ppd) || ppd <= 0) {
+      toast({ title: "Price per day must be a valid number greater than 0", variant: "destructive" });
+      return;
+    }
+
     setIsSaving(true);
     try {
       const payload: any = {
-        name: form.name, model: form.model, bike_type: form.bike_type,
-        price_per_hour: Number(form.price_per_hour),
-        price_per_day: Number(form.price_per_day),
+        name: form.name.trim(), model: form.model.trim(), bike_type: form.bike_type,
+        price_per_hour: pph,
+        price_per_day: ppd,
         condition: form.condition,
         is_available: form.is_available,
         maintenance_status: form.maintenance_status,

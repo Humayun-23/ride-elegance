@@ -111,10 +111,27 @@ export default function AdminDashboard() {
   };
 
   const createShop = async () => {
-    if (shopPhone.length < 10 || shopPhone.length > 20) {
-      toast({ title: "Phone must be 10-20 characters", variant: "destructive" });
+    if (!shopName.trim() || shopName.length > 50) {
+      toast({ title: "Shop name is required (max 50 characters)", variant: "destructive" });
       return;
     }
+    
+    const phoneDigits = shopPhone.replace(/\D/g, "");
+    if (phoneDigits.length < 10 || phoneDigits.length > 20) {
+      toast({ title: "Please enter a valid 10-digit phone number", variant: "destructive" });
+      return;
+    }
+
+    if (!shopAddress.trim() || !shopCity.trim()) {
+      toast({ title: "Address and City are required", variant: "destructive" });
+      return;
+    }
+
+    if (shopUpiId && shopUpiId.length > 50) {
+      toast({ title: "UPI ID cannot exceed 50 characters", variant: "destructive" });
+      return;
+    }
+
     setIsCreatingShop(true);
     try {
       const payload: any = {
