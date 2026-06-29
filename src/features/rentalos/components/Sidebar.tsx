@@ -18,14 +18,12 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
   return (
     <>
-      <div className="h-20 flex items-center px-8 border-b border-gray-50 mb-4">
-        <div className="flex flex-1 items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-teal-400 to-teal-600 flex items-center justify-center shadow-lg shadow-teal-500/30">
+      <div className="h-16 flex items-center px-5 border-b border-gray-200">
+        <div className="flex flex-1 items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-teal-600 flex items-center justify-center">
             <CarFront className="w-4 h-4 text-white" />
           </div>
-          <h2 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-teal-500 to-teal-700 tracking-tight">
-            RentalOS
-          </h2>
+          <h2 className="text-lg font-bold text-gray-900 tracking-tight">RentalOS</h2>
         </div>
         <button
           type="button"
@@ -36,8 +34,8 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           <X className="w-5 h-5" />
         </button>
       </div>
-      
-      <nav className="flex-1 px-4 space-y-1.5">
+
+      <nav className="flex-1 px-3 py-4 space-y-1">
         {NAV_ITEMS.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -45,27 +43,25 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
               key={item.name}
               to={item.path}
               onClick={onClose}
-              className={`flex items-center gap-3 px-4 py-3 rounded-[12px] font-semibold transition-all duration-200 ${
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-white shadow-[0_4px_12px_rgba(0,0,0,0.04)] text-gray-800'
-                  : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'bg-teal-50 text-teal-700'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
-              <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors ${isActive ? 'bg-teal-500 text-white shadow-md shadow-teal-500/30' : 'bg-gray-100'}`}>
-                <item.icon className="w-4 h-4" />
-              </div>
-              <span className="text-sm">{item.name}</span>
+              <item.icon className={`w-5 h-5 ${isActive ? 'text-teal-600' : 'text-gray-400'}`} />
+              <span>{item.name}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="p-4 mt-auto">
-        <div className="bg-gradient-to-br from-teal-400 to-teal-600 rounded-2xl p-4 text-white shadow-lg shadow-teal-500/30">
-          <h4 className="font-bold text-sm mb-1">Need help?</h4>
-          <p className="text-xs text-white/80 mb-3">Please check our docs</p>
-          <button className="w-full bg-white text-teal-600 text-xs font-bold py-2 rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
-            DOCUMENTATION
+      <div className="p-3 border-t border-gray-200">
+        <div className="rounded-lg bg-gray-50 border border-gray-200 p-4">
+          <h4 className="font-semibold text-sm text-gray-900 mb-1">Need help?</h4>
+          <p className="text-xs text-gray-500 mb-3">Check the documentation for setup and workflows.</p>
+          <button className="w-full bg-teal-600 text-white text-xs font-semibold py-2 rounded-lg hover:bg-teal-700 transition-colors">
+            Documentation
           </button>
         </div>
       </div>
@@ -76,7 +72,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 export default function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
   return (
     <>
-      <aside className="w-[260px] bg-white hidden md:flex flex-col border-r border-gray-100 shadow-[2px_0_24px_rgba(0,0,0,0.02)] z-20 shrink-0">
+      <aside className="w-64 bg-white hidden md:flex flex-col border-r border-gray-200 shrink-0">
         <SidebarContent />
       </aside>
 
@@ -85,10 +81,10 @@ export default function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
           <button
             type="button"
             aria-label="Close RentalOS menu overlay"
-            className="absolute inset-0 bg-gray-900/35"
+            className="absolute inset-0 bg-gray-900/40"
             onClick={onClose}
           />
-          <aside className="relative h-full w-[280px] max-w-[85vw] bg-white flex flex-col border-r border-gray-100 shadow-xl">
+          <aside className="relative h-full w-72 max-w-[85vw] bg-white flex flex-col border-r border-gray-200 shadow-xl">
             <SidebarContent onClose={onClose} />
           </aside>
         </div>
