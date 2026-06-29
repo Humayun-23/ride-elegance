@@ -155,7 +155,7 @@ export default function ShopDetail() {
     '@type': 'LocalBusiness',
     name: shop.name || 'Rental Shop',
     description: shop.description || `Vehicle rental shop in ${shop.city || 'Guwahati'}`,
-    image: shop.image_url || 'https://www.gopanda.in/og-image.png',
+    image: shop.image_url || 'https://www.gopanda.in/og-image-1.png',
     telephone: shop.phone_number || undefined,
     address: {
       '@type': 'PostalAddress',

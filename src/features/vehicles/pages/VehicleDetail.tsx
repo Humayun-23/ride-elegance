@@ -276,7 +276,7 @@ ${rejectLink}`;
     '@type': 'Product',
     name: `${vehicle.name}${vehicle.model ? ` ${vehicle.model}` : ''}`,
     description: vehicle.description || `Rent ${vehicle.name} in ${shop?.city || 'Guwahati'}`,
-    image: heroImage || 'https://www.gopanda.in/og-image.png',
+    image: heroImage || 'https://www.gopanda.in/og-image-1.png',
     brand: {
       '@type': 'Brand',
       name: vehicle.name?.split(' ')[0] || 'Vehicle',

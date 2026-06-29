@@ -82,7 +82,7 @@ export default async function handler(req, res) {
     );
     html = html.replace(
       /<meta name="twitter:image" content="[^"]*"\s*\/?>/,
-      `<meta name="twitter:image" content="${protocol}://${host}/og-image.png" />`
+      `<meta name="twitter:image" content="${protocol}://${host}/og-image-1.png" />`
     );
 
     // Add canonical link before </head> if not already present
