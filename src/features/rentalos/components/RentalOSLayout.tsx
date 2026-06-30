@@ -1,19 +1,28 @@
 import { Routes, Route } from 'react-router-dom';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import DashboardPage from '../pages/DashboardPage';
-import VehiclesPage from '../pages/VehiclesPage';
-import BookingsPage from '../pages/BookingsPage';
-import CustomersPage from '../pages/CustomersPage';
-import StaffPage from '../pages/StaffPage';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
-import CatalogueModal from './CatalogueModal';
-import CommandPalette from './CommandPalette';
 import BottomNav from './BottomNav';
-import BookingModal from './BookingModal';
 import { RentalOSContext, type ManageBookingFocus } from './RentalOSContext';
 import type { CatalogVehicle, RentalBooking, RentalOSMe } from '../types';
 import { rentalOSErrorMessage, useInvalidateRentalOS, useRentalOSAccess } from '../hooks/useRentalOSQueries';
+
+const DashboardPage = lazy(() => import('../pages/DashboardPage'));
+const VehiclesPage = lazy(() => import('../pages/VehiclesPage'));
+const BookingsPage = lazy(() => import('../pages/BookingsPage'));
+const CustomersPage = lazy(() => import('../pages/CustomersPage'));
+const StaffPage = lazy(() => import('../pages/StaffPage'));
+const CatalogueModal = lazy(() => import('./CatalogueModal'));
+const BookingModal = lazy(() => import('./BookingModal'));
+const CommandPalette = lazy(() => import('./CommandPalette'));
+
+function RouteFallback() {
+  return (
+    <div className="rl-surface rounded-lg px-4 py-8 text-center text-[13px] text-[color:var(--rl-muted)]">
+      Loading view...
+    </div>
+  );
+}
 
 export default function RentalOSLayout() {
   const [shopId, setShopId] = useState<number | null>(null);
@@ -97,6 +106,7 @@ export default function RentalOSLayout() {
   const accessErrorMessage = accessError
     ? rentalOSErrorMessage(accessError, 'Failed to load RentalOS access.')
     : '';
+  const bookingModalOpen = Boolean(selectedBooking || selectedVehicle || createBookingOpen);
 
   const contextValue = useMemo(
     () => ({
@@ -178,22 +188,36 @@ export default function RentalOSLayout() {
 
           <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-5 pb-20 md:pb-5">
             <div className="mx-auto w-full max-w-[1400px]">
-              <Routes>
-                <Route path="/" element={<DashboardPage />} />
-                <Route path="/vehicles" element={<VehiclesPage />} />
-                <Route path="/bookings" element={<BookingsPage />} />
-                <Route path="/customers" element={<CustomersPage />} />
-                <Route path="/staff" element={<StaffPage />} />
-                <Route path="*" element={<DashboardPage />} />
-              </Routes>
+              <Suspense fallback={<RouteFallback />}>
+                <Routes>
+                  <Route path="/" element={<DashboardPage />} />
+                  <Route path="/vehicles" element={<VehiclesPage />} />
+                  <Route path="/bookings" element={<BookingsPage />} />
+                  <Route path="/customers" element={<CustomersPage />} />
+                  <Route path="/staff" element={<StaffPage />} />
+                  <Route path="*" element={<DashboardPage />} />
+                </Routes>
+              </Suspense>
             </div>
           </main>
         </div>
 
         <BottomNav />
-        <CatalogueModal />
-        <BookingModal />
-        <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
+        {catalogueOpen && (
+          <Suspense fallback={null}>
+            <CatalogueModal />
+          </Suspense>
+        )}
+        {bookingModalOpen && (
+          <Suspense fallback={null}>
+            <BookingModal />
+          </Suspense>
+        )}
+        {commandOpen && (
+          <Suspense fallback={null}>
+            <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
+          </Suspense>
+        )}
       </div>
     </RentalOSContext.Provider>
   );

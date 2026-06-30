@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, FileText, CarFront, Users, Plus, Search, Phone, Hash } from 'lucide-react';
+import { LayoutDashboard, FileText, CarFront, Users, Plus, Phone, Hash } from 'lucide-react';
 import {
   CommandDialog,
   CommandEmpty,
@@ -140,22 +140,5 @@ export default function CommandPalette({ open, onOpenChange }: Props) {
         </CommandGroup>
       </CommandList>
     </CommandDialog>
-  );
-}
-
-// Provide a static trigger for the topbar.
-export function CommandPaletteTrigger({ onClick }: { onClick: () => void }) {
-  const mac = useMemo(() => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent), []);
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="rl-cmd group hidden md:flex items-center gap-2 h-8 w-full max-w-[420px] rounded-md px-2.5 text-[13px]"
-      aria-label="Open command palette"
-    >
-      <Search className="w-3.5 h-3.5 shrink-0" />
-      <span className="flex-1 text-left truncate">Search customer, booking, or jump to…</span>
-      <span className="rl-kbd">{mac ? '⌘' : 'Ctrl'} K</span>
-    </button>
   );
 }

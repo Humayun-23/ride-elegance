@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Menu, Plus, ChevronDown, Check, LayoutGrid } from 'lucide-react';
 import { useRentalOS } from './RentalOSContext';
-import { CommandPaletteTrigger } from './CommandPalette';
+import CommandPaletteTrigger from './CommandPaletteTrigger';
 import {
   Popover,
   PopoverContent,
