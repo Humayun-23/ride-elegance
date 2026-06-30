@@ -37,14 +37,13 @@ export default function CustomerLookup() {
     }
     setLoading(true);
     setError('');
-<<<<<<< HEAD
     setNotFound(false);
     setHistory([]);
 
     queryClient
       .fetchQuery({
-        queryKey: [...rentalOSKeys.customers(shopId), 'search', phone],
-        queryFn: async () => (await searchCustomer(shopId, phone)).data,
+        queryKey: [...rentalOSKeys.customers(shopId), 'search', phoneDigits],
+        queryFn: async () => (await searchCustomer(shopId, phoneDigits)).data,
         staleTime: 2 * 60 * 1000,
       })
       .then((customerResult) => {
@@ -63,13 +62,6 @@ export default function CustomerLookup() {
             .then((bookings) => setHistory(bookings))
             .catch(err => console.error(err))
             .finally(() => setLoadingHistory(false));
-=======
-    searchCustomer(shopId, phoneDigits)
-      .then(res => {
-        setCustomer(res.data);
-        if (!res.data.found) {
-          setError('Customer not found. Add name and create a new customer or create a booking by phone.');
->>>>>>> e315665 (added warnings to every form fields)
         }
       })
       .catch((err) => {
