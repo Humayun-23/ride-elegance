@@ -1,11 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, CarFront, Users, FileText, X } from 'lucide-react';
+import { LayoutDashboard, CarFront, Users, FileText, X, LogOut, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { useRentalOS } from './RentalOSLayout';
+import { useAuth } from '@/features/auth/context/AuthContext';
 
 const NAV_ITEMS = [
-  { name: 'Dashboard', path: '/rentalos', icon: LayoutDashboard },
-  { name: 'Vehicles', path: '/rentalos/vehicles', icon: CarFront },
-  { name: 'Bookings', path: '/rentalos/bookings', icon: FileText },
-  { name: 'Customers', path: '/rentalos/customers', icon: Users },
+  { name: 'Dashboard', path: '/rentalos', icon: LayoutDashboard, hint: 'G D' },
+  { name: 'Bookings', path: '/rentalos/bookings', icon: FileText, hint: 'G B' },
+  { name: 'Vehicles', path: '/rentalos/vehicles', icon: CarFront, hint: 'G V' },
+  { name: 'Customers', path: '/rentalos/customers', icon: Users, hint: 'G C' },
 ];
 
 interface SidebarProps {
@@ -13,79 +15,139 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-function SidebarContent({ onClose }: { onClose?: () => void }) {
-  const location = useLocation();
+function Rail({ collapsed, onClose, onToggle }: { collapsed: boolean; onClose?: () => void; onToggle?: () => void }) {
+  const { pathname } = useLocation();
+  const { activeShop, isOwner } = useRentalOS();
+  const { user, logout } = useAuth();
 
   return (
-    <>
-      <div className="h-16 flex items-center px-5 border-b border-gray-200">
-        <div className="flex flex-1 items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center">
-            <CarFront className="w-4 h-4 text-white" />
-          </div>
-          <h2 className="text-lg font-bold text-gray-900 tracking-tight">RentalOS</h2>
+    <div className="rl-rail flex flex-col h-full">
+      {/* Brand + shop */}
+      <div className={`h-14 flex items-center border-b border-white/5 ${collapsed ? 'justify-center px-2' : 'px-4'}`}>
+        <div className="w-7 h-7 rounded-md bg-[#3bb881] flex items-center justify-center shrink-0">
+          <span className="text-[#010101] font-black text-sm">R</span>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100"
-          aria-label="Close RentalOS menu"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {!collapsed && (
+          <div className="ml-2.5 flex-1 min-w-0">
+            <div className="text-[13px] font-bold text-white leading-tight tracking-tight">RentalOS</div>
+            <div className="text-[10px] text-white/40 uppercase tracking-wider truncate">
+              {activeShop?.shop_name || 'No shop'}
+            </div>
+          </div>
+        )}
+        {onClose && !collapsed && (
+          <button onClick={onClose} className="md:hidden p-1.5 rounded text-white/60 hover:bg-white/10" aria-label="Close">
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      {/* Nav */}
+      <nav className={`flex-1 ${collapsed ? 'px-2' : 'px-2'} py-3 space-y-0.5 overflow-y-auto`}>
+        {!collapsed && (
+          <div className="px-2 pb-1.5 text-[10px] font-bold text-white/30 uppercase tracking-widest">
+            Workspace
+          </div>
+        )}
         {NAV_ITEMS.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = item.path === '/rentalos' ? pathname === '/rentalos' : pathname.startsWith(item.path);
           return (
             <Link
               key={item.name}
               to={item.path}
               onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              data-active={isActive}
+              className={`rl-rail-item group flex items-center rounded-md text-[13px] ${
+                collapsed ? 'justify-center h-9 w-9 mx-auto' : 'gap-2.5 px-2.5 h-9'
               }`}
+              title={collapsed ? item.name : undefined}
             >
-              <item.icon className={`w-5 h-5 ${isActive ? 'text-emerald-600' : 'text-gray-400'}`} />
-              <span>{item.name}</span>
+              <item.icon className="w-4 h-4 shrink-0" />
+              {!collapsed && (
+                <>
+                  <span className="flex-1">{item.name}</span>
+                  <span className="rl-kbd opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.1)' }}>
+                    {item.hint}
+                  </span>
+                </>
+              )}
             </Link>
           );
         })}
       </nav>
 
-      <div className="p-3 border-t border-gray-200">
-        <div className="rounded-lg bg-gray-50 border border-gray-200 p-4">
-          <h4 className="font-semibold text-sm text-gray-900 mb-1">Need help?</h4>
-          <p className="text-xs text-gray-500 mb-3">Check the documentation for setup and workflows.</p>
-          <button className="w-full bg-emerald-600 text-white text-xs font-semibold py-2 rounded-lg hover:bg-emerald-700 transition-colors">
-            Documentation
+      {/* User footer */}
+      <div className="border-t border-white/5 p-2">
+        {!collapsed ? (
+          <div className="flex items-center gap-2.5 px-2 py-2 rounded-md">
+            <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-[11px] font-bold text-white shrink-0">
+              {(user?.firstname?.[0] || 'U').toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[12px] font-semibold text-white truncate leading-tight">
+                {user?.firstname} {user?.lastname}
+              </div>
+              <div className="text-[10px] text-white/40 uppercase tracking-wider">
+                {isOwner ? 'Owner' : 'Staff'}
+              </div>
+            </div>
+            <button
+              onClick={logout}
+              className="p-1.5 rounded text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label="Log out"
+              title="Log out"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={logout}
+            className="w-9 h-9 mx-auto flex items-center justify-center rounded-md text-white/50 hover:bg-white/10 hover:text-white transition-colors"
+            aria-label="Log out"
+            title="Log out"
+          >
+            <LogOut className="w-4 h-4" />
           </button>
-        </div>
+        )}
+
+        {onToggle && (
+          <button
+            onClick={onToggle}
+            className={`hidden md:flex w-full items-center justify-center mt-1 h-7 rounded-md text-white/30 hover:text-white/70 hover:bg-white/5 transition-colors`}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {collapsed ? <ChevronsRight className="w-3.5 h-3.5" /> : <ChevronsLeft className="w-3.5 h-3.5" />}
+          </button>
+        )}
       </div>
-    </>
+    </div>
   );
 }
 
 export default function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
+  const { sidebarCollapsed, toggleSidebar } = useRentalOS();
+
   return (
     <>
-      <aside className="w-64 bg-white hidden md:flex flex-col border-r border-gray-200 shrink-0">
-        <SidebarContent />
+      <aside
+        className={`hidden md:flex shrink-0 transition-[width] duration-200 ${
+          sidebarCollapsed ? 'w-[56px]' : 'w-[220px]'
+        }`}
+      >
+        <Rail collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
       </aside>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <button
             type="button"
-            aria-label="Close RentalOS menu overlay"
-            className="absolute inset-0 bg-gray-900/40"
+            aria-label="Close menu"
+            className="absolute inset-0 bg-black/50"
             onClick={onClose}
           />
-          <aside className="relative h-full w-72 max-w-[85vw] bg-white flex flex-col border-r border-gray-200 shadow-xl">
-            <SidebarContent onClose={onClose} />
+          <aside className="relative h-full w-64 max-w-[85vw] shadow-xl">
+            <Rail collapsed={false} onClose={onClose} />
           </aside>
         </div>
       )}

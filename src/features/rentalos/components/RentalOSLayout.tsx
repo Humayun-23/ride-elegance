@@ -7,6 +7,7 @@ import CustomersPage from '../pages/CustomersPage';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import CatalogueModal from './CatalogueModal';
+import CommandPalette from './CommandPalette';
 import { getMe } from '../services/rentalosService';
 import type { CatalogVehicle, RentalBooking, RentalOSAccessShop, RentalOSMe } from '../types';
 
@@ -18,17 +19,18 @@ interface RentalOSContextType {
   isOwner: boolean;
   loadingAccess: boolean;
   setActiveShopId: (shopId: number) => void;
-  // Shared selection + refresh state across pages
   selectedVehicle: CatalogVehicle | null;
   setSelectedVehicle: (vehicle: CatalogVehicle | null) => void;
   selectedBooking: RentalBooking | null;
   setSelectedBooking: (booking: RentalBooking | null) => void;
   refreshKey: number;
   refreshBookings: () => void;
-  // Global catalogue overlay (reachable from anywhere via the Topbar).
   catalogueOpen: boolean;
   openCatalogue: () => void;
   closeCatalogue: () => void;
+  sidebarCollapsed: boolean;
+  toggleSidebar: () => void;
+  openCommand: () => void;
 }
 
 export const RentalOSContext = createContext<RentalOSContextType>({
@@ -48,6 +50,9 @@ export const RentalOSContext = createContext<RentalOSContextType>({
   catalogueOpen: false,
   openCatalogue: () => undefined,
   closeCatalogue: () => undefined,
+  sidebarCollapsed: false,
+  toggleSidebar: () => undefined,
+  openCommand: () => undefined,
 });
 
 export const useRentalOS = () => useContext(RentalOSContext);
@@ -58,6 +63,9 @@ export default function RentalOSLayout() {
   const [loadingAccess, setLoadingAccess] = useState(true);
   const [error, setError] = useState('');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    return localStorage.getItem('rentalos_sidebar_collapsed') === '1';
+  });
 
   const [selectedVehicle, setSelectedVehicle] = useState<CatalogVehicle | null>(null);
   const [selectedBooking, setSelectedBooking] = useState<RentalBooking | null>(null);
@@ -66,26 +74,51 @@ export default function RentalOSLayout() {
   const [catalogueOpen, setCatalogueOpen] = useState(false);
   const openCatalogue = () => setCatalogueOpen(true);
   const closeCatalogue = () => setCatalogueOpen(false);
+  const [commandOpen, setCommandOpen] = useState(false);
+  const openCommand = () => setCommandOpen(true);
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem('rentalos_sidebar_collapsed', next ? '1' : '0');
+      return next;
+    });
+  };
 
   useEffect(() => {
-    getMe().then((res) => {
-      const nextAccess = res.data;
-      const availableShops = [...nextAccess.owned_shops, ...nextAccess.staff_shops];
-      const storedShopId = Number(localStorage.getItem('rentalos_shop_id'));
-      const selectedShop = availableShops.find((shop) => shop.shop_id === storedShopId) || availableShops[0];
+    getMe()
+      .then((res) => {
+        const nextAccess = res.data;
+        const availableShops = [...nextAccess.owned_shops, ...nextAccess.staff_shops];
+        const storedShopId = Number(localStorage.getItem('rentalos_shop_id'));
+        const selectedShop = availableShops.find((shop) => shop.shop_id === storedShopId) || availableShops[0];
 
-      setAccess(nextAccess);
-      if (selectedShop) {
-        setShopId(selectedShop.shop_id);
-        localStorage.setItem('rentalos_shop_id', String(selectedShop.shop_id));
-      } else {
-        setShopId(null);
-        localStorage.removeItem('rentalos_shop_id');
+        setAccess(nextAccess);
+        if (selectedShop) {
+          setShopId(selectedShop.shop_id);
+          localStorage.setItem('rentalos_shop_id', String(selectedShop.shop_id));
+        } else {
+          setShopId(null);
+          localStorage.removeItem('rentalos_shop_id');
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load rentalos staff context', err);
+        setError(err.response?.data?.detail || 'Failed to load RentalOS access.');
+      })
+      .finally(() => setLoadingAccess(false));
+  }, []);
+
+  // Keyboard: ⌘K / Ctrl+K to open palette
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandOpen((v) => !v);
       }
-    }).catch(err => {
-      console.error("Failed to load rentalos staff context", err);
-      setError(err.response?.data?.detail || 'Failed to load RentalOS access.');
-    }).finally(() => setLoadingAccess(false));
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
   }, []);
 
   const shops = access ? [...access.owned_shops, ...access.staff_shops] : [];
@@ -95,25 +128,24 @@ export default function RentalOSLayout() {
   const setActiveShopId = (nextShopId: number) => {
     setShopId(nextShopId);
     localStorage.setItem('rentalos_shop_id', String(nextShopId));
-    // Reset selections when switching shops to avoid stale cross-shop data
     setSelectedVehicle(null);
     setSelectedBooking(null);
   };
 
   if (loadingAccess) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center text-gray-500">
-        Loading RentalOS access...
+      <div className="rentalos min-h-screen flex items-center justify-center text-sm" style={{ color: 'var(--rl-muted)' }}>
+        Loading RentalOS…
       </div>
     );
   }
 
   if (error || !access?.has_rentalos_access) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <div className="max-w-md bg-white border border-gray-200 rounded-xl p-6 shadow-sm text-center">
-          <h1 className="text-xl font-bold text-gray-900 mb-2">No RentalOS access</h1>
-          <p className="text-sm text-gray-500">
+      <div className="rentalos min-h-screen flex items-center justify-center p-6">
+        <div className="max-w-md rl-surface rounded-lg p-6 text-center">
+          <h1 className="text-lg font-bold mb-2" style={{ color: 'var(--rl-ink)' }}>No RentalOS access</h1>
+          <p className="text-sm" style={{ color: 'var(--rl-muted)' }}>
             {error || 'Your account does not have an active RentalOS owner or staff shop.'}
           </p>
         </div>
@@ -140,16 +172,19 @@ export default function RentalOSLayout() {
         catalogueOpen,
         openCatalogue,
         closeCatalogue,
+        sidebarCollapsed,
+        toggleSidebar,
+        openCommand,
       }}
     >
-      <div className="flex h-screen bg-gray-50 text-gray-900 font-sans">
+      <div className="rentalos flex h-screen font-sans">
         <Sidebar mobileOpen={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)} />
 
         <div className="flex-1 flex flex-col overflow-hidden">
-          <Topbar onMenuClick={() => setMobileSidebarOpen(true)} />
+          <Topbar onMenuClick={() => setMobileSidebarOpen(true)} onOpenCommand={openCommand} />
 
-          <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6">
-            <div className="mx-auto w-full max-w-6xl">
+          <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-5">
+            <div className="mx-auto w-full max-w-[1400px]">
               <Routes>
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/vehicles" element={<VehiclesPage />} />
@@ -162,6 +197,7 @@ export default function RentalOSLayout() {
         </div>
 
         <CatalogueModal />
+        <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
       </div>
     </RentalOSContext.Provider>
   );
