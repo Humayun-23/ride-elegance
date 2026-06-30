@@ -43,7 +43,7 @@ const flagTypes = [
 
 const sectionClass = 'border border-gray-200 rounded-lg p-4 space-y-3';
 const sectionTitleClass = 'text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2';
-const actionButtonClass = 'w-full h-9 rounded-lg bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700 transition-colors disabled:opacity-50';
+const actionButtonClass = 'w-full h-9 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50';
 
 export default function BookingWorkflow({ booking, onChanged }: BookingWorkflowProps) {
   const [detail, setDetail] = useState<RentalBooking | null>(booking);

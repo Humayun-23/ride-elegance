@@ -85,7 +85,7 @@ export default function CustomerLookup() {
 
       {customer && (
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center gap-4">
-          <div className="w-11 h-11 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-semibold uppercase shrink-0">
+          <div className="w-11 h-11 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-semibold uppercase shrink-0">
             {customer.firstname ? customer.firstname[0] : 'U'}
           </div>
           <div className="min-w-0">

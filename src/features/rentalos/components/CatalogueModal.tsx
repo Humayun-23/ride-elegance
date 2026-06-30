@@ -130,7 +130,7 @@ export default function CatalogueModal() {
                     key={vehicle.bike_id}
                     type="button"
                     onClick={() => startBooking(vehicle)}
-                    className="text-left bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-teal-500 hover:ring-2 hover:ring-teal-500/20 transition-colors"
+                    className="text-left bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-emerald-500 hover:ring-2 hover:ring-emerald-500/20 transition-colors"
                   >
                     <div className="aspect-[4/3] bg-gray-100 flex items-center justify-center overflow-hidden">
                       {vehicle.image_url ? (

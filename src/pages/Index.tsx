@@ -347,7 +347,7 @@ export default function Index() {
                       alt={`GoPanda rental vehicle in Guwahati${primaryHeroVehicle?.name ? `: ${primaryHeroVehicle.name}` : ""}`}
                       className="w-full h-[300px] md:h-[360px] lg:h-[390px] object-cover object-center"
                       loading="eager"
-                      fetchpriority="high"
+                      fetchPriority="high"
                     />
                   ) : (
                     <div className="flex h-[300px] md:h-[360px] lg:h-[390px] items-center justify-center bg-gradient-to-br from-secondary to-background">

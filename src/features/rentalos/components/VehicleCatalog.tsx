@@ -69,7 +69,7 @@ export default function VehicleCatalog({ onVehicleSelect, selectedBikeId }: Vehi
                 type="button"
                 onClick={() => onVehicleSelect?.(v)}
                 className={`text-left bg-white border rounded-xl overflow-hidden transition-colors ${
-                  isSelected ? 'border-teal-500 ring-2 ring-teal-500/20' : 'border-gray-200 hover:border-gray-300'
+                  isSelected ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 <div className="h-28 bg-gray-100 flex items-center justify-center overflow-hidden">

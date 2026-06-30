@@ -36,7 +36,7 @@ export default function BookingsPage() {
             <button
               type="button"
               onClick={startCreate}
-              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-teal-600 text-white text-sm font-semibold hover:bg-teal-700 transition-colors"
+              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition-colors"
             >
               <Plus className="w-4 h-4" /> New
             </button>
@@ -49,9 +49,9 @@ export default function BookingsPage() {
         <Card className="p-5">
           <div className="flex items-center gap-2 mb-4 pb-4 border-b border-gray-100">
             {mode === 'create' ? (
-              <Plus className="w-5 h-5 text-teal-600" />
+              <Plus className="w-5 h-5 text-emerald-600" />
             ) : (
-              <Settings2 className="w-5 h-5 text-teal-600" />
+              <Settings2 className="w-5 h-5 text-emerald-600" />
             )}
             <h3 className="text-base font-semibold text-gray-900">
               {mode === 'create' ? 'Create booking' : 'Manage booking'}

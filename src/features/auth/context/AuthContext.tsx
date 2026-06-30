@@ -18,7 +18,6 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   googleLogin: (credential: string, user_type?: string) => Promise<void>;
-  adminLogin: (email: string, password: string) => Promise<void>;
   register: (data: { firstname: string; lastname: string; email: string; password: string; phone_number?: string; user_type: string }) => Promise<void>;
   setAuthToken: (accessToken: string) => Promise<void>;
   logout: () => void;
