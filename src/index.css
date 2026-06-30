@@ -256,6 +256,13 @@
   border-top: 1px solid var(--rl-border);
 }
 
+.rentalos input,
+.rentalos select,
+.rentalos textarea {
+  -webkit-text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+
 /* Buttons */
 .rentalos .rl-btn-primary {
   background: var(--rl-brand);

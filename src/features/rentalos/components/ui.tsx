@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 // Shared style tokens for the dense, brand-aligned RentalOS look.
 export const inputClass =
-  'w-full bg-white border rounded-md px-2.5 h-9 text-[13px] text-[color:var(--rl-ink)] placeholder:text-[color:var(--rl-faint)] focus:outline-none focus:border-[color:var(--rl-brand)] focus:ring-2 focus:ring-[color:var(--rl-brand)]/20 transition-colors';
+  'w-full bg-white border rounded-md px-2.5 h-11 sm:h-9 text-base sm:text-[13px] text-[color:var(--rl-ink)] placeholder:text-[color:var(--rl-faint)] focus:outline-none focus:border-[color:var(--rl-brand)] focus:ring-2 focus:ring-[color:var(--rl-brand)]/20 transition-colors';
 
 export const labelClass = 'block text-[11px] font-semibold uppercase tracking-wider text-[color:var(--rl-muted)] mb-1';
 

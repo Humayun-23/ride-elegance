@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Plus, User, CarFront, Wallet, CheckCircle2, FileUp, Camera } from 'lucide-react';
-import { createBooking, uploadBookingDocument, uploadHandoverPhoto } from '../services/rentalosService';
+import { Plus, User, CarFront, Wallet, CheckCircle2, FileUp, Camera, Upload, X } from 'lucide-react';
+import { createBooking, uploadBookingDocument } from '../services/rentalosService';
 import { useRentalOS } from './RentalOSContext';
 import { inputClass, labelClass, primaryButtonClass } from './ui';
 import type { RentalCustomerSearch } from '../types';
@@ -45,7 +45,6 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
   // Documents
   const [dlFile, setDlFile] = useState<File | null>(null);
   const [idProofFile, setIdProofFile] = useState<File | null>(null);
-  const [handoverFile, setHandoverFile] = useState<File | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -105,12 +104,6 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
         await uploadBookingDocument(bookingId, fd).catch(e => console.error(e));
       }
       
-      if (handoverFile) {
-        const fd = new FormData();
-        fd.append('file', handoverFile);
-        await uploadHandoverPhoto(bookingId, fd).catch(e => console.error(e));
-      }
-
       setMessage('Booking created successfully!');
       onCreated?.(res.data);
     } catch (err: any) {
@@ -122,21 +115,52 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
 
   const isSuccess = message.includes('success');
 
-  const FileUploader = ({ label, file, setFile }: { label: string, file: File | null, setFile: (f: File | null) => void }) => (
+  const FileUploader = ({
+    label,
+    file,
+    setFile,
+    uploadAccept = 'image/jpeg,image/png,image/webp,application/pdf',
+  }: {
+    label: string;
+    file: File | null;
+    setFile: (f: File | null) => void;
+    uploadAccept?: string;
+  }) => (
     <div className="flex-1">
       <label className={labelClass}>{label}</label>
-      <div className="relative">
-        <input 
-          type="file" 
-          accept="image/*" 
-          onChange={(e) => setFile(e.target.files?.[0] || null)}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-        />
-        <div className={`h-10 px-3 flex items-center justify-between border rounded-lg text-[13px] ${file ? 'border-[color:var(--rl-brand)] bg-[color:var(--rl-brand-soft)] text-[color:var(--rl-brand-deep)]' : 'border-gray-200 bg-white text-gray-500'}`}>
-          <span className="truncate pr-2">{file ? file.name : `Select ${label.toLowerCase()}`}</span>
-          {file ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <Camera className="w-4 h-4 shrink-0 opacity-50" />}
+      {!file ? (
+        <div className="grid grid-cols-2 gap-2">
+          <label className="flex items-center justify-center gap-2 h-11 rounded-lg bg-white text-[color:var(--rl-ink)] text-[13px] font-semibold cursor-pointer border border-gray-200 hover:bg-[color:var(--rl-hover)] transition-colors">
+            <Upload className="w-4 h-4" />
+            Upload
+            <input
+              type="file"
+              accept={uploadAccept}
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              className="hidden"
+            />
+          </label>
+          <label className="flex items-center justify-center gap-2 h-11 rounded-lg bg-white text-[color:var(--rl-ink)] text-[13px] font-semibold cursor-pointer border border-gray-200 hover:bg-[color:var(--rl-hover)] transition-colors">
+            <Camera className="w-4 h-4" />
+            Capture
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              className="hidden"
+            />
+          </label>
         </div>
-      </div>
+      ) : (
+        <div className="h-11 px-3 flex items-center justify-between gap-2 border rounded-lg text-[13px] border-[color:var(--rl-brand)] bg-[color:var(--rl-brand-soft)] text-[color:var(--rl-brand-deep)]">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <span className="truncate flex-1">{file.name}</span>
+          <button type="button" onClick={() => setFile(null)} className="p-1 text-[color:var(--rl-muted)] hover:text-[color:var(--rl-danger)] transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 
@@ -218,7 +242,6 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
         <div className="flex flex-col sm:flex-row gap-3">
           <FileUploader label="Driving License" file={dlFile} setFile={setDlFile} />
           <FileUploader label="ID Proof" file={idProofFile} setFile={setIdProofFile} />
-          <FileUploader label="Handover Photo" file={handoverFile} setFile={setHandoverFile} />
         </div>
       </FormGroup>
 
