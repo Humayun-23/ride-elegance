@@ -80,7 +80,6 @@ const buildUpiPaymentUrl = ({
     pn: payeeName || "Shop Owner",
     am: amount.toFixed(2),
     cu: "INR",
-    tn: "GoPanda Token Advance",
     tr: reference,
   });
 
