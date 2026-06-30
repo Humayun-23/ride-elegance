@@ -16,7 +16,7 @@ function FormGroup({ icon, title, children }: { icon: React.ReactNode; title: st
   return (
     <section>
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-teal-600">{icon}</span>
+        <span className="text-emerald-600">{icon}</span>
         <h4 className="text-sm font-semibold text-gray-900">{title}</h4>
       </div>
       {children}
@@ -85,8 +85,8 @@ export default function CreateBooking({ onCreated }: CreateBookingProps) {
   return (
     <div className="space-y-6">
       {selectedVehicle && (
-        <div className="flex items-center gap-3 rounded-lg bg-teal-50 border border-teal-100 p-3">
-          <span className="w-9 h-9 rounded-lg bg-white text-teal-600 flex items-center justify-center shrink-0">
+        <div className="flex items-center gap-3 rounded-lg bg-emerald-50 border border-emerald-100 p-3">
+          <span className="w-9 h-9 rounded-lg bg-white text-emerald-600 flex items-center justify-center shrink-0">
             <CarFront className="w-4 h-4" />
           </span>
           <div className="min-w-0">

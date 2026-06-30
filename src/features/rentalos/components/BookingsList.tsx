@@ -10,7 +10,7 @@ interface BookingsListProps {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  active: 'bg-teal-50 text-teal-700',
+  active: 'bg-emerald-50 text-emerald-700',
   confirmed: 'bg-blue-50 text-blue-700',
   completed: 'bg-green-50 text-green-700',
   cancelled: 'bg-gray-100 text-gray-500',
@@ -36,7 +36,7 @@ export default function BookingsList({ onSelectBooking }: BookingsListProps) {
       <select
         value={status}
         onChange={(event) => setStatus(event.target.value)}
-        className="self-start bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500"
+        className="self-start bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
       >
         <option value="">All statuses</option>
         <option value="confirmed">Confirmed</option>
@@ -59,7 +59,7 @@ export default function BookingsList({ onSelectBooking }: BookingsListProps) {
                   type="button"
                   onClick={() => onSelectBooking?.(b)}
                   className={`w-full text-left rounded-lg border p-3 transition-colors ${
-                    isSelected ? 'border-teal-500 bg-teal-50/40 ring-1 ring-teal-500/20' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    isSelected ? 'border-emerald-500 bg-emerald-50/40 ring-1 ring-emerald-500/20' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2">

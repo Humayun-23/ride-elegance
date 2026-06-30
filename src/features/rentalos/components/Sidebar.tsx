@@ -20,7 +20,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
     <>
       <div className="h-16 flex items-center px-5 border-b border-gray-200">
         <div className="flex flex-1 items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-teal-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center">
             <CarFront className="w-4 h-4 text-white" />
           </div>
           <h2 className="text-lg font-bold text-gray-900 tracking-tight">RentalOS</h2>
@@ -45,11 +45,11 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
               onClick={onClose}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive
-                  ? 'bg-teal-50 text-teal-700'
+                  ? 'bg-emerald-50 text-emerald-700'
                   : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
               }`}
             >
-              <item.icon className={`w-5 h-5 ${isActive ? 'text-teal-600' : 'text-gray-400'}`} />
+              <item.icon className={`w-5 h-5 ${isActive ? 'text-emerald-600' : 'text-gray-400'}`} />
               <span>{item.name}</span>
             </Link>
           );
@@ -60,7 +60,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
         <div className="rounded-lg bg-gray-50 border border-gray-200 p-4">
           <h4 className="font-semibold text-sm text-gray-900 mb-1">Need help?</h4>
           <p className="text-xs text-gray-500 mb-3">Check the documentation for setup and workflows.</p>
-          <button className="w-full bg-teal-600 text-white text-xs font-semibold py-2 rounded-lg hover:bg-teal-700 transition-colors">
+          <button className="w-full bg-emerald-600 text-white text-xs font-semibold py-2 rounded-lg hover:bg-emerald-700 transition-colors">
             Documentation
           </button>
         </div>

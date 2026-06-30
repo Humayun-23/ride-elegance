@@ -17,7 +17,7 @@ function StatCard({ label, value, icon }: { label: string; value: string; icon: 
   return (
     <Card className="p-5">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
           {icon}
         </div>
         <div className="min-w-0">
@@ -74,7 +74,7 @@ export default function DashboardPage() {
         <Card className="lg:col-span-2 p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-semibold text-gray-900">Recent bookings</h3>
-            <Link to="/rentalos/bookings" className="text-sm font-medium text-teal-600 hover:text-teal-700 flex items-center gap-1">
+            <Link to="/rentalos/bookings" className="text-sm font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1">
               View all <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -123,13 +123,13 @@ export default function DashboardPage() {
               <Link
                 key={link.to}
                 to={link.to}
-                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-teal-300 hover:bg-teal-50/50 transition-colors group"
+                className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/50 transition-colors group"
               >
-                <span className="w-9 h-9 rounded-lg bg-gray-100 group-hover:bg-white text-gray-500 group-hover:text-teal-600 flex items-center justify-center transition-colors">
+                <span className="w-9 h-9 rounded-lg bg-gray-100 group-hover:bg-white text-gray-500 group-hover:text-emerald-600 flex items-center justify-center transition-colors">
                   <link.icon className="w-4 h-4" />
                 </span>
                 <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">{link.label}</span>
-                <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-teal-500 ml-auto" />
+                <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-emerald-500 ml-auto" />
               </Link>
             ))}
           </div>
