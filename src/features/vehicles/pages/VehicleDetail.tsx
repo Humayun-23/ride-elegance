@@ -380,7 +380,7 @@ ${rejectLink}`;
                 <img
                   src={heroImage}
                   alt={vehicle.name}
-                  fetchpriority="high"
+                  fetchPriority="high"
                   loading="eager"
                   decoding="sync"
                   className="h-full w-full object-cover"

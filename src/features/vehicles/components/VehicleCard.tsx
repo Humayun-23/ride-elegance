@@ -96,7 +96,7 @@ export default function VehicleCard({
               src={getOptimizedImageUrl(vehicle.image_url)}
               alt={`Rent ${vehicle.name} ${vehicle.model || ''}`.trim() + ` in ${vehicle.location || 'Guwahati'}`}
               loading={priority ? "eager" : "lazy"}
-              fetchpriority={priority ? "high" : "auto"}
+              fetchPriority={priority ? "high" : "auto"}
               decoding="async"
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             />

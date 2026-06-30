@@ -201,7 +201,7 @@ export default function ShopDetail() {
                   <div className="flex items-center gap-3">
                     <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center ring-1 ring-primary/20 overflow-hidden">
                       {shop.image_url ? (
-                        <img src={shop.image_url} alt={shop.name} fetchpriority="high" className="h-full w-full object-cover" />
+                        <img src={shop.image_url} alt={shop.name} fetchPriority="high" className="h-full w-full object-cover" />
                       ) : (
                         <Store className="h-7 w-7 text-primary" />
                       )}
