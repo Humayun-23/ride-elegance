@@ -186,7 +186,15 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label className={labelClass}>Phone number</label>
-            <input type="text" value={phone} readOnly className={`${inputClass} bg-gray-50 text-gray-500`} />
+            <input
+              type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+              readOnly={isExisting}
+              className={`${inputClass} ${isExisting ? 'bg-gray-50 text-gray-500' : ''}`}
+            />
           </div>
           <div>
             <label className={labelClass}>First name</label>

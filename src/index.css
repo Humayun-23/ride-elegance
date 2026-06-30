@@ -263,6 +263,20 @@
   touch-action: manipulation;
 }
 
+.rentalos-booking-sheet {
+  height: 100dvh;
+  max-height: 100dvh;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+@supports (-webkit-touch-callout: none) {
+  .rentalos-booking-sheet[data-state="open"] {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
 /* Buttons */
 .rentalos .rl-btn-primary {
   background: var(--rl-brand);

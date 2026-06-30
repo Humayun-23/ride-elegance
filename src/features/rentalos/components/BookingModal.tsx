@@ -43,7 +43,7 @@ export default function BookingModal() {
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto p-0">
+      <SheetContent side="right" className="rentalos rentalos-booking-sheet w-full sm:max-w-xl overflow-y-auto p-0">
         <div className="p-5">
           <SheetHeader className="mb-4 pb-4 border-b border-gray-100 flex flex-row items-center gap-2 space-y-0">
             {mode === 'create' ? (
