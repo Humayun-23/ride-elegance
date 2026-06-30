@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { SEO } from "@/components/common/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { stripIndianPrefix } from "@/lib/phone";
 
 export default function AuthPage() {
   const location = useLocation();
@@ -50,7 +51,7 @@ export default function AuthPage() {
     try {
       if (activeTab === "login") setLoginLoading(true);
       else setRegLoading(true);
-      
+
       await googleLogin(credentialResponse.credential, activeTab === "register" ? userType : "customer");
       const from = location.state?.from || "/";
       navigate(from);
@@ -81,8 +82,29 @@ export default function AuthPage() {
     }
   };
 
+  // TODO: Remove demo login before launching to real users.
+  const handleDemoLogin = async () => {
+    setLoginEmail("demo@gopanda.in");
+    setLoginPassword("demo123");
+    setLoginLoading(true);
+    try {
+      await login("demo@gopanda.in", "demo123");
+      const from = location.state?.from || "/";
+      navigate(from);
+    } catch (err: any) {
+      toast({
+        title: "Demo account not found",
+        description: "Please register a user with email 'demo@gopanda.in' and password 'demo123' first.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const phoneDigits = stripIndianPrefix(phone).replace(/\D/g, "");
     if (firstname.length < 1 || firstname.length > 50) {
       toast({ title: "First name must be 1-50 characters", variant: "destructive" });
       return;
@@ -91,8 +113,8 @@ export default function AuthPage() {
       toast({ title: "Last name must be 1-50 characters", variant: "destructive" });
       return;
     }
-    if (phone.length < 10 || phone.length > 20) {
-      toast({ title: "Phone number must be 10-20 characters", variant: "destructive" });
+    if (phoneDigits.length !== 10) {
+      toast({ title: "Please enter a valid 10-digit phone number", variant: "destructive" });
       return;
     }
     if (regPassword.length < 8 || regPassword.length > 128) {
@@ -101,7 +123,7 @@ export default function AuthPage() {
     }
     setRegLoading(true);
     try {
-      await register({ firstname, lastname, email: regEmail, password: regPassword, phone_number: phone, user_type: userType });
+      await register({ firstname, lastname, email: regEmail, password: regPassword, phone_number: phoneDigits, user_type: userType });
       const from = location.state?.from || "/";
       navigate(`/verify-email?email=${encodeURIComponent(regEmail)}`, { state: { justRegistered: true, from } });
     } catch (err: any) {
@@ -152,11 +174,10 @@ export default function AuthPage() {
                         key={type}
                         type="button"
                         onClick={() => setUserType(type)}
-                        className={`p-2 sm:p-2.5 rounded-xl border-2 text-xs sm:text-sm font-semibold flex items-center justify-center gap-1 sm:gap-1.5 transition-all ${
-                          userType === type
+                        className={`p-2 sm:p-2.5 rounded-xl border-2 text-xs sm:text-sm font-semibold flex items-center justify-center gap-1 sm:gap-1.5 transition-all ${userType === type
                             ? "border-primary bg-primary/5 text-primary shadow-sm"
                             : "border-border bg-background text-muted-foreground hover:border-muted-foreground/30"
-                        }`}
+                          }`}
                       >
                         <span className="text-sm sm:text-base">{type === "customer" ? "🏍️" : "🏪"}</span>
                         <span>{type === "customer" ? "Customer" : "Shop Owner"}</span>
@@ -193,7 +214,7 @@ export default function AuthPage() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 10 }}
                     transition={{ duration: 0.2 }}
-                    onSubmit={handleLoginSubmit} 
+                    onSubmit={handleLoginSubmit}
                     className="space-y-4 px-3 sm:px-0"
                   >
                     <div className="space-y-1.5">
@@ -216,9 +237,24 @@ export default function AuthPage() {
                     <div className="flex justify-end">
                       <Link to="/forgot-password" className="text-xs text-primary hover:underline">Forgot password?</Link>
                     </div>
-                    <Button type="submit" className="w-full font-display rounded-xl glow" disabled={loginLoading}>
-                      {loginLoading ? <span className="flex items-center gap-2"><div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />Signing in...</span> : "Sign In"}
-                    </Button>
+                    <div className="flex flex-col gap-3 pt-1">
+                      <Button type="submit" className="w-full font-display rounded-xl glow" disabled={loginLoading}>
+                        {loginLoading ? <span className="flex items-center gap-2"><div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />Signing in...</span> : "Sign In"}
+                      </Button>
+                      {/* TODO: Remove this demo login button before launching to real users. */}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full font-display rounded-xl border-dashed border-2 hover:bg-muted/50"
+                        disabled={loginLoading}
+                        onClick={handleDemoLogin}
+                      >
+                        <span className="flex items-center gap-2">
+                          <Eye className="w-4 h-4 text-muted-foreground" />
+                          Try Demo Account
+                        </span>
+                      </Button>
+                    </div>
                   </motion.form>
                 </TabsContent>
 
@@ -228,7 +264,7 @@ export default function AuthPage() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -10 }}
                     transition={{ duration: 0.2 }}
-                    onSubmit={handleRegisterSubmit} 
+                    onSubmit={handleRegisterSubmit}
                     className="space-y-4 px-3 sm:px-0 pb-4"
                   >
 
@@ -243,7 +279,7 @@ export default function AuthPage() {
                         <Input id="lastname" value={lastname} onChange={(e) => setLastname(e.target.value)} required maxLength={50} placeholder="Doe" className="bg-background rounded-xl" />
                       </div>
                     </div>
-                    
+
                     <div className="space-y-1.5">
                       <Label htmlFor="regEmail" className="text-xs font-display uppercase tracking-wider text-muted-foreground">Email</Label>
                       <div className="relative">
@@ -257,7 +293,20 @@ export default function AuthPage() {
                       <div className="relative flex items-center">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <span className="absolute left-9 text-sm text-foreground">+91</span>
-                        <Input id="phone" type="tel" value={phone} onChange={(e) => { const v = e.target.value.replace(/\\D/g, ''); if (v.length <= 10) setPhone(v); }} required className="bg-background pl-[68px] rounded-xl" placeholder="9876543210" />
+                        <Input
+                          id="phone"
+                          type="tel"
+                          value={phone}
+                          onChange={(e) => {
+                            const v = stripIndianPrefix(e.target.value).replace(/\D/g, "");
+                            if (v.length <= 10) setPhone(v);
+                          }}
+                          required
+                          className="bg-background pl-[68px] rounded-xl"
+                          placeholder="9876543210"
+                          inputMode="numeric"
+                          autoComplete="tel-national"
+                        />
                       </div>
                     </div>
 

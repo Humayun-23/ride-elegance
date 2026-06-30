@@ -34,25 +34,6 @@ export default function Login() {
     }
   };
 
-  // TODO: Remove this demo login function before launching to real clients
-  const handleDemoLogin = async () => {
-    setEmail("demo@gopanda.io");
-    setPassword("demo123");
-    setLoading(true);
-    try {
-      await login("demo@gopanda.io", "demo123");
-      const from = location.state?.from || "/";
-      navigate(from);
-    } catch (err: any) {
-      toast({ 
-        title: "Demo account not found", 
-        description: "Please register a user with email 'demo@gopanda.io' and password 'demo123' first.", 
-        variant: "destructive" 
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,32 +137,16 @@ export default function Login() {
                   Forgot password?
                 </Link>
               </div>
-              <div className="flex flex-col gap-3 mt-2">
-                <Button type="submit" className="w-full font-display rounded-xl glow" disabled={loading}>
-                  {loading ? (
-                    <span className="flex items-center gap-2">
-                      <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                      Signing in...
-                    </span>
-                  ) : (
-                    "Sign In"
-                  )}
-                </Button>
-                
-                {/* TODO: Remove this demo button block before launching */}
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full font-display rounded-xl border-dashed border-2 hover:bg-muted/50" 
-                  disabled={loading}
-                  onClick={handleDemoLogin}
-                >
+              <Button type="submit" className="w-full font-display rounded-xl glow" disabled={loading}>
+                {loading ? (
                   <span className="flex items-center gap-2">
-                    <Eye className="w-4 h-4 text-muted-foreground" />
-                    Try Demo Account
+                    <div className="h-4 w-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                    Signing in...
                   </span>
-                </Button>
-              </div>
+                ) : (
+                  "Sign In"
+                )}
+              </Button>
             </form>
           </CardContent>
         </Card>
