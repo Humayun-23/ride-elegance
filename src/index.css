@@ -175,3 +175,157 @@
     50% { opacity: 0.8; transform: scale(1.02); box-shadow: 0 0 40px hsl(var(--primary) / 0.5); }
   }
 }
+
+/* ============================================================
+   RentalOS scoped theme — POS / Linear density, brand palette
+   Emerald #3bb881 · Ink #010101 · Paper #ffffff
+   ============================================================ */
+.rentalos {
+  --rl-brand: #3bb881;
+  --rl-brand-deep: #1f8a5c;
+  --rl-brand-soft: #e8f7f0;
+  --rl-brand-softer: #c7ebd9;
+
+  --rl-ink: #010101;
+  --rl-ink-2: #1a1a19;
+  --rl-ink-3: #2a2a29;
+
+  --rl-paper: #ffffff;
+  --rl-canvas: #fafaf9;
+  --rl-surface: #ffffff;
+  --rl-hover: #f6f6f5;
+  --rl-border: #ececea;
+  --rl-border-strong: #d6d6d3;
+  --rl-muted: #525250;
+  --rl-faint: #9a9a96;
+
+  --rl-ok: #3bb881;
+  --rl-warn: #e0a23a;
+  --rl-warn-soft: #fdf3df;
+  --rl-danger: #e26d5c;
+  --rl-danger-soft: #fbe9e5;
+  --rl-info: #3a6ea8;
+  --rl-info-soft: #e6eef7;
+
+  background: var(--rl-canvas);
+  color: var(--rl-ink);
+  font-feature-settings: "ss01", "cv11";
+}
+
+.rentalos *,
+.rentalos *::before,
+.rentalos *::after {
+  border-color: var(--rl-border);
+}
+
+.rentalos .rl-num,
+.rentalos [data-num] {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Ink sidebar — POS rail */
+.rentalos .rl-rail {
+  background: var(--rl-ink);
+  color: #e8e8e6;
+}
+.rentalos .rl-rail-item {
+  color: #9a9a96;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.rentalos .rl-rail-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #ffffff;
+}
+.rentalos .rl-rail-item[data-active="true"] {
+  background: var(--rl-brand);
+  color: var(--rl-ink);
+  font-weight: 600;
+}
+.rentalos .rl-rail-item[data-active="true"] svg {
+  color: var(--rl-ink);
+}
+
+/* Surfaces & borders */
+.rentalos .rl-surface {
+  background: var(--rl-surface);
+  border: 1px solid var(--rl-border);
+}
+.rentalos .rl-divide > * + * {
+  border-top: 1px solid var(--rl-border);
+}
+
+/* Buttons */
+.rentalos .rl-btn-primary {
+  background: var(--rl-brand);
+  color: var(--rl-ink);
+  font-weight: 600;
+  transition: background-color 120ms ease;
+}
+.rentalos .rl-btn-primary:hover {
+  background: var(--rl-brand-deep);
+  color: #ffffff;
+}
+.rentalos .rl-btn-ghost {
+  background: transparent;
+  color: var(--rl-ink);
+  transition: background-color 120ms ease;
+}
+.rentalos .rl-btn-ghost:hover {
+  background: var(--rl-hover);
+}
+
+/* Command bar trigger */
+.rentalos .rl-cmd {
+  background: var(--rl-hover);
+  border: 1px solid var(--rl-border);
+  color: var(--rl-muted);
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+.rentalos .rl-cmd:hover {
+  background: #ffffff;
+  border-color: var(--rl-border-strong);
+}
+.rentalos .rl-kbd {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  padding: 2px 5px;
+  border: 1px solid var(--rl-border-strong);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: #ffffff;
+  color: var(--rl-muted);
+  line-height: 1;
+}
+
+/* Status pills */
+.rentalos .rl-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+.rentalos .rl-pill-ok    { background: var(--rl-brand-soft); color: var(--rl-brand-deep); }
+.rentalos .rl-pill-info  { background: var(--rl-info-soft);  color: var(--rl-info); }
+.rentalos .rl-pill-warn  { background: var(--rl-warn-soft);  color: #8a5a10; }
+.rentalos .rl-pill-danger{ background: var(--rl-danger-soft);color: #a8331f; }
+.rentalos .rl-pill-mute  { background: var(--rl-hover);      color: var(--rl-muted); }
+
+/* Focus rings tuned for power use */
+.rentalos :focus-visible {
+  outline: 2px solid var(--rl-brand);
+  outline-offset: 1px;
+  border-radius: 4px;
+}
+
+/* Tighter scrollbars */
+.rentalos ::-webkit-scrollbar { width: 10px; height: 10px; }
+.rentalos ::-webkit-scrollbar-thumb { background: var(--rl-border-strong); border-radius: 5px; border: 2px solid var(--rl-canvas); }
+.rentalos ::-webkit-scrollbar-thumb:hover { background: var(--rl-faint); }
