@@ -85,16 +85,16 @@ export default function AuthPage() {
   // TODO: Remove demo login before launching to real users.
   const handleDemoLogin = async () => {
     setLoginEmail("demo@gopanda.in");
-    setLoginPassword("demo123");
+    setLoginPassword("demo1234");
     setLoginLoading(true);
     try {
-      await login("demo@gopanda.in", "demo123");
+      await login("demo@gopanda.in", "demo1234");
       const from = location.state?.from || "/";
       navigate(from);
     } catch (err: any) {
       toast({
         title: "Demo account not found",
-        description: "Please register a user with email 'demo@gopanda.in' and password 'demo123' first.",
+        description: "Please register a user with email 'demo@gopanda.in' and password 'demo1234' first.",
         variant: "destructive",
       });
     } finally {
@@ -314,11 +314,12 @@ export default function AuthPage() {
                       <Label htmlFor="regPassword" className="text-xs font-display uppercase tracking-wider text-muted-foreground">Password</Label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input id="regPassword" type={showRegPassword ? "text" : "password"} value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required className="bg-background pl-10 pr-10 rounded-xl" placeholder="••••••••" />
+                        <Input id="regPassword" type={showRegPassword ? "text" : "password"} value={regPassword} onChange={(e) => setRegPassword(e.target.value)} required className="bg-background pl-10 pr-10 rounded-xl" placeholder="Minimum 8 characters" />
                         <button type="button" onClick={() => setShowRegPassword(!showRegPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                           {showRegPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                         </button>
                       </div>
+                      <p className="text-xs text-muted-foreground">Password must be at least 8 characters.</p>
                     </div>
 
                     <Button type="submit" className="w-full font-display rounded-xl glow mt-4" disabled={regLoading}>
