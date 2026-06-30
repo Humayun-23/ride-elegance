@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Menu, Plus, ChevronDown, Check, LayoutGrid } from 'lucide-react';
-import { useRentalOS } from './RentalOSLayout';
+import { useRentalOS } from './RentalOSContext';
 import { CommandPaletteTrigger } from './CommandPalette';
 import {
   Popover,
@@ -39,15 +39,6 @@ export default function Topbar({ onMenuClick, onOpenCommand }: TopbarProps) {
 
   return (
     <header className="h-14 bg-white border-b sticky top-0 z-10 px-3 sm:px-4 flex items-center gap-3 shrink-0" style={{ borderColor: 'var(--rl-border)' }}>
-      <button
-        type="button"
-        onClick={onMenuClick}
-        className="md:hidden p-2 -ml-1 rounded-md text-[color:var(--rl-muted)] hover:bg-[color:var(--rl-hover)]"
-        aria-label="Open menu"
-      >
-        <Menu className="w-5 h-5" />
-      </button>
-
       <div className="flex items-center gap-2 min-w-0">
         <h1 className="text-[14px] font-semibold tracking-tight truncate" style={{ color: 'var(--rl-ink)' }}>
           {title}
@@ -109,22 +100,31 @@ export default function Topbar({ onMenuClick, onOpenCommand }: TopbarProps) {
         <button
           type="button"
           onClick={openCatalogue}
-          className="rl-btn-ghost hidden md:inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] font-semibold border"
+          className="rl-btn-ghost inline-flex items-center gap-1.5 h-8 px-2.5 rounded-md text-[12px] font-semibold border"
           style={{ borderColor: 'var(--rl-border)' }}
           aria-label="Open vehicle catalogue"
         >
           <LayoutGrid className="w-3.5 h-3.5" />
-          Catalogue
+          <span>Catalogue</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onMenuClick}
+          className="rl-btn-ghost md:hidden inline-flex items-center justify-center h-8 w-8 rounded-md border"
+          style={{ borderColor: 'var(--rl-border)' }}
+          aria-label="Open menu"
+        >
+          <Menu className="w-4 h-4" />
         </button>
 
         <button
           type="button"
           onClick={() => navigate('/rentalos/bookings?new=1')}
-          className="rl-btn-primary inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[12px]"
+          className="rl-btn-primary hidden md:inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[12px]"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">New booking</span>
-          <span className="sm:hidden">New</span>
+          <span>New booking</span>
         </button>
       </div>
     </header>

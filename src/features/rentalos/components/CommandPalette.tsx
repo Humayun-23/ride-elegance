@@ -10,7 +10,7 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command';
-import { useRentalOS } from './RentalOSLayout';
+import { useRentalOS } from './RentalOSContext';
 import { searchCustomer, getBooking } from '../services/rentalosService';
 
 interface Props {
