@@ -64,6 +64,29 @@ const formatTime12 = (time: string) => {
   return `${hour12}:${minuteText} ${period}`;
 };
 
+const buildUpiPaymentUrl = ({
+  upiId,
+  payeeName,
+  amount,
+  reference,
+}: {
+  upiId: string;
+  payeeName: string;
+  amount: number;
+  reference: string;
+}) => {
+  const params = new URLSearchParams({
+    pa: upiId.trim(),
+    pn: payeeName || "Shop Owner",
+    am: amount.toFixed(2),
+    cu: "INR",
+    tn: "GoPanda Token Advance",
+    tr: reference,
+  });
+
+  return `upi://pay?${params.toString()}`;
+};
+
 export default function VehicleDetail() {
   const { id } = useParams<{ id: string }>();
   const [vehicle, setVehicle] = useState<any>(null);
@@ -154,6 +177,15 @@ export default function VehicleDetail() {
   const bookingRangeError = getBookingRangeError();
   const tokenAmount = totalPrice > 0 ? Math.max(299, Math.floor(totalPrice * 0.10)) : 299;
   const balanceAmount = totalPrice > 0 ? totalPrice - tokenAmount : 0;
+  const upiReference = `GP${id || vehicle?.id || "TOKEN"}${startTime.replace(/\D/g, "")}${endTime.replace(/\D/g, "")}`.slice(0, 35);
+  const upiPaymentUrl = shop?.upi_id
+    ? buildUpiPaymentUrl({
+      upiId: shop.upi_id,
+      payeeName: shop.name || "Shop Owner",
+      amount: tokenAmount,
+      reference: upiReference,
+    })
+    : "";
   const mapUrl = shop?.shop_location || shop?.googleMapsUrl || shop?.gmapLink || shop?.mapUrl || shop?.locationUrl || "";
   const contactShopUrl = shop?.phone_number ? `tel:${shop.phone_number.replace(/\D/g, '')}` : "";
 
@@ -593,7 +625,7 @@ ${rejectLink}`;
                                 {/* Desktop QR Code */}
                                 <div className="hidden md:block bg-white p-2 rounded-xl shadow-sm border border-slate-100 shrink-0">
                                   <QRCodeSVG
-                                    value={`upi://pay?pa=${shop.upi_id}&pn=${encodeURIComponent(shop.name || "Shop Owner")}&am=${tokenAmount}.00&cu=INR&tn=${encodeURIComponent("GoPanda Token Advance")}`}
+                                    value={upiPaymentUrl}
                                     size={90}
                                     level="L"
                                   />
@@ -602,7 +634,7 @@ ${rejectLink}`;
                                 {/* Mobile Deep Link */}
                                 <div className="md:hidden w-full">
                                   <Button asChild size="lg" className="w-full font-display">
-                                    <a href={`upi://pay?pa=${shop.upi_id}&pn=${encodeURIComponent(shop.name || "Shop Owner")}&am=${tokenAmount}.00&cu=INR&tn=${encodeURIComponent("GoPanda Token Advance")}`} target="_blank" rel="noopener noreferrer">
+                                    <a href={upiPaymentUrl} target="_blank" rel="noopener noreferrer">
                                       Pay via UPI App
                                     </a>
                                   </Button>
