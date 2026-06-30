@@ -29,12 +29,18 @@ export default function CustomerLookup() {
   const [loadingHistory, setLoadingHistory] = useState(false);
 
   const handleSearch = () => {
-    if (!shopId || !phone) return;
+    if (!shopId) return;
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (phoneDigits.length < 10 || phoneDigits.length > 20) {
+      setError('Please enter a valid 10-digit phone number');
+      return;
+    }
     setLoading(true);
     setError('');
+<<<<<<< HEAD
     setNotFound(false);
     setHistory([]);
-    
+
     queryClient
       .fetchQuery({
         queryKey: [...rentalOSKeys.customers(shopId), 'search', phone],
@@ -57,6 +63,13 @@ export default function CustomerLookup() {
             .then((bookings) => setHistory(bookings))
             .catch(err => console.error(err))
             .finally(() => setLoadingHistory(false));
+=======
+    searchCustomer(shopId, phoneDigits)
+      .then(res => {
+        setCustomer(res.data);
+        if (!res.data.found) {
+          setError('Customer not found. Add name and create a new customer or create a booking by phone.');
+>>>>>>> e315665 (added warnings to every form fields)
         }
       })
       .catch((err) => {
@@ -67,17 +80,23 @@ export default function CustomerLookup() {
   };
 
   const handleCreate = () => {
-    if (!phone || !shopId) {
-      setError('Phone and active shop are required');
+    if (!shopId) return;
+    const phoneDigits = phone.replace(/\D/g, "");
+    if (phoneDigits.length < 10 || phoneDigits.length > 20) {
+      setError('Please enter a valid 10-digit phone number');
+      return;
+    }
+    if (!firstname.trim()) {
+      setError('First name is required');
       return;
     }
     setLoading(true);
     setError('');
     createCustomer({
       shop_id: shopId,
-      phone_number: phone,
-      firstname: firstname || undefined,
-      lastname: lastname || undefined,
+      phone_number: phoneDigits,
+      firstname: firstname.trim(),
+      lastname: lastname.trim() || undefined,
       document_consent: true,
       marketing_consent: false,
     })
@@ -102,9 +121,9 @@ export default function CustomerLookup() {
       <div className="flex flex-col sm:flex-row sm:items-end gap-3 max-w-xl">
         <div className="flex-1">
           <label className={labelClass}>Phone number</label>
-          <input 
-            type="tel" 
-            value={phone} 
+          <input
+            type="tel"
+            value={phone}
             onChange={(e) => {
               // Basic format to keep numbers, max 10
               const val = e.target.value.replace(/\D/g, '').slice(0, 10);
@@ -114,9 +133,9 @@ export default function CustomerLookup() {
                 setNotFound(false);
                 setError('');
               }
-            }} 
-            placeholder="Enter 10-digit phone" 
-            className={`${inputClass} text-lg py-2`} 
+            }}
+            placeholder="Enter 10-digit phone"
+            className={`${inputClass} text-lg py-2`}
             maxLength={10}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           />
@@ -167,7 +186,7 @@ export default function CustomerLookup() {
                 )}
               </div>
               <p className="text-[13px] text-[color:var(--rl-muted)] font-mono">{customer.phone_number}</p>
-              
+
               {'latest_note' in customer && customer.latest_note && (
                 <p className="text-[13px] text-[color:var(--rl-ink)] mt-2 bg-[color:var(--rl-warn-soft)] p-2 rounded text-[#8a5a10]">
                   <strong>Note: </strong>{customer.latest_note}
