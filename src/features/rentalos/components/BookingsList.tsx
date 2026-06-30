@@ -1,89 +1,262 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Calendar } from 'lucide-react';
-import { getBookings } from '../services/rentalosService';
-import { useRentalOS } from './RentalOSLayout';
+import { motion, useAnimation, type PanInfo } from 'framer-motion';
+import { useRentalOS } from './RentalOSContext';
 import { EmptyState } from './ui';
+import { Tabs, TabsList, TabsTrigger } from '../../../components/ui/tabs';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table';
 import type { RentalBooking } from '../types';
+import { useRentalOSBookings } from '../hooks/useRentalOSQueries';
 
 interface BookingsListProps {
   onSelectBooking?: (booking: RentalBooking) => void;
 }
 
-const STATUS_STYLES: Record<string, string> = {
-  active: 'bg-emerald-50 text-emerald-700',
-  confirmed: 'bg-blue-50 text-blue-700',
-  completed: 'bg-green-50 text-green-700',
-  cancelled: 'bg-gray-100 text-gray-500',
-};
+const currency = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
 
-export default function BookingsList({ onSelectBooking }: BookingsListProps) {
-  const { shopId, refreshKey, selectedBooking } = useRentalOS();
-  const [bookings, setBookings] = useState<RentalBooking[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState('');
+function isSameDay(dateStr: string, compare: Date) {
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return false;
+  return date.getFullYear() === compare.getFullYear() && date.getMonth() === compare.getMonth() && date.getDate() === compare.getDate();
+}
 
-  useEffect(() => {
-    if (!shopId) return;
-    setLoading(true);
-    getBookings(shopId, status ? { status } : undefined)
-      .then((res) => setBookings(res.data))
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
-  }, [shopId, status, refreshKey]);
+function statusTone(status: string) {
+  if (status === 'active') return 'rl-pill-ok';
+  if (status === 'confirmed') return 'rl-pill-info';
+  if (status === 'completed') return 'rl-pill-mute';
+  if (status === 'cancelled') return 'rl-pill-danger';
+  return 'rl-pill-warn';
+}
+
+type TabKey = 'all' | 'active' | 'due_today' | 'overdue' | 'completed';
+
+function SwipeableRow({ booking, isSelected, onClick, onSwipeComplete, now }: { booking: RentalBooking, isSelected: boolean, onClick: () => void, onSwipeComplete: () => void, now: Date }) {
+  const controls = useAnimation();
+  const isActiveTrip = booking.status === 'active' || booking.status === 'confirmed';
+  
+  const end = new Date(booking.end_time);
+  const isOverdue = isActiveTrip && !Number.isNaN(end.getTime()) && end < now;
+
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (isActiveTrip && info.offset.x > 80) {
+      onSwipeComplete();
+    }
+    controls.start({ x: 0 });
+  };
+
+  const RowContent = (
+    <>
+      <TableCell className="min-h-[44px]">
+        <div className="font-semibold text-[color:var(--rl-ink)]">
+          {booking.customer?.firstname || 'Walk-in'} {booking.customer?.lastname || ''}
+        </div>
+        <div className="text-xs text-[color:var(--rl-muted)]">
+          {booking.customer?.phone_number || `#${booking.id}`}
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="text-[color:var(--rl-ink)]">
+          {booking.bike?.name || `Bike ${booking.bike_id}`}
+        </div>
+        <div className="text-xs text-[color:var(--rl-muted)]">
+          {booking.bike?.model || ''}
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="text-[color:var(--rl-ink)]">
+          {!Number.isNaN(end.getTime()) ? end.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown'}
+        </div>
+      </TableCell>
+      <TableCell>
+        <span className={`rl-pill ${isOverdue ? 'rl-pill-danger' : statusTone(booking.status)}`}>
+          {isOverdue ? 'Overdue' : booking.status}
+        </span>
+      </TableCell>
+      <TableCell className="text-right">
+        <span className={`rl-num font-semibold ${booking.balance_due > 0 ? 'text-[#8a5a10]' : 'text-[color:var(--rl-brand-deep)]'}`}>
+          ₹{currency.format(booking.balance_due || 0)}
+        </span>
+      </TableCell>
+    </>
+  );
+
+  if (!isActiveTrip) {
+    return (
+      <TableRow 
+        data-state={isSelected ? "selected" : undefined}
+        onClick={onClick}
+        className="cursor-pointer hover:bg-[color:var(--rl-hover)]"
+      >
+        {RowContent}
+      </TableRow>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-3">
-      <select
-        value={status}
-        onChange={(event) => setStatus(event.target.value)}
-        className="self-start bg-white border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
-      >
-        <option value="">All statuses</option>
-        <option value="confirmed">Confirmed</option>
-        <option value="active">Active</option>
-        <option value="completed">Completed</option>
-        <option value="cancelled">Cancelled</option>
-      </select>
+    <motion.tr
+      drag="x"
+      dragConstraints={{ left: 0, right: 0 }}
+      dragElastic={0.1}
+      onDragEnd={handleDragEnd}
+      animate={controls}
+      data-state={isSelected ? "selected" : undefined}
+      onClick={onClick}
+      className="cursor-pointer hover:bg-[color:var(--rl-hover)] border-b transition-colors data-[state=selected]:bg-muted hover:bg-muted/50"
+    >
+      {RowContent}
+    </motion.tr>
+  );
+}
 
-      {loading ? (
-        <p className="text-center py-6 text-gray-400 text-sm">Loading bookings...</p>
-      ) : bookings.length === 0 ? (
+export default function BookingsList({ onSelectBooking }: BookingsListProps) {
+  const { shopId, selectedBooking } = useRentalOS();
+  const { data: allBookings = [], isLoading: loading } = useRentalOSBookings(shopId);
+  const [activeTab, setActiveTab] = useState<TabKey>('all');
+  
+  const [sortCol, setSortCol] = useState<'customer' | 'vehicle' | 'end_time' | 'balance_due'>('end_time');
+  const [sortAsc, setSortAsc] = useState(true);
+
+  // Use a stable 'now' for the render cycle
+  const now = useMemo(() => new Date(), []);
+
+  const counts = useMemo(() => {
+    const active = allBookings.filter(b => b.status === 'active' || b.status === 'confirmed').length;
+    const dueToday = allBookings.filter(b => b.status !== 'completed' && b.status !== 'cancelled' && isSameDay(b.end_time, now)).length;
+    const overdue = allBookings.filter(b => {
+      if (b.status === 'completed' || b.status === 'cancelled') return false;
+      const end = new Date(b.end_time);
+      return !Number.isNaN(end.getTime()) && end < now;
+    }).length;
+    const completed = allBookings.filter(b => b.status === 'completed').length;
+    return { all: allBookings.length, active, due_today: dueToday, overdue, completed };
+  }, [allBookings, now]);
+
+  const filtered = useMemo(() => {
+    let list = allBookings;
+    if (activeTab === 'active') {
+      list = allBookings.filter(b => b.status === 'active' || b.status === 'confirmed');
+    } else if (activeTab === 'due_today') {
+      list = allBookings.filter(b => b.status !== 'completed' && b.status !== 'cancelled' && isSameDay(b.end_time, now));
+    } else if (activeTab === 'overdue') {
+      list = allBookings.filter(b => {
+        if (b.status === 'completed' || b.status === 'cancelled') return false;
+        const end = new Date(b.end_time);
+        return !Number.isNaN(end.getTime()) && end < now;
+      });
+    } else if (activeTab === 'completed') {
+      list = allBookings.filter(b => b.status === 'completed');
+    }
+    
+    return [...list].sort((a, b) => {
+      let valA: string | number = '';
+      let valB: string | number = '';
+      
+      if (sortCol === 'customer') {
+        valA = a.customer?.firstname || '';
+        valB = b.customer?.firstname || '';
+      } else if (sortCol === 'vehicle') {
+        valA = a.bike?.name || '';
+        valB = b.bike?.name || '';
+      } else if (sortCol === 'end_time') {
+        valA = new Date(a.end_time).getTime();
+        valB = new Date(b.end_time).getTime();
+      } else if (sortCol === 'balance_due') {
+        valA = a.balance_due || 0;
+        valB = b.balance_due || 0;
+      }
+      
+      if (valA < valB) return sortAsc ? -1 : 1;
+      if (valA > valB) return sortAsc ? 1 : -1;
+      return 0;
+    });
+  }, [allBookings, activeTab, sortCol, sortAsc, now]);
+
+  const handleSort = (col: typeof sortCol) => {
+    if (sortCol === col) setSortAsc(!sortAsc);
+    else {
+      setSortCol(col);
+      setSortAsc(col === 'balance_due' ? false : true);
+    }
+  };
+
+  const handleSwipeComplete = (booking: RentalBooking) => {
+    onSelectBooking?.(booking);
+    setTimeout(() => {
+      document.getElementById('completion-section')?.scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('completion-section')?.querySelector('textarea')?.focus();
+    }, 400); // Wait for the drawer animation
+  };
+
+  const SortIcon = ({ col }: { col: typeof sortCol }) => {
+    if (sortCol !== col) return null;
+    return <span className="ml-1">{sortAsc ? '↑' : '↓'}</span>;
+  };
+
+  return (
+    <div className="flex flex-col gap-4 relative">
+      {/* Visual cue for swipe on mobile */}
+      <div className="hidden absolute top-0 left-0 text-[10px] text-gray-400 -mt-3 md:block">
+        Tip: Swipe active trips right to complete.
+      </div>
+      
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabKey)} className="w-full overflow-x-auto">
+        <TabsList className="bg-transparent p-0 justify-start h-auto space-x-1 border-b w-full rounded-none">
+          <TabsTrigger value="all" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[color:var(--rl-brand)] data-[state=active]:shadow-none data-[state=active]:bg-transparent px-4 py-2">
+            All <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">{counts.all}</span>
+          </TabsTrigger>
+          <TabsTrigger value="active" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[color:var(--rl-brand)] data-[state=active]:shadow-none data-[state=active]:bg-transparent px-4 py-2">
+            Active <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-xs text-emerald-600">{counts.active}</span>
+          </TabsTrigger>
+          <TabsTrigger value="due_today" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[color:var(--rl-brand)] data-[state=active]:shadow-none data-[state=active]:bg-transparent px-4 py-2">
+            Due today <span className="ml-2 rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-600">{counts.due_today}</span>
+          </TabsTrigger>
+          <TabsTrigger value="overdue" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[color:var(--rl-brand)] data-[state=active]:shadow-none data-[state=active]:bg-transparent px-4 py-2">
+            Overdue <span className="ml-2 rounded-full bg-red-50 px-2 py-0.5 text-xs text-red-600">{counts.overdue}</span>
+          </TabsTrigger>
+          <TabsTrigger value="completed" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[color:var(--rl-brand)] data-[state=active]:shadow-none data-[state=active]:bg-transparent px-4 py-2">
+            Completed <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">{counts.completed}</span>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {loading && allBookings.length === 0 ? (
+        <p className="text-center py-6 text-[color:var(--rl-faint)] text-sm">Loading bookings...</p>
+      ) : filtered.length === 0 ? (
         <EmptyState icon={<Calendar className="w-6 h-6" />} message="No bookings match this filter." />
       ) : (
-        <ul className="flex flex-col gap-2">
-          {bookings.map((b) => {
-            const isSelected = selectedBooking?.id === b.id;
-            return (
-              <li key={b.id}>
-                <button
-                  type="button"
+        <div className="overflow-hidden relative w-full">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="cursor-pointer" onClick={() => handleSort('customer')}>
+                  Customer <SortIcon col="customer" />
+                </TableHead>
+                <TableHead className="cursor-pointer" onClick={() => handleSort('vehicle')}>
+                  Vehicle <SortIcon col="vehicle" />
+                </TableHead>
+                <TableHead className="cursor-pointer" onClick={() => handleSort('end_time')}>
+                  End Time <SortIcon col="end_time" />
+                </TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right cursor-pointer" onClick={() => handleSort('balance_due')}>
+                  Balance <SortIcon col="balance_due" />
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((b) => (
+                <SwipeableRow
+                  key={b.id}
+                  booking={b}
+                  now={now}
+                  isSelected={selectedBooking?.id === b.id}
                   onClick={() => onSelectBooking?.(b)}
-                  className={`w-full text-left rounded-lg border p-3 transition-colors ${
-                    isSelected ? 'border-emerald-500 bg-emerald-50/40 ring-1 ring-emerald-500/20' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {b.customer?.firstname || 'Walk-in'} {b.customer?.lastname || ''}
-                    </p>
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${STATUS_STYLES[b.status] || 'bg-gray-100 text-gray-500'}`}>
-                      {b.status}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-0.5 truncate">
-                    #{b.id} · {b.bike?.name || `Bike ${b.bike_id}`}
-                  </p>
-                  <div className="flex items-center justify-between mt-2 text-xs">
-                    <span className="text-gray-400">Due {new Date(b.end_time).toLocaleDateString()}</span>
-                    <span className={`font-semibold ${b.balance_due > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                      ₹{b.balance_due}
-                    </span>
-                  </div>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+                  onSwipeComplete={() => handleSwipeComplete(b)}
+                />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       )}
     </div>
   );

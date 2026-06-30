@@ -82,6 +82,20 @@ export interface RentalBooking {
   } | null;
 }
 
+export interface RentalDashboardSummary {
+  generated_at: string;
+  active_count: number;
+  active_delta: number;
+  due_today_count: number;
+  due_today_delta: number;
+  overdue_count: number;
+  overdue_delta: number;
+  outstanding: number;
+  outstanding_delta: number;
+  today_revenue: number;
+  revenue_delta: number;
+}
+
 export interface RentalDocument {
   id: number;
   booking_id: number;
@@ -116,6 +130,38 @@ export interface RentalPayment {
   paid_at: string | null;
   received_by_user_id: number | null;
   created_at: string;
+}
+
+export type RentalPaymentType = 'advance' | 'balance' | 'security_deposit' | 'refund' | 'extra_charge';
+export type RentalPaymentMethod = 'cash' | 'upi' | 'card' | 'bank_transfer' | 'other';
+
+export interface RentalPaymentCreatePayload {
+  payment_type: RentalPaymentType;
+  amount: number;
+  status: 'paid';
+  method: RentalPaymentMethod;
+  reference_number?: string;
+  paid_at?: string;
+}
+
+export type RentalCustomerFlagType =
+  | 'good_customer'
+  | 'normal_customer'
+  | 'late_return'
+  | 'payment_issue'
+  | 'damage_issue'
+  | 'document_issue'
+  | 'watchlist'
+  | 'blocked';
+
+export type RentalCustomerFlagSeverity = 'info' | 'warning' | 'blocked';
+
+export interface RentalBookingCompletePayload {
+  completed_at?: string;
+  note?: string;
+  customer_flag_type?: RentalCustomerFlagType;
+  customer_flag_severity?: RentalCustomerFlagSeverity;
+  customer_flag_note?: string;
 }
 
 export interface RentalBookingNote {

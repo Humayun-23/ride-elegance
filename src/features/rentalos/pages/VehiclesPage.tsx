@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import VehicleCatalog from '../components/VehicleCatalog';
 import { SectionCard } from '../components/ui';
-import { useRentalOS } from '../components/RentalOSLayout';
+import { useRentalOS } from '../components/RentalOSContext';
 import type { CatalogVehicle } from '../types';
 
 export default function VehiclesPage() {

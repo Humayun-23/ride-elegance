@@ -75,18 +75,18 @@ export default function AdminDashboard() {
       getAdminBookings({ limit: 100 }).catch(() => ({ data: [] }))
     ]).then(([shopsRes, metricsRes, bookingsRes]) => {
       setShops(shopsRes.data || []);
-      
+
       // Fetch bikes for all shops
       const fetchedShops = shopsRes.data || [];
       if (fetchedShops.length > 0) {
         Promise.all(fetchedShops.map((shop: any) => getAdminShopBikes(shop.id)))
           .then((responses) => {
-             const bikes = responses.flatMap(r => r.data || []);
-             setAllBikes(bikes);
+            const bikes = responses.flatMap(r => r.data || []);
+            setAllBikes(bikes);
           })
           .catch(() => setAllBikes([]))
           .finally(() => setLoadingBikes(false));
-          
+
         getAdminAnalytics().then(res => {
           setAnalytics(res.data);
         }).catch(err => console.error(err));
@@ -297,7 +297,7 @@ export default function AdminDashboard() {
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                       <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
                       <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value}`} />
-                      <RechartsTooltip 
+                      <RechartsTooltip
                         contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }}
                         itemStyle={{ color: 'hsl(var(--foreground))' }}
                       />
@@ -321,7 +321,7 @@ export default function AdminDashboard() {
                       <BarChart data={analytics.top_performers} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                         <XAxis type="number" hide />
                         <YAxis dataKey="name" type="category" stroke="hsl(var(--foreground))" fontSize={12} tickLine={false} axisLine={false} width={80} />
-                        <RechartsTooltip cursor={{fill: 'hsl(var(--secondary))'}} contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }} />
+                        <RechartsTooltip cursor={{ fill: 'hsl(var(--secondary))' }} contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px' }} />
                         <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={15} />
                       </BarChart>
                     </ResponsiveContainer>
@@ -387,72 +387,72 @@ export default function AdminDashboard() {
         )}
 
         {/* Invisible Create Shop Modal */}
-            <Dialog open={isShopModalOpen} onOpenChange={setIsShopModalOpen}>
-              <DialogTrigger asChild>
-                <Button className="font-display gap-2"><Plus className="h-4 w-4" /> Add Shop</Button>
-              </DialogTrigger>
-              <DialogContent className="bg-card border-border max-h-[85vh] overflow-y-auto">
-                <DialogHeader><DialogTitle className="font-display">Create New Shop</DialogTitle></DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Name <span className="text-destructive">*</span></Label>
-                    <Input value={shopName} onChange={(e) => setShopName(e.target.value)} className="bg-background" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Phone Number <span className="text-destructive">*</span></Label>
-                    <Input value={shopPhone} onChange={(e) => setShopPhone(e.target.value)} placeholder="10-20 chars" minLength={10} maxLength={20} className="bg-background" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Address <span className="text-destructive">*</span></Label>
-                    <Input value={shopAddress} onChange={(e) => setShopAddress(e.target.value)} className="bg-background" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label>City <span className="text-destructive">*</span></Label>
-                      <Input value={shopCity} onChange={(e) => setShopCity(e.target.value)} className="bg-background" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>State</Label>
-                      <Input value={shopState} onChange={(e) => setShopState(e.target.value)} className="bg-background" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Zip Code</Label>
-                    <Input value={shopZipCode} onChange={(e) => setShopZipCode(e.target.value)} className="bg-background" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label>Opening Time</Label>
-                      <Input type="time" value={shopOpeningTime} onChange={(e) => setShopOpeningTime(e.target.value)} className="bg-background" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Closing Time</Label>
-                      <Input type="time" value={shopClosingTime} onChange={(e) => setShopClosingTime(e.target.value)} className="bg-background" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>UPI ID (For direct token payments)</Label>
-                    <Input value={shopUpiId} onChange={(e) => setShopUpiId(e.target.value)} placeholder="e.g., shopname@ybl" className="bg-background" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Description</Label>
-                    <Textarea value={shopDesc} onChange={(e) => setShopDesc(e.target.value)} className="bg-background" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Shop Photo (1 image)</Label>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => setShopImage(e.target.files?.[0] || null)}
-                      className="bg-background"
-                    />
-                  </div>
-                  <Button className="w-full font-display" onClick={createShop} disabled={isCreatingShop}>
-                    {isCreatingShop ? "Creating..." : "Create Shop"}
-                  </Button>
+        <Dialog open={isShopModalOpen} onOpenChange={setIsShopModalOpen}>
+          <DialogTrigger asChild>
+            <Button className="font-display gap-2"><Plus className="h-4 w-4" /> Add Shop</Button>
+          </DialogTrigger>
+          <DialogContent className="bg-card border-border max-h-[85vh] overflow-y-auto">
+            <DialogHeader><DialogTitle className="font-display">Create New Shop</DialogTitle></DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Name <span className="text-destructive">*</span></Label>
+                <Input value={shopName} onChange={(e) => setShopName(e.target.value)} className="bg-background" />
+              </div>
+              <div className="space-y-2">
+                <Label>Phone Number <span className="text-destructive">*</span></Label>
+                <Input value={shopPhone} onChange={(e) => setShopPhone(e.target.value)} placeholder="10-20 chars" minLength={10} maxLength={20} className="bg-background" />
+              </div>
+              <div className="space-y-2">
+                <Label>Address <span className="text-destructive">*</span></Label>
+                <Input value={shopAddress} onChange={(e) => setShopAddress(e.target.value)} className="bg-background" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>City <span className="text-destructive">*</span></Label>
+                  <Input value={shopCity} onChange={(e) => setShopCity(e.target.value)} className="bg-background" />
                 </div>
-              </DialogContent>
-            </Dialog>
+                <div className="space-y-2">
+                  <Label>State</Label>
+                  <Input value={shopState} onChange={(e) => setShopState(e.target.value)} className="bg-background" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Zip Code</Label>
+                <Input value={shopZipCode} onChange={(e) => setShopZipCode(e.target.value)} className="bg-background" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Opening Time</Label>
+                  <Input type="time" value={shopOpeningTime} onChange={(e) => setShopOpeningTime(e.target.value)} className="bg-background" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Closing Time</Label>
+                  <Input type="time" value={shopClosingTime} onChange={(e) => setShopClosingTime(e.target.value)} className="bg-background" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>UPI ID (For direct token payments)</Label>
+                <Input value={shopUpiId} onChange={(e) => setShopUpiId(e.target.value)} placeholder="e.g., shopname@ybl" className="bg-background" />
+              </div>
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <Textarea value={shopDesc} onChange={(e) => setShopDesc(e.target.value)} className="bg-background" />
+              </div>
+              <div className="space-y-2">
+                <Label>Shop Photo (1 image)</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setShopImage(e.target.files?.[0] || null)}
+                  className="bg-background"
+                />
+              </div>
+              <Button className="w-full font-display" onClick={createShop} disabled={isCreatingShop}>
+                {isCreatingShop ? "Creating..." : "Create Shop"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
       </div>
     </div>

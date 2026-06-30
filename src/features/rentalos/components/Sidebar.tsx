@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, CarFront, Users, FileText, X, LogOut, ChevronsLeft, ChevronsRight } from 'lucide-react';
-import { useRentalOS } from './RentalOSLayout';
+import { AnimatePresence, motion } from 'framer-motion';
+import { LayoutDashboard, CarFront, Users, FileText, X, LogOut, ChevronsLeft, ChevronsRight, UserCog } from 'lucide-react';
+import { useRentalOS } from './RentalOSContext';
 import { useAuth } from '@/features/auth/context/AuthContext';
 
 const NAV_ITEMS = [
@@ -8,6 +9,7 @@ const NAV_ITEMS = [
   { name: 'Bookings', path: '/rentalos/bookings', icon: FileText, hint: 'G B' },
   { name: 'Vehicles', path: '/rentalos/vehicles', icon: CarFront, hint: 'G V' },
   { name: 'Customers', path: '/rentalos/customers', icon: Users, hint: 'G C' },
+  { name: 'Staff', path: '/rentalos/staff', icon: UserCog, hint: 'G S' },
 ];
 
 interface SidebarProps {
@@ -138,19 +140,33 @@ export default function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
         <Rail collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
       </aside>
 
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          <button
-            type="button"
-            aria-label="Close menu"
-            className="absolute inset-0 bg-black/50"
-            onClick={onClose}
-          />
-          <aside className="relative h-full w-64 max-w-[85vw] shadow-xl">
-            <Rail collapsed={false} onClose={onClose} />
-          </aside>
-        </div>
-      )}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            className="fixed inset-0 z-50 md:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.16, ease: 'easeOut' }}
+          >
+            <button
+              type="button"
+              aria-label="Close menu"
+              className="absolute inset-0 bg-black/50"
+              onClick={onClose}
+            />
+            <motion.aside
+              className="relative h-full w-64 max-w-[85vw] shadow-xl"
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', stiffness: 420, damping: 38, mass: 0.8 }}
+            >
+              <Rail collapsed={false} onClose={onClose} />
+            </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

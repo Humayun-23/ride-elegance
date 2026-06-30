@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Plus, X } from 'lucide-react';
-import { createVehicle } from '../services/rentalosService';
+import { Camera, Image as ImageIcon, Plus, Upload, X } from 'lucide-react';
+import { createVehicle, uploadVehicleImages } from '../services/rentalosService';
 import { inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from './ui';
-import { useRentalOS } from './RentalOSLayout';
+import { useRentalOS } from './RentalOSContext';
 
 const vehicleTypes = ['scooty', 'bike', 'car', 'mountain', 'road', 'hybrid', 'electric'];
 const conditions = ['excellent', 'good', 'fair'];
@@ -20,10 +20,33 @@ const initialForm = {
   maintenance_status: 'available',
 };
 
+type VehiclePayload = {
+  shop_id: number;
+  name: string;
+  model: string;
+  bike_type: string;
+  price_per_hour: number;
+  price_per_day: number;
+  condition: string;
+  is_available: boolean;
+  maintenance_status: string;
+  engine_cc?: number;
+  description?: string;
+};
+
+function apiErrorMessage(error: unknown, fallback: string) {
+  if (typeof error === 'object' && error !== null && 'response' in error) {
+    const response = (error as { response?: { data?: { detail?: string } } }).response;
+    return response?.data?.detail || fallback;
+  }
+  return fallback;
+}
+
 export default function AddVehicleModal() {
-  const { shopId, isOwner } = useRentalOS();
+  const { shopId, isOwner, refreshBookings } = useRentalOS();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(initialForm);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -36,6 +59,7 @@ export default function AddVehicleModal() {
   const close = () => {
     setOpen(false);
     setMessage('');
+    setImageFile(null);
   };
 
   const submit = () => {
@@ -46,7 +70,7 @@ export default function AddVehicleModal() {
 
     setSaving(true);
     setMessage('');
-    const payload: any = {
+    const payload: VehiclePayload = {
       shop_id: shopId,
       name: form.name,
       model: form.model,
@@ -61,12 +85,29 @@ export default function AddVehicleModal() {
     if (form.description) payload.description = form.description;
 
     createVehicle(payload)
-      .then(() => {
+      .then(async (res) => {
+        const createdBikeId = res.data?.id || res.data?.bike_id;
+        if (imageFile && createdBikeId) {
+          try {
+            const formData = new FormData();
+            formData.append('files', imageFile);
+            await uploadVehicleImages(createdBikeId, formData);
+          } catch (err) {
+            setForm(initialForm);
+            setImageFile(null);
+            setMessage(apiErrorMessage(err, 'Vehicle added, image upload failed.'));
+            refreshBookings();
+            setTimeout(() => close(), 1200);
+            return;
+          }
+        }
         setForm(initialForm);
-        setMessage('Vehicle added.');
-        setTimeout(() => close(), 500);
+        setImageFile(null);
+        refreshBookings();
+        setMessage(imageFile ? 'Vehicle added with image.' : 'Vehicle added.');
+        setTimeout(() => close(), 700);
       })
-      .catch((err) => setMessage(err.response?.data?.detail || 'Failed to add vehicle.'))
+      .catch((err) => setMessage(apiErrorMessage(err, 'Failed to add vehicle.')))
       .finally(() => setSaving(false));
   };
 
@@ -146,6 +187,48 @@ export default function AddVehicleModal() {
                     onChange={(e) => updateField('description', e.target.value)}
                     placeholder="Optional counter note or vehicle description"
                   />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className={labelClass}>Vehicle image</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <label className="flex items-center justify-center gap-2 h-10 rounded-md bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] text-[13px] font-semibold cursor-pointer border hover:bg-gray-200 transition-colors">
+                      <Upload className="w-4 h-4" />
+                      Upload image
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                      />
+                    </label>
+                    <label className="flex items-center justify-center gap-2 h-10 rounded-md bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] text-[13px] font-semibold cursor-pointer border hover:bg-gray-200 transition-colors">
+                      <Camera className="w-4 h-4" />
+                      Capture now
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        capture="environment"
+                        onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                      />
+                    </label>
+                  </div>
+                  {imageFile && (
+                    <div className="mt-2 flex items-center justify-between gap-3 rounded-md border bg-[color:var(--rl-brand-soft)] px-3 py-2">
+                      <span className="flex min-w-0 items-center gap-2 text-[13px] font-medium text-[color:var(--rl-ink)]">
+                        <ImageIcon className="w-4 h-4 shrink-0 text-[color:var(--rl-brand-deep)]" />
+                        <span className="truncate">{imageFile.name}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setImageFile(null)}
+                        className="shrink-0 rounded p-1 text-[color:var(--rl-muted)] hover:bg-white/70"
+                        aria-label="Remove selected image"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 

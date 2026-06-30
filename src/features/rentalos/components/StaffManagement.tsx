@@ -1,34 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { UserPlus } from 'lucide-react';
-import { createStaff, getStaff, updateStaff } from '../services/rentalosService';
-import { useRentalOS } from './RentalOSLayout';
+import { createStaff, updateStaff } from '../services/rentalosService';
+import { useRentalOS } from './RentalOSContext';
 import { inputClass, labelClass, primaryButtonClass } from './ui';
 import type { RentalStaff } from '../types';
+import { useRentalOSStaff } from '../hooks/useRentalOSQueries';
 
 export default function StaffManagement() {
   const { shopId, isOwner } = useRentalOS();
-  const [staff, setStaff] = useState<RentalStaff[]>([]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstname, setFirstname] = useState('');
   const [lastname, setLastname] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
-
-  const loadStaff = () => {
-    if (!shopId || !isOwner) return;
-    setLoading(true);
-    getStaff(shopId)
-      .then((res) => setStaff(res.data))
-      .catch((err) => setMessage(err.response?.data?.detail || 'Failed to load staff'))
-      .finally(() => setLoading(false));
-  };
-
-  useEffect(() => {
-    loadStaff();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shopId, isOwner]);
+  const { data: staff = [], isFetching, refetch } = useRentalOSStaff(shopId, isOwner);
+  const loading = saving || isFetching;
 
   if (!isOwner) return null;
 
@@ -37,7 +25,7 @@ export default function StaffManagement() {
       setMessage('Email, name, and phone are required');
       return;
     }
-    setLoading(true);
+    setSaving(true);
     setMessage('');
     createStaff({
       shop_id: shopId,
@@ -55,18 +43,18 @@ export default function StaffManagement() {
         setFirstname('');
         setLastname('');
         setPhoneNumber('');
-        loadStaff();
+        refetch();
       })
       .catch((err) => setMessage(err.response?.data?.detail || 'Failed to save staff'))
-      .finally(() => setLoading(false));
+      .finally(() => setSaving(false));
   };
 
   const toggleActive = (item: RentalStaff) => {
-    setLoading(true);
+    setSaving(true);
     updateStaff(item.id, { is_active: !item.is_active, role: 'staff' })
-      .then(loadStaff)
+      .then(() => refetch())
       .catch((err) => setMessage(err.response?.data?.detail || 'Failed to update staff'))
-      .finally(() => setLoading(false));
+      .finally(() => setSaving(false));
   };
 
   return (

@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Plus, User, CarFront, Wallet, CheckCircle2 } from 'lucide-react';
-import { createBooking } from '../services/rentalosService';
-import { useRentalOS } from './RentalOSLayout';
+import { Plus, User, CarFront, Wallet, CheckCircle2, FileUp, Camera } from 'lucide-react';
+import { createBooking, uploadBookingDocument, uploadHandoverPhoto } from '../services/rentalosService';
+import { useRentalOS } from './RentalOSContext';
 import { inputClass, labelClass, primaryButtonClass } from './ui';
+import type { RentalCustomerSearch } from '../types';
 
 interface CreateBookingProps {
-  onCreated?: () => void;
+  initialCustomer?: RentalCustomerSearch;
+  onCreated?: (booking: any) => void;
+  onCancel?: () => void;
 }
 
 const toLocalDateTimeValue = (date: Date) => {
@@ -16,7 +19,7 @@ function FormGroup({ icon, title, children }: { icon: React.ReactNode; title: st
   return (
     <section>
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-emerald-600">{icon}</span>
+        <span className="text-[color:var(--rl-brand-deep)]">{icon}</span>
         <h4 className="text-sm font-semibold text-gray-900">{title}</h4>
       </div>
       {children}
@@ -24,31 +27,43 @@ function FormGroup({ icon, title, children }: { icon: React.ReactNode; title: st
   );
 }
 
-export default function CreateBooking({ onCreated }: CreateBookingProps) {
-  const { shopId, selectedVehicle } = useRentalOS();
+export default function CreateBooking({ initialCustomer, onCreated, onCancel }: CreateBookingProps) {
+  const { shopId, selectedVehicle, openCatalogue } = useRentalOS();
+  
   const [total, setTotal] = useState(1200);
   const [advance, setAdvance] = useState(200);
   const [securityDeposit, setSecurityDeposit] = useState(500);
-  const [bikeId, setBikeId] = useState('');
-  const [phone, setPhone] = useState('');
-  const [firstname, setFirstname] = useState('');
-  const [lastname, setLastname] = useState('');
+  
+  const [phone, setPhone] = useState(initialCustomer?.phone_number || '');
+  const [firstname, setFirstname] = useState(initialCustomer?.firstname || '');
+  const [lastname, setLastname] = useState(initialCustomer?.lastname || '');
+  
   const [startTime, setStartTime] = useState(toLocalDateTimeValue(new Date()));
   const [endTime, setEndTime] = useState(toLocalDateTimeValue(new Date(Date.now() + 8 * 60 * 60 * 1000)));
   const [note, setNote] = useState('');
 
+  // Documents
+  const [dlFile, setDlFile] = useState<File | null>(null);
+  const [idProofFile, setIdProofFile] = useState<File | null>(null);
+  const [handoverFile, setHandoverFile] = useState<File | null>(null);
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const effectiveBikeId = selectedVehicle?.bike_id ? String(selectedVehicle.bike_id) : bikeId;
+  const effectiveBikeId = selectedVehicle?.bike_id ? String(selectedVehicle.bike_id) : '';
+  const isExisting = initialCustomer?.found;
 
   useEffect(() => {
-    if (selectedVehicle?.price_per_day) {
-      setTotal(selectedVehicle.price_per_day);
+    if (selectedVehicle?.price_per_day && startTime && endTime) {
+      const ms = new Date(endTime).getTime() - new Date(startTime).getTime();
+      const hours = ms / (1000 * 60 * 60);
+      let days = Math.ceil(hours / 24);
+      if (days < 1) days = 1; // Minimum 1 day charge
+      setTotal(selectedVehicle.price_per_day * days);
     }
-  }, [selectedVehicle]);
+  }, [selectedVehicle, startTime, endTime]);
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!shopId || !effectiveBikeId || !phone || !startTime || !endTime) {
       setMessage('Bike, phone, start time, and end time are required.');
       return;
@@ -71,44 +86,81 @@ export default function CreateBooking({ onCreated }: CreateBookingProps) {
       notes: note || undefined,
     };
 
-    createBooking(payload)
-      .then(() => {
-        setMessage('Booking created successfully!');
-        onCreated?.();
-      })
-      .catch((err) => setMessage(err.response?.data?.detail || 'Failed to create booking'))
-      .finally(() => setLoading(false));
+    try {
+      const res = await createBooking(payload);
+      const bookingId = res.data.id;
+      
+      // Upload Documents
+      if (dlFile) {
+        const fd = new FormData();
+        fd.append('file', dlFile);
+        fd.append('document_type', 'driving_license');
+        await uploadBookingDocument(bookingId, fd).catch(e => console.error(e));
+      }
+      
+      if (idProofFile) {
+        const fd = new FormData();
+        fd.append('file', idProofFile);
+        fd.append('document_type', 'id_proof');
+        await uploadBookingDocument(bookingId, fd).catch(e => console.error(e));
+      }
+      
+      if (handoverFile) {
+        const fd = new FormData();
+        fd.append('file', handoverFile);
+        await uploadHandoverPhoto(bookingId, fd).catch(e => console.error(e));
+      }
+
+      setMessage('Booking created successfully!');
+      onCreated?.(res.data);
+    } catch (err: any) {
+      setMessage(err.response?.data?.detail || 'Failed to create booking');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isSuccess = message.includes('success');
 
-  return (
-    <div className="space-y-6">
-      {selectedVehicle && (
-        <div className="flex items-center gap-3 rounded-lg bg-emerald-50 border border-emerald-100 p-3">
-          <span className="w-9 h-9 rounded-lg bg-white text-emerald-600 flex items-center justify-center shrink-0">
-            <CarFront className="w-4 h-4" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">{selectedVehicle.name}</p>
-            <p className="text-xs text-gray-500">#{selectedVehicle.bike_id} · ₹{selectedVehicle.price_per_day}/day</p>
-          </div>
+  const FileUploader = ({ label, file, setFile }: { label: string, file: File | null, setFile: (f: File | null) => void }) => (
+    <div className="flex-1">
+      <label className={labelClass}>{label}</label>
+      <div className="relative">
+        <input 
+          type="file" 
+          accept="image/*" 
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
+        />
+        <div className={`h-10 px-3 flex items-center justify-between border rounded-lg text-[13px] ${file ? 'border-[color:var(--rl-brand)] bg-[color:var(--rl-brand-soft)] text-[color:var(--rl-brand-deep)]' : 'border-gray-200 bg-white text-gray-500'}`}>
+          <span className="truncate pr-2">{file ? file.name : `Select ${label.toLowerCase()}`}</span>
+          {file ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <Camera className="w-4 h-4 shrink-0 opacity-50" />}
         </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6 pb-6">
+      {onCancel && (
+        <button type="button" onClick={onCancel} className="text-[12px] font-semibold text-[color:var(--rl-brand-deep)] hover:underline mb-2 block">
+          &larr; Back to customer search
+        </button>
       )}
 
-      <FormGroup icon={<User className="w-4 h-4" />} title="Customer">
+      <FormGroup icon={<User className="w-4 h-4" />} title={isExisting ? "Existing Customer" : "New Customer"}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label className={labelClass}>Phone number</label>
-            <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="9999999999" className={inputClass} />
+            <input type="text" value={phone} readOnly className={`${inputClass} bg-gray-50 text-gray-500`} />
           </div>
           <div>
             <label className={labelClass}>First name</label>
-            <input type="text" value={firstname} onChange={(e) => setFirstname(e.target.value)} className={inputClass} />
+            <input type="text" value={firstname} onChange={(e) => setFirstname(e.target.value)} readOnly={isExisting} className={`${inputClass} ${isExisting ? 'bg-gray-50 text-gray-500' : ''}`} />
           </div>
           <div>
             <label className={labelClass}>Last name</label>
-            <input type="text" value={lastname} onChange={(e) => setLastname(e.target.value)} className={inputClass} />
+            <input type="text" value={lastname} onChange={(e) => setLastname(e.target.value)} readOnly={isExisting} className={`${inputClass} ${isExisting ? 'bg-gray-50 text-gray-500' : ''}`} />
           </div>
         </div>
       </FormGroup>
@@ -116,15 +168,15 @@ export default function CreateBooking({ onCreated }: CreateBookingProps) {
       <FormGroup icon={<CarFront className="w-4 h-4" />} title="Vehicle & dates">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label className={labelClass}>Bike ID</label>
-            <input
-              type="number"
-              value={effectiveBikeId}
-              onChange={(e) => setBikeId(e.target.value)}
-              placeholder="e.g. 1"
-              readOnly={Boolean(selectedVehicle)}
-              className={`${inputClass} ${selectedVehicle ? 'bg-gray-50 text-gray-500' : ''}`}
-            />
+            <label className={labelClass}>Vehicle</label>
+            <button
+              type="button"
+              onClick={openCatalogue}
+              className={`${inputClass} flex items-center justify-between text-left ${!selectedVehicle ? 'text-[color:var(--rl-muted)]' : 'text-[color:var(--rl-ink)] font-semibold'}`}
+            >
+              <span className="truncate">{selectedVehicle ? selectedVehicle.name : 'Choose vehicle'}</span>
+              <CarFront className="w-4 h-4 opacity-50 shrink-0" />
+            </button>
           </div>
           <div>
             <label className={labelClass}>Start time</label>
@@ -162,15 +214,23 @@ export default function CreateBooking({ onCreated }: CreateBookingProps) {
         </div>
       </FormGroup>
 
+      <FormGroup icon={<FileUp className="w-4 h-4" />} title="Documents (Optional)">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <FileUploader label="Driving License" file={dlFile} setFile={setDlFile} />
+          <FileUploader label="ID Proof" file={idProofFile} setFile={setIdProofFile} />
+          <FileUploader label="Handover Photo" file={handoverFile} setFile={setHandoverFile} />
+        </div>
+      </FormGroup>
+
       {message && (
-        <div className={`flex items-center gap-2 text-sm ${isSuccess ? 'text-green-600' : 'text-red-600'}`}>
-          {isSuccess && <CheckCircle2 className="w-4 h-4" />}
+        <div className={`flex items-center gap-2 text-sm font-semibold p-3 rounded-lg ${isSuccess ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+          {isSuccess && <CheckCircle2 className="w-5 h-5" />}
           {message}
         </div>
       )}
 
-      <button onClick={handleCreate} disabled={loading} className={`${primaryButtonClass} w-full`}>
-        <Plus className="w-4 h-4" />
+      <button onClick={handleCreate} disabled={loading} className={`${primaryButtonClass} w-full h-12 text-[15px]`}>
+        <Plus className="w-5 h-5 mr-1" />
         {loading ? 'Processing...' : 'Confirm booking'}
       </button>
     </div>
