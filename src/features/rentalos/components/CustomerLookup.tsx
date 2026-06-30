@@ -39,11 +39,11 @@ export default function CustomerLookup() {
     setError('');
     setNotFound(false);
     setHistory([]);
-    
+
     queryClient
       .fetchQuery({
-        queryKey: [...rentalOSKeys.customers(shopId), 'search', phone],
-        queryFn: async () => (await searchCustomer(shopId, phone)).data,
+        queryKey: [...rentalOSKeys.customers(shopId), 'search', phoneDigits],
+        queryFn: async () => (await searchCustomer(shopId, phoneDigits)).data,
         staleTime: 2 * 60 * 1000,
       })
       .then((customerResult) => {
@@ -113,9 +113,9 @@ export default function CustomerLookup() {
       <div className="flex flex-col sm:flex-row sm:items-end gap-3 max-w-xl">
         <div className="flex-1">
           <label className={labelClass}>Phone number</label>
-          <input 
-            type="tel" 
-            value={phone} 
+          <input
+            type="tel"
+            value={phone}
             onChange={(e) => {
               // Basic format to keep numbers, max 10
               const val = e.target.value.replace(/\D/g, '').slice(0, 10);
@@ -125,9 +125,9 @@ export default function CustomerLookup() {
                 setNotFound(false);
                 setError('');
               }
-            }} 
-            placeholder="Enter 10-digit phone" 
-            className={`${inputClass} text-lg py-2`} 
+            }}
+            placeholder="Enter 10-digit phone"
+            className={`${inputClass} text-lg py-2`}
             maxLength={10}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           />
@@ -178,7 +178,7 @@ export default function CustomerLookup() {
                 )}
               </div>
               <p className="text-[13px] text-[color:var(--rl-muted)] font-mono">{customer.phone_number}</p>
-              
+
               {'latest_note' in customer && customer.latest_note && (
                 <p className="text-[13px] text-[color:var(--rl-ink)] mt-2 bg-[color:var(--rl-warn-soft)] p-2 rounded text-[#8a5a10]">
                   <strong>Note: </strong>{customer.latest_note}
