@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { AlertTriangle, CheckCircle2, X } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, X, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../../components/ui/dialog';
 import { completeBooking } from '../services/rentalosService';
 import { inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from './ui';
@@ -74,6 +75,7 @@ export default function CompleteTripModal({ booking, isOpen, onClose, onComplete
       }
 
       await completeBooking(booking.id, payload);
+      toast.success('Trip completed successfully');
       onComplete();
     } catch (err: unknown) {
       setMessage(rentalOSErrorMessage(err, 'Failed to complete trip'));
@@ -83,7 +85,7 @@ export default function CompleteTripModal({ booking, isOpen, onClose, onComplete
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-white">
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-white/95 backdrop-blur-md">
         <div className="p-6 pb-0">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2 text-[color:var(--rl-ink)]">
@@ -181,8 +183,9 @@ export default function CompleteTripModal({ booking, isOpen, onClose, onComplete
             type="button"
             disabled={loading}
             onClick={handleComplete}
-            className="px-6 h-10 rounded-lg bg-[#3bb881] text-white font-bold text-[13px] hover:bg-[#32a472] transition-colors shadow-md flex items-center justify-center disabled:opacity-50"
+            className="px-6 h-10 rounded-lg bg-[#3bb881] text-white font-bold text-[13px] hover:bg-[#32a472] transition-colors shadow-md flex items-center justify-center gap-1.5 disabled:opacity-50"
           >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {loading ? 'Completing...' : 'Complete Trip'}
           </button>
         </div>

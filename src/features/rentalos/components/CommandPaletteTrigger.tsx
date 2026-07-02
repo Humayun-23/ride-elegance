@@ -12,9 +12,9 @@ export default function CommandPaletteTrigger({ onClick }: { onClick: () => void
       className="rl-cmd group hidden md:flex items-center gap-2 h-8 w-full max-w-[420px] rounded-md px-2.5 text-[13px]"
       aria-label="Open command palette"
     >
-      <Search className="w-3.5 h-3.5 shrink-0" />
-      <span className="flex-1 text-left truncate">Search customer, booking, or jump to...</span>
-      <span className="rl-kbd">{mac ? '⌘' : 'Ctrl'} K</span>
+      <Search className="w-3.5 h-3.5 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+      <span className="flex-1 text-left truncate opacity-70 group-hover:opacity-100 transition-opacity">Search customer, booking, or jump to...</span>
+      <span className="rl-kbd opacity-50 group-hover:opacity-100 transition-opacity">{mac ? '⌘' : 'Ctrl'} K</span>
     </button>
   );
 }

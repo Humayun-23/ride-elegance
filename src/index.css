@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -52,7 +51,7 @@
     --gradient-primary: linear-gradient(135deg, hsl(154 51% 48%), hsl(154 60% 55%));
     --gradient-warm: linear-gradient(135deg, hsl(32 95% 58%), hsl(42 98% 52%));
     --gradient-dark: linear-gradient(180deg, hsl(210 25% 98%), hsl(210 22% 94%));
-    --gradient-card: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(255,255,255,0.75));
+    --gradient-card: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.75));
     --shadow-glow: 0 0 30px hsl(154 60% 55% / 0.4), 0 0 60px hsl(154 60% 55% / 0.15);
     --shadow-card: 0 10px 40px -10px hsl(0 0% 0% / 0.1);
     --shadow-elevated: 0 20px 40px -10px hsl(0 0% 0% / 0.15), 0 0 20px hsl(154 51% 48% / 0.05);
@@ -64,11 +63,17 @@
     @apply border-border;
   }
 
-  html, body {
+  html,
+  body {
     @apply bg-background text-foreground font-body antialiased overflow-x-hidden w-full;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-display font-bold tracking-tight;
   }
 
@@ -146,6 +151,7 @@
   .noise {
     position: relative;
   }
+
   .noise::before {
     content: "";
     position: absolute;
@@ -166,13 +172,31 @@
   }
 
   @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-12px); }
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-12px);
+    }
   }
 
   @keyframes pulse-glow {
-    0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 20px hsl(var(--primary) / 0.2); }
-    50% { opacity: 0.8; transform: scale(1.02); box-shadow: 0 0 40px hsl(var(--primary) / 0.5); }
+
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.2);
+    }
+
+    50% {
+      opacity: 0.8;
+      transform: scale(1.02);
+      box-shadow: 0 0 40px hsl(var(--primary) / 0.5);
+    }
   }
 }
 
@@ -230,19 +254,23 @@
   background: var(--rl-ink);
   color: #e8e8e6;
 }
+
 .rentalos .rl-rail-item {
   color: #9a9a96;
   transition: background-color 120ms ease, color 120ms ease;
 }
+
 .rentalos .rl-rail-item:hover {
   background: rgba(255, 255, 255, 0.04);
   color: #ffffff;
 }
+
 .rentalos .rl-rail-item[data-active="true"] {
   background: var(--rl-brand);
   color: var(--rl-ink);
   font-weight: 600;
 }
+
 .rentalos .rl-rail-item[data-active="true"] svg {
   color: var(--rl-ink);
 }
@@ -252,7 +280,8 @@
   background: var(--rl-surface);
   border: 1px solid var(--rl-border);
 }
-.rentalos .rl-divide > * + * {
+
+.rentalos .rl-divide>*+* {
   border-top: 1px solid var(--rl-border);
 }
 
@@ -277,6 +306,66 @@
   }
 }
 
+.rentalos-loading-screen {
+  --rentalos-loader-green: #3bb881;
+  position: fixed;
+  inset: 0;
+  min-height: 100dvh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--rentalos-loader-green);
+  color: #ffffff;
+}
+
+.rentalos-loading-logo,
+.rentalos-loading-tagline {
+  position: absolute;
+  left: 50%;
+  display: block;
+  user-select: none;
+  opacity: 0;
+  transform: translateX(-50%) translateY(10px);
+  animation: rentalos-loader-fade-in 700ms ease-out forwards;
+}
+
+.rentalos-loading-logo.rentalos-no-animate,
+.rentalos-loading-tagline.rentalos-no-animate {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  animation: none;
+}
+
+.rentalos-loading-logo {
+  top: 41.5%;
+  width: clamp(260px, 32vw, 520px);
+  animation-delay: 280ms;
+}
+
+.rentalos-loading-tagline {
+  bottom: 10.5%;
+  width: clamp(260px, 28vw, 430px);
+  animation-delay: 520ms;
+}
+
+@media (orientation: portrait) {
+  .rentalos-loading-logo {
+    top: 39.5%;
+    width: min(65vw, 560px);
+  }
+
+  .rentalos-loading-tagline {
+    bottom: 5.5%;
+    width: min(55vw, 420px);
+  }
+}
+
+@keyframes rentalos-loader-fade-in {
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
 /* Buttons */
 .rentalos .rl-btn-primary {
   background: var(--rl-brand);
@@ -284,15 +373,18 @@
   font-weight: 600;
   transition: background-color 120ms ease;
 }
+
 .rentalos .rl-btn-primary:hover {
   background: var(--rl-brand-deep);
   color: #ffffff;
 }
+
 .rentalos .rl-btn-ghost {
   background: transparent;
   color: var(--rl-ink);
   transition: background-color 120ms ease;
 }
+
 .rentalos .rl-btn-ghost:hover {
   background: var(--rl-hover);
 }
@@ -304,10 +396,12 @@
   color: var(--rl-muted);
   transition: border-color 120ms ease, background-color 120ms ease;
 }
+
 .rentalos .rl-cmd:hover {
   background: #ffffff;
   border-color: var(--rl-border-strong);
 }
+
 .rentalos .rl-kbd {
   font-family: "JetBrains Mono", ui-monospace, monospace;
   font-size: 10px;
@@ -333,19 +427,44 @@
   border-radius: 4px;
   font-family: "JetBrains Mono", ui-monospace, monospace;
 }
-.rentalos .rl-pill-ok    { background: var(--rl-brand-soft); color: var(--rl-brand-deep); }
-.rentalos .rl-pill-info  { background: var(--rl-info-soft);  color: var(--rl-info); }
-.rentalos .rl-pill-warn  { background: var(--rl-warn-soft);  color: #8a5a10; }
-.rentalos .rl-pill-danger{ background: var(--rl-danger-soft);color: #a8331f; }
-.rentalos .rl-pill-mute  { background: var(--rl-hover);      color: var(--rl-muted); }
+
+.rentalos .rl-pill-ok {
+  background: var(--rl-brand-soft);
+  color: var(--rl-brand-deep);
+}
+
+.rentalos .rl-pill-info {
+  background: var(--rl-info-soft);
+  color: var(--rl-info);
+}
+
+.rentalos .rl-pill-warn {
+  background: var(--rl-warn-soft);
+  color: #8a5a10;
+}
+
+.rentalos .rl-pill-danger {
+  background: var(--rl-danger-soft);
+  color: #a8331f;
+}
+
+.rentalos .rl-pill-mute {
+  background: var(--rl-hover);
+  color: var(--rl-muted);
+}
 
 .rentalos .rl-metric-pulse {
   animation: rlMetricPulse 700ms ease-out;
 }
 
 @keyframes rlMetricPulse {
-  0% { box-shadow: 0 0 0 0 rgba(59, 184, 129, 0.28); }
-  100% { box-shadow: 0 0 0 8px rgba(59, 184, 129, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 184, 129, 0.28);
+  }
+
+  100% {
+    box-shadow: 0 0 0 8px rgba(59, 184, 129, 0);
+  }
 }
 
 /* Focus rings tuned for power use */
@@ -356,6 +475,17 @@
 }
 
 /* Tighter scrollbars */
-.rentalos ::-webkit-scrollbar { width: 10px; height: 10px; }
-.rentalos ::-webkit-scrollbar-thumb { background: var(--rl-border-strong); border-radius: 5px; border: 2px solid var(--rl-canvas); }
-.rentalos ::-webkit-scrollbar-thumb:hover { background: var(--rl-faint); }
+.rentalos ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.rentalos ::-webkit-scrollbar-thumb {
+  background: var(--rl-border-strong);
+  border-radius: 5px;
+  border: 2px solid var(--rl-canvas);
+}
+
+.rentalos ::-webkit-scrollbar-thumb:hover {
+  background: var(--rl-faint);
+}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   AlertTriangle,
   ArrowRight,
@@ -15,7 +16,7 @@ import {
   WalletCards,
 } from 'lucide-react';
 import { useRentalOS } from '../components/RentalOSContext';
-import { Card } from '../components/ui';
+import { Card, EmptyState } from '../components/ui';
 import type { RentalBooking } from '../types';
 import AddVehicleModal from '../components/AddVehicleModal';
 import CompleteTripModal from '../components/CompleteTripModal';
@@ -156,6 +157,61 @@ function AttentionItem({
     </button>
   );
 }
+
+function TripCardSkeleton() {
+  return (
+    <div className="bg-white rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-gray-100 p-5 flex flex-col h-full animate-pulse">
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-full bg-gray-200 shrink-0"></div>
+          <div className="h-4 w-24 bg-gray-200 rounded"></div>
+        </div>
+        <div className="h-5 w-14 bg-gray-200 rounded-full"></div>
+      </div>
+      <div className="h-12 bg-gray-100 rounded-lg mb-4 w-full"></div>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-5">
+        <div className="h-8 bg-gray-100 rounded"></div>
+        <div className="h-8 bg-gray-100 rounded"></div>
+        <div className="h-8 bg-gray-100 rounded"></div>
+        <div className="h-8 bg-gray-100 rounded"></div>
+      </div>
+      <div className="mb-auto pb-4">
+        <div className="h-6 w-24 bg-gray-100 rounded-md"></div>
+      </div>
+      <div className="flex gap-3 pt-5 border-t border-gray-100 mt-auto">
+        <div className="h-12 w-full bg-gray-200 rounded-2xl"></div>
+      </div>
+    </div>
+  );
+}
+
+function TimelineSkeleton() {
+  return (
+    <div className="divide-y relative">
+      <div className="absolute top-0 bottom-0 left-[75px] w-[2px] bg-gray-100 z-0"></div>
+      {[1, 2, 3].map(i => (
+        <div key={i} className="flex items-start gap-4 px-4 py-4 animate-pulse relative">
+          <div className="w-14 shrink-0"></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-gray-200 mt-1 relative z-10 shrink-0"></div>
+          <div className="flex-1 pl-1">
+            <div className="h-4 w-16 bg-gray-200 rounded mb-2"></div>
+            <div className="h-3 w-32 bg-gray-100 rounded mb-1"></div>
+            <div className="h-3 w-24 bg-gray-100 rounded"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.05 } }
+};
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0 }
+};
 
 export default function DashboardPage() {
   const { activeShop, isOwner, shopId, refreshBookings, setSelectedBooking } = useRentalOS();
@@ -311,23 +367,26 @@ export default function DashboardPage() {
         </div>
         
         {loading && bookings.length === 0 ? (
-          <p className="px-4 py-8 text-center text-[13px] text-[color:var(--rl-faint)]">Loading trips...</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => <TripCardSkeleton key={i} />)}
+          </div>
         ) : dashboard.activeTrips.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-gray-100 p-8 flex flex-col items-center justify-center min-h-[200px]">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-gray-100 p-8 flex flex-col items-center justify-center min-h-[200px]">
             <CheckCircle2 className="w-10 h-10 text-[#3bb881] mb-3 opacity-80" />
             <h3 className="font-bold text-[15px] text-[color:var(--rl-ink)]">All clear. No active bookings due today.</h3>
-          </div>
+          </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {dashboard.activeTrips.map((booking) => (
-              <ActiveTripCard 
-                key={booking.id} 
-                booking={booking} 
-                onRecordPayment={setPaymentBooking} 
-                onCompleteTrip={(b) => setCompleteBookingData(b)} 
-              />
+              <motion.div key={booking.id} variants={itemVariants} className="h-full">
+                <ActiveTripCard 
+                  booking={booking} 
+                  onRecordPayment={setPaymentBooking} 
+                  onCompleteTrip={(b) => setCompleteBookingData(b)} 
+                />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
 
@@ -336,38 +395,57 @@ export default function DashboardPage() {
           <PanelHeader title="Today's timeline" meta={`${dashboard.timeline.length} events`} />
           <div className="max-h-[560px] overflow-y-auto">
             {loading && bookings.length === 0 ? (
-              <p className="px-4 py-8 text-center text-[13px] text-[color:var(--rl-faint)]">Loading timeline...</p>
+              <TimelineSkeleton />
             ) : dashboard.timeline.length === 0 ? (
-              <p className="px-4 py-8 text-center text-[13px] text-[color:var(--rl-faint)]">No pickups or returns today.</p>
+              <div className="p-8">
+                <EmptyState icon={<CalendarClock className="w-8 h-8 opacity-50" />} message="No pickups or returns today." />
+              </div>
             ) : (
-              <div className="divide-y">
+              <div className="divide-y relative pb-4">
                 {dashboard.timelineGroups.map((group) => (
                   <div key={group.hour}>
-                    <div className={`sticky top-0 z-[1] border-b px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider ${group.hour === 'Overdue' ? 'bg-[color:var(--rl-danger-soft)] text-[color:var(--rl-danger)]' : 'bg-white text-[color:var(--rl-muted)]'}`}>
+                    <div className={`sticky top-0 z-[2] border-b px-4 py-1.5 text-[10px] font-semibold uppercase tracking-wider ${group.hour === 'Overdue' ? 'bg-[color:var(--rl-danger-soft)] text-[color:var(--rl-danger)]' : 'bg-white text-[color:var(--rl-muted)]'}`}>
                       {group.hour}
                     </div>
-                    {group.events.map((event) => (
-                      <button
-                        type="button"
-                        key={event.id}
-                        onClick={() => openBooking(event.booking)}
-                        className={`flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-[color:var(--rl-hover)] ${event.overdue ? 'bg-[color:var(--rl-danger-soft)]/60' : ''}`}
-                      >
-                        <span className={`rl-num w-14 shrink-0 text-[12px] font-semibold ${event.overdue ? 'text-[color:var(--rl-danger)]' : 'text-[color:var(--rl-muted)]'}`}>
-                          {formatTime(event.time.toISOString())}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="flex items-center gap-2">
-                            <span className={`rl-pill ${event.type === 'pickup' ? 'rl-pill-info' : event.overdue ? 'rl-pill-danger' : 'rl-pill-warn'}`}>
-                              {event.overdue ? 'Overdue' : event.type}
+                    <div className="relative">
+                      {/* Vertical line connecting nodes */}
+                      <div className="absolute top-0 bottom-0 left-[75px] w-[2px] bg-gray-100 z-0"></div>
+                      
+                      {group.events.map((event) => {
+                        const isOverdue = event.overdue;
+                        const isPickup = event.type === 'pickup';
+                        const dotColor = isOverdue ? 'bg-[color:var(--rl-danger)]' : isPickup ? 'bg-[color:var(--rl-info)]' : 'bg-[color:var(--rl-warn)]';
+                        
+                        return (
+                          <motion.button
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            type="button"
+                            key={event.id}
+                            onClick={() => openBooking(event.booking)}
+                            className={`relative flex w-full items-start gap-4 px-4 py-3 text-left transition-colors hover:bg-[color:var(--rl-hover)] ${event.overdue ? 'bg-[color:var(--rl-danger-soft)]/60' : ''}`}
+                          >
+                            <span className={`rl-num w-14 shrink-0 text-right text-[12px] font-semibold mt-0.5 ${event.overdue ? 'text-[color:var(--rl-danger)]' : 'text-[color:var(--rl-muted)]'}`}>
+                              {formatTime(event.time.toISOString())}
                             </span>
-                            <span className="rl-num text-[10px] text-[color:var(--rl-faint)]">#{event.booking.id}</span>
-                          </span>
-                          <span className="mt-1 block truncate text-[13px] font-semibold text-[color:var(--rl-ink)]">{customerName(event.booking)}</span>
-                          <span className="block truncate text-[12px] text-[color:var(--rl-muted)]">{vehicleName(event.booking)}</span>
-                        </span>
-                      </button>
-                    ))}
+                            
+                            {/* Timeline Node */}
+                            <div className={`w-2.5 h-2.5 rounded-full mt-[7px] shrink-0 z-10 ring-4 ring-white ${dotColor}`} />
+                            
+                            <span className="min-w-0 flex-1 pl-1">
+                              <span className="flex items-center gap-2">
+                                <span className={`rl-pill ${isPickup ? 'rl-pill-info' : isOverdue ? 'rl-pill-danger' : 'rl-pill-warn'}`}>
+                                  {isOverdue ? 'Overdue' : event.type}
+                                </span>
+                                <span className="rl-num text-[10px] text-[color:var(--rl-faint)]">#{event.booking.id}</span>
+                              </span>
+                              <span className="mt-1 block truncate text-[13px] font-semibold text-[color:var(--rl-ink)]">{customerName(event.booking)}</span>
+                              <span className="block truncate text-[12px] text-[color:var(--rl-muted)]">{vehicleName(event.booking)}</span>
+                            </span>
+                          </motion.button>
+                        );
+                      })}
+                    </div>
                   </div>
                 ))}
               </div>

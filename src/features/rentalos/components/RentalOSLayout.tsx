@@ -1,4 +1,6 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { LoadingState } from '../../../components/common/LoadingState';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
@@ -17,14 +19,27 @@ const BookingModal = lazy(() => import('./BookingModal'));
 const CommandPalette = lazy(() => import('./CommandPalette'));
 
 function RouteFallback() {
+  // Return a completely transparent spacer instead of "Loading view..." 
+  // so we don't get an ugly text flash when navigating between pages
+  return <div className="min-h-[60vh]" />;
+}
+
+function PageTransition({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rl-surface rounded-lg px-4 py-8 text-center text-[13px] text-[color:var(--rl-muted)]">
-      Loading view...
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 5 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -5 }}
+      transition={{ duration: 0.15 }}
+      className="h-full"
+    >
+      {children}
+    </motion.div>
   );
 }
 
 export default function RentalOSLayout() {
+  const location = useLocation();
   const [shopId, setShopId] = useState<number | null>(null);
   const [access, setAccess] = useState<RentalOSMe | null>(null);
   const [error, setError] = useState('');
@@ -158,11 +173,7 @@ export default function RentalOSLayout() {
   );
 
   if (loadingAccess) {
-    return (
-      <div className="rentalos min-h-screen flex items-center justify-center text-sm" style={{ color: 'var(--rl-muted)' }}>
-        Loading RentalOS…
-      </div>
-    );
+    return <LoadingState type="rentalos" />;
   }
 
   if (error || accessErrorMessage || !access?.has_rentalos_access) {
@@ -189,14 +200,16 @@ export default function RentalOSLayout() {
           <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-5 pb-20 md:pb-5">
             <div className="mx-auto w-full max-w-[1400px]">
               <Suspense fallback={<RouteFallback />}>
-                <Routes>
-                  <Route path="/" element={<DashboardPage />} />
-                  <Route path="/vehicles" element={<VehiclesPage />} />
-                  <Route path="/bookings" element={<BookingsPage />} />
-                  <Route path="/customers" element={<CustomersPage />} />
-                  <Route path="/staff" element={<StaffPage />} />
-                  <Route path="*" element={<DashboardPage />} />
-                </Routes>
+                <AnimatePresence mode="wait">
+                  <Routes location={location} key={location.pathname}>
+                    <Route path="/" element={<PageTransition><DashboardPage /></PageTransition>} />
+                    <Route path="/vehicles" element={<PageTransition><VehiclesPage /></PageTransition>} />
+                    <Route path="/bookings" element={<PageTransition><BookingsPage /></PageTransition>} />
+                    <Route path="/customers" element={<PageTransition><CustomersPage /></PageTransition>} />
+                    <Route path="/staff" element={<PageTransition><StaffPage /></PageTransition>} />
+                    <Route path="*" element={<PageTransition><DashboardPage /></PageTransition>} />
+                  </Routes>
+                </AnimatePresence>
               </Suspense>
             </div>
           </main>

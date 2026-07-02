@@ -5,13 +5,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Mail, Lock, Eye, EyeOff, Phone } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Phone, MonitorCog } from "lucide-react";
 import { GoogleLogin } from "@react-oauth/google";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { SEO } from "@/components/common/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { stripIndianPrefix } from "@/lib/phone";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function AuthPage() {
   const location = useLocation();
@@ -32,6 +40,8 @@ export default function AuthPage() {
   const [loginPassword, setLoginPassword] = useState("");
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
+  const [demoPromptOpen, setDemoPromptOpen] = useState(false);
+  const [demoContinuePath, setDemoContinuePath] = useState("/");
 
   // Register State
   const [firstname, setFirstname] = useState("");
@@ -46,15 +56,33 @@ export default function AuthPage() {
   const { login, register, googleLogin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const getPostLoginPath = (loggedInUser: { user_type?: string }) => {
+    if (loggedInUser.user_type === "shop_owner") return "/owner/dashboard";
+    if (loggedInUser.user_type === "shop_staff") return "/rentalos";
+    return location.state?.from || "/";
+  };
+  const handleDemoPromptOpenChange = (open: boolean) => {
+    setDemoPromptOpen(open);
+    if (!open) navigate(demoContinuePath);
+  };
+
+  const continueDemoLogin = () => {
+    setDemoPromptOpen(false);
+    navigate(demoContinuePath);
+  };
+
+  const tryRentalOSDemo = () => {
+    setDemoPromptOpen(false);
+    navigate("/rentalos");
+  };
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
     try {
       if (activeTab === "login") setLoginLoading(true);
       else setRegLoading(true);
 
-      await googleLogin(credentialResponse.credential, activeTab === "register" ? userType : "customer");
-      const from = location.state?.from || "/";
-      navigate(from);
+      const loggedInUser = await googleLogin(credentialResponse.credential, activeTab === "register" ? userType : "customer");
+      navigate(getPostLoginPath(loggedInUser));
     } catch (err: any) {
       toast({ title: "Google authentication failed", description: err.message, variant: "destructive" });
     } finally {
@@ -67,9 +95,8 @@ export default function AuthPage() {
     e.preventDefault();
     setLoginLoading(true);
     try {
-      await login(loginEmail, loginPassword);
-      const from = location.state?.from || "/";
-      navigate(from);
+      const loggedInUser = await login(loginEmail, loginPassword);
+      navigate(getPostLoginPath(loggedInUser));
     } catch (err: any) {
       if (String(err.message || "").toLowerCase().includes("email not verified")) {
         toast({ title: "Verify your email", description: "Check your inbox to activate your account." });
@@ -88,9 +115,9 @@ export default function AuthPage() {
     setLoginPassword("demo1234");
     setLoginLoading(true);
     try {
-      await login("demo@gopanda.in", "demo1234");
-      const from = location.state?.from || "/";
-      navigate(from);
+      const loggedInUser = await login("demo@gopanda.in", "demo1234");
+      setDemoContinuePath(getPostLoginPath(loggedInUser));
+      setDemoPromptOpen(true);
     } catch (err: any) {
       toast({
         title: "Demo account not found",
@@ -332,6 +359,28 @@ export default function AuthPage() {
           </CardContent>
         </Card>
       </motion.div>
+
+      <Dialog open={demoPromptOpen} onOpenChange={handleDemoPromptOpenChange}>
+        <DialogContent className="max-w-sm rounded-2xl">
+          <DialogHeader>
+            <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <MonitorCog className="h-5 w-5" />
+            </div>
+            <DialogTitle>Try RentalOS?</DialogTitle>
+            <DialogDescription>
+              Open the offline rental desk dashboard for counter bookings, customer lookup, payments, and trip handover.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button type="button" variant="outline" onClick={continueDemoLogin}>
+              Continue demo
+            </Button>
+            <Button type="button" onClick={tryRentalOSDemo}>
+              Try RentalOS
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

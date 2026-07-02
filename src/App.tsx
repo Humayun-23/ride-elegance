@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
 import { LoadingState } from './components/common/LoadingState';
@@ -42,6 +42,11 @@ const AdminShop = lazy(() => import('./features/admin/pages/AdminShop'));
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "647492306352-ajfb14t9be7ibq8furvfkb25rv3p6jql.apps.googleusercontent.com";
 
 function App() {
+  useEffect(() => {
+    // Clean up the index.html initialization class once React boots up
+    document.documentElement.classList.remove('rentalos-init');
+  }, []);
+
   return (
     <AuthProvider>
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
@@ -51,7 +56,7 @@ function App() {
             <Routes>
               {/* RentalOS Sub-App */}
               <Route path="/rentalos/*" element={
-                <Suspense fallback={<LoadingState />}>
+                <Suspense fallback={<LoadingState type="rentalos" />}>
                   <RentalOSLayout />
                 </Suspense>
               } />
@@ -77,7 +82,7 @@ function App() {
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/password-reset" element={<PasswordReset />} />
                 <Route path="/verify-email" element={<VerifyEmail />} />
-                
+
                 {/* Owner Routes */}
                 <Route path="/owner/dashboard" element={<AdminDashboard />} />
                 <Route path="/owner/shop" element={<AdminShop />} />

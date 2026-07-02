@@ -34,11 +34,23 @@
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://www.gopanda.in/og-image-1.png" />
+  <script>
+    if (window.location.pathname.startsWith('/rentalos')) {
+      document.documentElement.classList.add('rentalos-init');
+    }
+  </script>
+  <style>
+    html.rentalos-init body { background-color: #3bb881 !important; }
+    html.rentalos-init #initial-skeleton,
+    html.rentalos-init #seo-fallback-h1,
+    html.rentalos-init #seo-fallback-p { display: none !important; }
+  </style>
 </head>
 
 <body>
   <div id="root">
     <!-- SKELETON APP SHELL FOR INSTANT LCP & FCP -->
+    <div id="initial-skeleton">
     <style>
       :root {
         --bg: hsl(30, 25%, 97%);
@@ -225,6 +237,7 @@
         </div>
 
       </div>
+    </div>
     </div>
     <!-- SEO: visible H1 and body text for crawlers (replaced by React on hydration) -->
     <h1 id="seo-fallback-h1" style="font-size:2.25rem;font-weight:700;padding:0 1rem;max-width:1536px;margin:0 auto;">

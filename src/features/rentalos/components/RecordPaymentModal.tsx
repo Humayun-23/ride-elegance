@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { QrCode, Wallet, XCircle } from 'lucide-react';
+import { QrCode, Wallet, XCircle, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { QRCodeSVG } from 'qrcode.react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
 import { getPayments, recordPayment } from '../services/rentalosService';
@@ -102,6 +103,7 @@ export default function RecordPaymentModal({ booking, isOpen, onClose, onRecorde
 
     try {
       await recordPayment(booking.id, payload);
+      toast.success('Payment recorded successfully');
       onRecorded();
       onClose();
     } catch (err: unknown) {
@@ -113,7 +115,7 @@ export default function RecordPaymentModal({ booking, isOpen, onClose, onRecorde
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md bg-white">
+      <DialogContent className="sm:max-w-md bg-white/95 backdrop-blur-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg font-bold text-[color:var(--rl-ink)]">
             <Wallet className="h-5 w-5 text-[color:var(--rl-brand-deep)]" />
@@ -208,6 +210,7 @@ export default function RecordPaymentModal({ booking, isOpen, onClose, onRecorde
             Cancel
           </button>
           <button type="button" onClick={submit} disabled={saving} className={primaryButtonClass}>
+            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             {saving ? 'Recording...' : 'Record payment'}
           </button>
         </div>

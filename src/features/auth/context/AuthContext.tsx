@@ -16,8 +16,8 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  googleLogin: (credential: string, user_type?: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
+  googleLogin: (credential: string, user_type?: string) => Promise<User>;
   register: (data: { firstname: string; lastname: string; email: string; password: string; phone_number?: string; user_type: string }) => Promise<void>;
   setAuthToken: (accessToken: string) => Promise<void>;
   logout: () => void;
@@ -78,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(userRes.data);
     localStorage.setItem("user_data", JSON.stringify(userRes.data));
     setToken(accessToken);
+    return userRes.data;
   };
 
   const googleLogin = async (credential: string, user_type?: string) => {
@@ -94,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(userRes.data);
     localStorage.setItem("user_data", JSON.stringify(userRes.data));
     setToken(accessToken);
+    return userRes.data;
   };
 
   const setAuthToken = useCallback(async (accessToken: string) => {
@@ -124,7 +126,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   if (isLoading) {
-    return <LoadingState />;
+    const isRentalOS = typeof window !== 'undefined' && window.location.pathname.startsWith('/rentalos');
+    return <LoadingState type={isRentalOS ? 'rentalos' : 'default'} />;
   }
 
   return (
