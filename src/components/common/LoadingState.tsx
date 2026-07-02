@@ -1,3 +1,5 @@
+import { motion } from 'framer-motion';
+
 interface LoadingStateProps {
   text?: string;
   type?: "default" | "rentalos";
@@ -19,8 +21,21 @@ export function LoadingState({ text = "Loading...", type = "default" }: LoadingS
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-pulse text-primary font-medium">{text}</div>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="flex flex-col items-center gap-6"
+      >
+        <div className="flex items-center justify-center">
+          <img src="/logo.png" alt="GoPanda Logo" className="h-12 w-auto object-contain drop-shadow-sm" />
+        </div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-6 h-6 border-[3px] border-primary/20 border-t-primary rounded-full animate-spin" />
+          {text && <span className="text-[11px] text-muted-foreground uppercase tracking-[0.2em] font-medium">{text}</span>}
+        </div>
+      </motion.div>
     </div>
   );
 }
