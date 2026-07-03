@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/features/auth/context/AuthContext";
 import { createBooking } from "@/features/bookings/services/bookingService";
@@ -20,12 +20,12 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { ArrowLeft, Gauge, Calendar, Info, Shield, Clock, CheckCircle2, Star, MessageSquare, ChevronRight, Phone, MapPinned, Bike, Car, Zap } from "lucide-react";
+import { ArrowLeft, Gauge, Calendar, Info, Shield, Clock, CheckCircle2, Star, MessageSquare, ChevronRight, Phone, MapPinned, MapPin, Bike, Car, Zap } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SEO } from "@/components/common/SEO";
 import { EmptyState } from "@/components/common/EmptyState";
 import VehicleCard from "@/features/vehicles/components/VehicleCard";
-import { buildWhatsAppUrl } from "@/lib/phone";
+import { buildWhatsAppUrl, formatIndianPhone } from "@/lib/phone";
 import { QRCodeSVG } from "qrcode.react";
 
 const TYPE_ICON: Record<string, any> = {
@@ -751,6 +751,89 @@ ${rejectLink}`;
             </div>
           )}
         </div>
+
+        {/* Explore this shop */}
+        {shop && (
+          <div className="mt-12 space-y-5">
+            <h2 className="font-display text-xl md:text-2xl font-bold">Explore this shop</h2>
+            <Link to={`/shops/${shop.id}`} className="group block">
+              <Card className="border-border/50 bg-card/60 backdrop-blur hover:border-primary/20 hover:bg-card transition-all overflow-hidden flex flex-col">
+                <div className="h-1 w-full bg-gradient-to-r from-primary/60 via-primary/30 to-transparent shrink-0" />
+                <CardContent className="p-6 space-y-4 flex-1 flex flex-col">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <h3 className="font-display text-lg font-bold group-hover:text-primary transition-colors">
+                        {shop.name}
+                      </h3>
+                      {shop.is_active === false && (
+                        <Badge variant="outline" className="text-[10px] text-destructive border-destructive/30">
+                          Inactive
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="h-9 w-9 rounded-xl bg-secondary flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    {(shop.address || shop.city) && (
+                      <p className="flex items-start gap-2">
+                        <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                        <span className="line-clamp-1">
+                          {shop.address}{shop.city ? `, ${shop.city}` : ""}{shop.state ? `, ${shop.state}` : ""}
+                        </span>
+                      </p>
+                    )}
+                    {shop.phone_number && (
+                      <p className="flex items-center gap-2">
+                        <Phone className="h-3.5 w-3.5 shrink-0" />
+                        {formatIndianPhone(shop.phone_number)}
+                      </p>
+                    )}
+                    {(shop.opening_time || shop.closing_time) && (
+                      <p className="flex items-center gap-2">
+                        <Clock className="h-3.5 w-3.5 shrink-0" />
+                        {shop.opening_time || "?"} – {shop.closing_time || "?"}
+                      </p>
+                    )}
+                  </div>
+
+                  {shop.description && (
+                    <p className="text-xs text-muted-foreground/70 line-clamp-2 leading-relaxed flex-1">
+                      {shop.description}
+                    </p>
+                  )}
+
+                  <div className="pt-2">
+                    {shop.rating ? (
+                      <div className="flex items-center gap-1.5 pt-1">
+                        <div className="flex">
+                          {[...Array(5)].map((_, j) => (
+                            <Star
+                              key={j}
+                              className={`h-3 w-3 ${j < Math.round(shop.rating) ? "text-primary fill-primary" : "text-muted-foreground/20"}`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs text-muted-foreground font-display">{shop.rating}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 pt-1">
+                        <div className="flex">
+                          {[...Array(5)].map((_, j) => (
+                            <Star key={j} className="h-3 w-3 text-muted-foreground/20" />
+                          ))}
+                        </div>
+                        <span className="text-xs text-muted-foreground font-display">New Shop</span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+        )}
       </div>
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-white/95 p-3 shadow-[0_-8px_30px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
         <div className={`grid gap-2 ${contactShopUrl && mapUrl ? "grid-cols-3" : contactShopUrl || mapUrl ? "grid-cols-2" : "grid-cols-1"}`}>

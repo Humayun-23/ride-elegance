@@ -2,7 +2,18 @@
 export const staticRoutes = [
   '/',
   '/search-vehicles',
-  '/shops'
+  '/shops',
+  '/contact',
+  '/about-us',
+  '/blog-travel-guides',
+  '/cancellation-and-refund-policy',
+  '/faq-help-center',
+  '/partner-with-us',
+  '/privacy-policy',
+  '/rental-partner-terms',
+  '/rentalos-data-handling',
+  '/terms-and-conditions',
+  '/trust-and-safety'
 ];
 
 // Canonical vehicle types × cities — no synonym slugs

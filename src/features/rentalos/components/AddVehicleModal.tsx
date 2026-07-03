@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Camera, Image as ImageIcon, Plus, Upload, X } from 'lucide-react';
 import { createVehicle, uploadVehicleImages } from '../services/rentalosService';
 import { inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from './ui';
@@ -118,7 +119,7 @@ export default function AddVehicleModal() {
         Add vehicle
       </button>
 
-      {open && (
+      {open && createPortal(
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-gray-900/40 p-0 sm:p-4" role="dialog" aria-modal="true">
           <button type="button" aria-label="Close add vehicle dialog" className="absolute inset-0" onClick={close} />
 
@@ -244,7 +245,8 @@ export default function AddVehicleModal() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

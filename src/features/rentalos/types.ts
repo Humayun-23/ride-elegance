@@ -94,6 +94,8 @@ export interface RentalDashboardSummary {
   outstanding_delta: number;
   today_revenue: number;
   revenue_delta: number;
+  monthly_booking_count: number;
+  monthly_booking_delta: number;
 }
 
 export interface RentalDocument {

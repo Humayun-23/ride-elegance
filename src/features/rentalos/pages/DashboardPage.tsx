@@ -77,11 +77,11 @@ function formatTime(dateStr: string) {
   return date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 }
 
-function formatDelta(value: number, money = false) {
-  if (value === 0) return 'No change vs yesterday';
+function formatDelta(value: number, money = false, suffix = 'vs yesterday') {
+  if (value === 0) return `No change ${suffix}`;
   const prefix = value > 0 ? '+' : '-';
   const formatted = money ? `₹${currency.format(Math.abs(value))}` : currency.format(Math.abs(value));
-  return `${prefix}${formatted} vs yesterday`;
+  return `${prefix}${formatted} ${suffix}`;
 }
 
 function statusTone(status: string) {
@@ -318,7 +318,7 @@ export default function DashboardPage() {
     const formatted = currency.format(value);
     return money ? `₹${formatted}` : formatted;
   };
-  const kpiDelta = (value: number, money = false) => (kpiSyncing ? 'Syncing' : formatDelta(value, money));
+  const kpiDelta = (value: number, money = false, suffix = 'vs yesterday') => (kpiSyncing ? 'Syncing' : formatDelta(value, money, suffix));
 
   const openBooking = (booking: RentalBooking) => {
     setSelectedBooking(booking);
@@ -339,7 +339,14 @@ export default function DashboardPage() {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-[color:var(--rl-ink)]">{activeShop?.shop_name || 'Rental desk'}</h2>
+          <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
+            <h2 className="text-xl font-bold tracking-tight text-[color:var(--rl-ink)]">{activeShop?.shop_name || 'Rental desk'}</h2>
+            {isOwner && (
+              <div className="scale-[0.85] origin-right sm:origin-left shrink-0">
+                <AddVehicleModal />
+              </div>
+            )}
+          </div>
           <p className="mt-1 flex items-center gap-1.5 text-[12px] text-[color:var(--rl-muted)]">
             <ShieldCheck className="h-4 w-4 text-[color:var(--rl-faint)]" />
             Signed in as {isOwner ? 'Owner' : 'Staff'}
@@ -351,12 +358,13 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <KpiCard label="Active" value={kpiValue(summary?.active_count || 0)} delta={kpiDelta(summary?.active_delta || 0)} pulsing={metricPulse} />
-        <KpiCard label="Due today" value={kpiValue(summary?.due_today_count || 0)} delta={kpiDelta(summary?.due_today_delta || 0)} tone="warn" pulsing={metricPulse} />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+        <KpiCard label="Active Trips" value={kpiValue(summary?.active_count || 0)} delta={kpiDelta(summary?.active_delta || 0)} pulsing={metricPulse} />
+        <KpiCard label="Due Today" value={kpiValue(summary?.due_today_count || 0)} delta={kpiDelta(summary?.due_today_delta || 0)} tone="warn" pulsing={metricPulse} />
         <KpiCard label="Overdue" value={kpiValue(summary?.overdue_count || 0)} delta={kpiDelta(summary?.overdue_delta || 0)} tone="danger" pulsing={metricPulse} />
-        <KpiCard label="Outstanding" value={kpiValue(summary?.outstanding || 0, true)} delta={kpiDelta(summary?.outstanding_delta || 0, true)} tone={(summary?.outstanding || 0) > 0 ? 'warn' : 'default'} pulsing={metricPulse} />
-        <KpiCard label="Today's revenue" value={kpiValue(summary?.today_revenue || 0, true)} delta={kpiDelta(summary?.revenue_delta || 0, true)} pulsing={metricPulse} />
+        <KpiCard label="Pending Balance" value={kpiValue(summary?.outstanding || 0, true)} delta={kpiDelta(summary?.outstanding_delta || 0, true)} tone={(summary?.outstanding || 0) > 0 ? 'warn' : 'default'} pulsing={metricPulse} />
+        <KpiCard label="Today's Collection" value={kpiValue(summary?.today_revenue || 0, true)} delta={kpiDelta(summary?.revenue_delta || 0, true)} pulsing={metricPulse} />
+        <KpiCard label="Monthly Bookings" value={kpiValue(summary?.monthly_booking_count || 0)} delta={kpiDelta(summary?.monthly_booking_delta || 0, false, 'vs last month')} pulsing={metricPulse} />
       </div>
 
       {/* Active Bookings Due Today Section */}
@@ -474,11 +482,6 @@ export default function DashboardPage() {
                 Phone lookup
                 <ArrowRight className="ml-auto h-4 w-4 text-[color:var(--rl-faint)]" />
               </Link>
-              {isOwner && (
-                <div className="px-4 py-3">
-                  <AddVehicleModal />
-                </div>
-              )}
             </div>
           </Card>
 

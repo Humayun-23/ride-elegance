@@ -22,6 +22,7 @@ const NAV_LINKS = [
   { label: "How It Works", to: "/#how-it-works" },
   { label: "Rental Shops", to: "/shops" },
   { label: "List Your Shop", to: "/register" },
+  { label: "Contact", to: "/contact" },
 ];
 
 export default function Navbar() {
@@ -65,7 +66,7 @@ export default function Navbar() {
 
   return (
     <nav className={`fixed top-4 inset-x-0 z-50 flex justify-center px-4 md:px-6 pointer-events-none transition-transform duration-300 ${!isVisible ? "-translate-y-[150%] md:translate-y-0" : "translate-y-0"}`}>
-      <div className="w-full max-w-6xl flex h-[3.75rem] items-center justify-between rounded-full border border-slate-200/80 bg-white/[0.88] px-4 shadow-[0_18px_45px_rgba(15,23,42,0.14)] ring-1 ring-white/70 backdrop-blur-xl md:px-5 pointer-events-auto transition-all duration-300">
+      <div className="w-full max-w-7xl flex h-[3.75rem] items-center justify-between rounded-full border border-slate-200/80 bg-white/[0.88] px-4 shadow-[0_18px_45px_rgba(15,23,42,0.14)] ring-1 ring-white/70 backdrop-blur-xl md:px-6 pointer-events-auto transition-all duration-300">
 
         {/* Brand */}
         <Link to="/" className="flex items-center gap-2 font-display text-xl font-bold group">
@@ -83,9 +84,6 @@ export default function Navbar() {
               </Link>
             );
           })}
-          <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="whitespace-nowrap px-3 lg:px-3.5 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-950 hover:bg-white transition-all rounded-full">
-            Contact
-          </a>
         </div>
 
         {/* Desktop Actions */}
@@ -188,9 +186,6 @@ export default function Navbar() {
                       </Link>
                     );
                   })}
-                  <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="block px-4 py-3 text-sm font-medium text-foreground hover:bg-slate-100 rounded-xl transition-colors" onClick={() => setMobileOpen(false)}>
-                    Contact
-                  </a>
                 </>
               )}
 

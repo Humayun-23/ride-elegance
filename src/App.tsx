@@ -23,6 +23,19 @@ const SavedVehicles = lazy(() => import('./pages/SavedVehicles'));
 // Lazy load the remaining pages
 const BusinessRentalNetwork = lazy(() => import('./pages/BusinessRentalNetwork'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const ContactUs = lazy(() => import('./pages/ContactUs'));
+const MarkdownPage = lazy(() => import('./pages/MarkdownPage'));
+
+const AboutUs = lazy(() => import('./pages/AboutUs'));
+import blogTravelGuidesContent from './content/blog-travel-guides.md?raw';
+import cancellationPolicyContent from './content/cancellation-and-refund-policy.md?raw';
+import faqContent from './content/faq-help-center.md?raw';
+import partnerWithUsContent from './content/partner-with-us.md?raw';
+import privacyPolicyContent from './content/privacy-policy.md?raw';
+import rentalPartnerTermsContent from './content/rental-partner-terms.md?raw';
+import rentalosDataContent from './content/rentalos-data-handling.md?raw';
+import termsContent from './content/terms-and-conditions.md?raw';
+import trustAndSafetyContent from './content/trust-and-safety.md?raw';
 const Shops = lazy(() => import('./features/shops/pages/Shops'));
 const ShopDetail = lazy(() => import('./features/shops/pages/ShopDetail'));
 const Bookings = lazy(() => import('./features/bookings/pages/Bookings'));
@@ -66,9 +79,23 @@ function App() {
                 <Route path="/" element={<Index />} />
                 <Route path="/search-vehicles" element={<SearchVehicles />} />
                 <Route path="/business-rental-network" element={<BusinessRentalNetwork />} />
+                <Route path="/contact" element={<ContactUs />} />
                 <Route path="/search/:seoSlug" element={<DynamicLanding />} />
                 <Route path="/rent/:vehicleType/in/:city" element={<DynamicLanding />} />
                 <Route path="/rent/:vehicleType" element={<DynamicLanding />} />
+                
+                {/* Legal and Content Pages */}
+                <Route path="/about-us" element={<AboutUs />} />
+                <Route path="/blog-travel-guides" element={<MarkdownPage title="Blog & Travel Guides" content={blogTravelGuidesContent} />} />
+                <Route path="/cancellation-and-refund-policy" element={<MarkdownPage title="Cancellation and Refund Policy" content={cancellationPolicyContent} />} />
+                <Route path="/faq-help-center" element={<MarkdownPage title="FAQ & Help Center" content={faqContent} />} />
+                <Route path="/partner-with-us" element={<MarkdownPage title="Partner With Us" content={partnerWithUsContent} />} />
+                <Route path="/privacy-policy" element={<MarkdownPage title="Privacy Policy" content={privacyPolicyContent} />} />
+                <Route path="/rental-partner-terms" element={<MarkdownPage title="Rental Partner Terms" content={rentalPartnerTermsContent} />} />
+                <Route path="/rentalos-data-handling" element={<MarkdownPage title="RentalOS Data Handling" content={rentalosDataContent} />} />
+                <Route path="/terms-and-conditions" element={<MarkdownPage title="Terms and Conditions" content={termsContent} />} />
+                <Route path="/trust-and-safety" element={<MarkdownPage title="Trust and Safety" content={trustAndSafetyContent} />} />
+
                 <Route path="/shops" element={<Shops />} />
                 <Route path="/shops/:id" element={<ShopDetail />} />
                 <Route path="/bikes/:id" element={<VehicleDetail />} />

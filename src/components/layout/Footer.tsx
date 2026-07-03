@@ -1,4 +1,4 @@
-import { Car } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const POPULAR_AREAS = [
   "Guwahati Airport",
@@ -7,107 +7,96 @@ const POPULAR_AREAS = [
   "Six Mile",
   "Khanapara",
   "Ganeshguri",
-  "Beltola",
-  "Maligaon",
 ];
 
-const CITIES = [
-  { name: "Guwahati", slug: "guwahati", status: "Available Now" },
-  { name: "Shillong", slug: "shillong", status: "Coming Soon" },
-  { name: "Jorhat", slug: "jorhat", status: "Available Now" },
-  { name: "Silchar", slug: "silchar", status: "Coming Soon" },
-  { name: "Dibrugarh", slug: "dibrugarh", status: "Coming Soon" },
-  { name: "Tezpur", slug: "tezpur", status: "Coming Soon" },
+const FOOTER_COLUMNS = [
+  {
+    title: "Vehicle Rentals",
+    links: [
+      { label: "Bike Rental in Guwahati", href: "/rent/bike/in/guwahati" },
+      { label: "Scooty Rental in Guwahati", href: "/rent/scooty/in/guwahati" },
+      { label: "Self-Drive Car Rental in Guwahati", href: "/rent/car/in/guwahati" },
+    ],
+  },
+  {
+    title: "Popular Areas",
+    links: POPULAR_AREAS.map((area) => ({
+      label: area,
+      href: `/search-vehicles?q=${encodeURIComponent(area)}`,
+    })),
+  },
+  {
+    title: "For Shops",
+    links: [
+      { label: "List Your Shop", href: "/register" },
+      { label: "Shop Login", href: "/login" },
+      { label: "Partner With Us", href: "/partner-with-us" },
+      { label: "RentalOS", href: "/rentalos" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About Us", href: "/about-us" },
+      { label: "How It Works", href: "/#how-it-works" },
+      { label: "Blog & Travel Guides", href: "/blog-travel-guides" },
+      { label: "Contact Us", href: "/contact" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "FAQ & Help Center", href: "/faq-help-center" },
+      { label: "Trust & Safety", href: "/trust-and-safety" },
+      { label: "Terms & Conditions", href: "/terms-and-conditions" },
+      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Cancellation Policy", href: "/cancellation-and-refund-policy" },
+    ],
+  },
 ];
+
+function FooterColumn({ title, links }: { title: string; links: { label: string; href: string }[] }) {
+  return (
+    <div className="space-y-3">
+      <h4 className="font-display text-sm font-semibold text-[#010101]">{title}</h4>
+      <ul className="space-y-2.5">
+        {links.map((link) => (
+          <li key={link.href}>
+            <a
+              href={link.href}
+              className="text-sm leading-5 text-[#4d5650] transition-colors hover:text-[#3bb881]"
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 export default function Footer() {
   return (
-    <footer className="bg-white border-t border-border pt-14 pb-8 text-sm">
-      <div className="container mx-auto px-4">
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5 mb-10">
-          <div className="space-y-3">
-            <a href="/" className="flex items-center hover:opacity-80 transition-opacity">
-              <img src="/logo-green-black.png" alt="GoPanda Logo" className="h-8 w-auto" />
+    <footer className="border-t border-[#dfeee6] bg-[#f7fbf8] font-body text-sm">
+      <div className="mx-auto w-full max-w-7xl px-5 py-12 sm:px-6 lg:px-8 lg:py-14">
+        <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[1.45fr_repeat(5,minmax(0,1fr))]">
+          <div className="space-y-5">
+            <a href="/" className="inline-flex items-center transition-opacity hover:opacity-80">
+              <img src="/logo-green-black.png" alt="GoPanda Logo" className="h-9 w-auto" />
             </a>
-            <p className="text-muted-foreground text-sm leading-relaxed">
+            <p className="max-w-[300px] text-sm leading-relaxed text-[#3f4943] text-pretty">
               GoPanda helps users book bikes, scooties, and self-drive cars from verified local rental shops.
             </p>
-            <div className="space-y-1.5 pt-2">
-              {CITIES.map((city) => (
-                <p key={city.name} className="text-xs text-muted-foreground">
-                  <a
-                    href={`/rent/car/in/${city.slug}`}
-                    className="font-semibold text-foreground hover:text-primary transition-colors"
-                  >
-                    {city.name}
-                  </a> - {city.status}
-                </p>
-              ))}
-            </div>
           </div>
 
-          <div className="space-y-3">
-            <h4 className="font-bold text-foreground">Vehicle Rentals</h4>
-            <ul className="space-y-2 text-muted-foreground">
-              <li>
-                <a href="/rent/bike/in/guwahati" className="hover:text-primary transition-colors">Bike Rental in Guwahati</a>
-              </li>
-              <li>
-                <a href="/rent/scooty/in/guwahati" className="hover:text-primary transition-colors">Scooty Rental in Guwahati</a>
-              </li>
-              <li>
-                <a href="/rent/car/in/guwahati" className="hover:text-primary transition-colors">Self-Drive Car Rental in Guwahati</a>
-              </li>
-            </ul>
-          </div>
-
-          <div className="space-y-3">
-            <h4 className="font-bold text-foreground">Popular Areas</h4>
-            <ul className="space-y-2 text-muted-foreground">
-              {POPULAR_AREAS.map((area) => (
-                <li key={area}>
-                  <a href={`/search-vehicles?q=${encodeURIComponent(area)}`} className="hover:text-primary transition-colors">
-                    {area}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="space-y-3">
-            <h4 className="font-bold text-foreground">For Shops</h4>
-            <ul className="space-y-2 text-muted-foreground">
-              <li>
-                <a href="/register" className="hover:text-primary transition-colors">List Your Shop</a>
-              </li>
-              <li>
-                <a href="/login" className="hover:text-primary transition-colors">Shop Login</a>
-              </li>
-              <li>
-                <a href="/shops" className="hover:text-primary transition-colors">Rental Shops</a>
-              </li>
-            </ul>
-          </div>
-
-          <div className="space-y-3">
-            <h4 className="font-bold text-foreground">Company</h4>
-            <ul className="space-y-2 text-muted-foreground">
-              <li>
-                <a href="/search-vehicles" className="hover:text-primary transition-colors">Rent Vehicles</a>
-              </li>
-              <li>
-                <a href="/#how-it-works" className="hover:text-primary transition-colors">How It Works</a>
-              </li>
-              <li>
-                <a href="/shops" className="hover:text-primary transition-colors">Browse Shops</a>
-              </li>
-            </ul>
-          </div>
+          {FOOTER_COLUMNS.map((column) => (
+            <FooterColumn key={column.title} title={column.title} links={column.links} />
+          ))}
         </div>
 
-        <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between text-muted-foreground">
-          <p>© {new Date().getFullYear()} GoPanda. All rights reserved.</p>
-          <p className="mt-2 md:mt-0">Built in Assam for local rental businesses.</p>
+        <div className="mt-10 flex flex-col gap-2 border-t border-[#dfeee6] pt-6 text-sm text-[#5f6963] md:flex-row md:items-center md:justify-between">
+          <p>© 2026 GoPanda. All rights reserved.</p>
+          <p>Built in Assam for local rental businesses.</p>
         </div>
       </div>
     </footer>

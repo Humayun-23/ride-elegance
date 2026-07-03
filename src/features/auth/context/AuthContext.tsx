@@ -12,6 +12,17 @@ interface User {
   [key: string]: any;
 }
 
+const parseJwt = (token: string) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(base64.length + (4 - (base64.length % 4)) % 4, '=');
+    return JSON.parse(atob(padded));
+  } catch (e) {
+    return null;
+  }
+};
+
 interface AuthContextType {
   user: User | null;
   token: string | null;
@@ -40,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       try {
-        const payload = JSON.parse(atob(currentToken.split(".")[1]));
+        const payload = parseJwt(currentToken);
         const userId = payload.sub || payload.user_id || payload.id;
         if (userId) {
           const res = await getUserById(userId, {
@@ -69,7 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const accessToken = res.data.access_token;
     localStorage.setItem("auth_token", accessToken);
     
-    const payload = JSON.parse(atob(accessToken.split(".")[1]));
+    const payload = parseJwt(accessToken);
     const userId = payload.sub || payload.user_id || payload.id;
     const userRes = await getUserById(userId, {
       headers: { Authorization: `Bearer ${accessToken}` }
@@ -86,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const accessToken = res.data.access_token;
     localStorage.setItem("auth_token", accessToken);
     
-    const payload = JSON.parse(atob(accessToken.split(".")[1]));
+    const payload = parseJwt(accessToken);
     const userId = payload.sub || payload.user_id || payload.id;
     const userRes = await getUserById(userId, {
       headers: { Authorization: `Bearer ${accessToken}` }
@@ -101,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const setAuthToken = useCallback(async (accessToken: string) => {
     localStorage.setItem("auth_token", accessToken);
     try {
-      const payload = JSON.parse(atob(accessToken.split(".")[1]));
+      const payload = parseJwt(accessToken);
       const userId = payload.sub || payload.user_id || payload.id;
       const userRes = await getUserById(userId, {
         headers: { Authorization: `Bearer ${accessToken}` }

@@ -12,6 +12,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { getOptimizedImageUrl } from "@/lib/imageUtils";
 import { Link } from "react-router-dom";
 import { PlatformStats } from "@/components/common/PlatformStats";
+import { toast } from "sonner";
 
 const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER;
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent("Hi GoPanda, I need help finding a rental vehicle in Guwahati.")}`;
@@ -50,10 +51,13 @@ const TRUST_CARDS = [
 
 export default function Index() {
   const navigate = useNavigate();
+  const today = new Date().toISOString().split("T")[0];
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split("T")[0];
+
   const [city, setCity] = useState("Guwahati");
   const [vehicleType, setVehicleType] = useState("");
-  const [pickupDate, setPickupDate] = useState("");
-  const [returnDate, setReturnDate] = useState("");
+  const [pickupDate, setPickupDate] = useState(today);
+  const [returnDate, setReturnDate] = useState(tomorrow);
   const [activeStep, setActiveStep] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
   const scrollTimeout = useRef<number | null>(null);
@@ -99,6 +103,10 @@ export default function Index() {
 
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (pickupDate && returnDate && returnDate < pickupDate) {
+      toast.error("Return date cannot be earlier than pickup date");
+      return;
+    }
     const params = new URLSearchParams();
     if (city) params.append("q", city);
     if (vehicleType) params.append("type", vehicleType);
@@ -193,11 +201,11 @@ export default function Index() {
                 <label className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-background/80 dark:bg-white/5 border border-border/70 text-left">
                   <MapPin className="text-primary h-5 w-5 shrink-0" />
                   <div className="flex flex-col w-full text-left">
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">City</span>
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Location / Area</span>
                     <input
-                      aria-label="City"
+                      aria-label="Location or Area"
                       type="text"
-                      placeholder="Guwahati"
+                      placeholder="Guwahati, Zoo Road..."
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       className="w-full border-0 bg-transparent shadow-none focus:outline-none p-0 text-sm md:text-base font-semibold text-foreground placeholder:text-muted-foreground/40"
@@ -209,7 +217,7 @@ export default function Index() {
                   <CalendarDays className="text-primary h-5 w-5 shrink-0" />
                   <div className="flex flex-col w-full text-left">
                     <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Pickup date</span>
-                    <input aria-label="Pickup date" type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} className="w-full border-0 bg-transparent shadow-none focus:outline-none p-0 text-sm md:text-base font-semibold text-foreground" />
+                    <input aria-label="Pickup date" type="date" min={today} value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} className="w-full border-0 bg-transparent shadow-none focus:outline-none p-0 text-sm md:text-base font-semibold text-foreground" />
                   </div>
                 </label>
 
@@ -217,7 +225,7 @@ export default function Index() {
                   <CalendarDays className="text-primary h-5 w-5 shrink-0" />
                   <div className="flex flex-col w-full text-left">
                     <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Return date</span>
-                    <input aria-label="Return date" type="date" value={returnDate} onChange={(e) => setReturnDate(e.target.value)} className="w-full border-0 bg-transparent shadow-none focus:outline-none p-0 text-sm md:text-base font-semibold text-foreground" />
+                    <input aria-label="Return date" type="date" min={pickupDate || today} value={returnDate} onChange={(e) => setReturnDate(e.target.value)} className="w-full border-0 bg-transparent shadow-none focus:outline-none p-0 text-sm md:text-base font-semibold text-foreground" />
                   </div>
                 </label>
 
@@ -444,9 +452,6 @@ export default function Index() {
                   <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">Popular Rentals in Guwahati</h2>
                   <p className="text-muted-foreground mt-1.5 text-sm">Real bikes, scooties, and cars from local rental partners.</p>
                 </div>
-                <Button variant="outline" className="font-display gap-1 rounded-full text-foreground text-sm" onClick={() => navigate("/search-vehicles")}>
-                  View All Vehicles <ChevronRight className="h-4 w-4" />
-                </Button>
               </div>
               {isLoadingVehicles ? (
                 <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -463,13 +468,20 @@ export default function Index() {
                   ))}
                 </div>
               ) : popularBikes.length > 0 ? (
-                <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {popularBikes.map((v, i) => (
-                    <motion.div key={v.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
-                      <VehicleCard vehicle={v} priority={i < 4} />
-                    </motion.div>
-                  ))}
-                </div>
+                <>
+                  <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {popularBikes.map((v, i) => (
+                      <motion.div key={v.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
+                        <VehicleCard vehicle={v} priority={i < 4} />
+                      </motion.div>
+                    ))}
+                  </div>
+                  <div className="flex justify-center mt-10">
+                    <Button variant="outline" className="font-display gap-1 rounded-full text-foreground text-sm px-8 h-12 hover:bg-primary hover:text-primary-foreground transition-all hover:border-primary" onClick={() => navigate("/search-vehicles")}>
+                      View All Vehicles <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </>
               ) : (
                 <div className="rounded-2xl border border-border bg-background p-8 text-center">
                   <p className="mx-auto max-w-xl text-muted-foreground">
