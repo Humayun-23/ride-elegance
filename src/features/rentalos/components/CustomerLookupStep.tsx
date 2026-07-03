@@ -49,120 +49,133 @@ export default function CustomerLookupStep({ onContinue, onCancel }: CustomerLoo
   const isRisky = result?.current_flag_status && RISKY_FLAGS.includes(result.current_flag_status.toLowerCase());
 
   return (
-    <div className="flex flex-col h-full space-y-6 pb-[env(safe-area-inset-bottom)]">
-      <div className="text-center space-y-2 mt-4">
-        <div className="w-12 h-12 bg-[color:var(--rl-hover)] rounded-full flex items-center justify-center mx-auto text-[color:var(--rl-brand-deep)]">
-          <Search className="w-6 h-6" />
+    <div className="flex flex-col h-full bg-white relative animate-in fade-in duration-500">
+      <div className="flex-1 flex flex-col overflow-y-auto px-6 pt-10 pb-[env(safe-area-inset-bottom)]">
+        
+        {/* Header Section */}
+        <div className="text-center space-y-4 mb-10">
+          <div className="w-20 h-20 bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200/60 shadow-sm rounded-2xl flex items-center justify-center mx-auto text-black rotate-3 hover:rotate-0 transition-transform duration-300">
+            <Search className="w-8 h-8" strokeWidth={2.5} />
+          </div>
+          <div className="space-y-1.5">
+            <h3 className="text-2xl font-extrabold text-black tracking-tight">Find Customer</h3>
+            <p className="text-[14px] text-gray-500 max-w-sm mx-auto leading-relaxed">
+              Enter the customer's phone number to retrieve their history or create a new profile.
+            </p>
+          </div>
         </div>
-        <h3 className="text-lg font-bold text-[color:var(--rl-ink)]">Find Customer</h3>
-        <p className="text-[13px] text-[color:var(--rl-muted)] px-6">
-          Enter the customer's phone number to retrieve their history or create a new profile.
-        </p>
-      </div>
 
-      <div className="px-6 space-y-4">
-        <div>
-          <label className={labelClass}>Phone number</label>
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        {/* Search Input Section */}
+        <div className="max-w-md mx-auto w-full space-y-8">
+          <div className="space-y-2">
+            <label className="text-[12px] font-bold text-gray-400 uppercase tracking-widest ml-1">Phone number</label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-black transition-colors">
+                <Phone className="w-5 h-5" />
+              </div>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="9999999999"
-                className={`${inputClass} pl-10`}
+                placeholder="Enter 10-digit number"
+                className="w-full h-16 pl-12 pr-[110px] bg-gray-50/50 border border-gray-200 rounded-2xl text-[16px] font-semibold text-black focus:outline-none focus:bg-white focus:ring-4 focus:ring-black/5 focus:border-black transition-all shadow-sm"
                 autoFocus
               />
+              <button
+                type="button"
+                onClick={handleSearch}
+                disabled={loading || !phone}
+                className="absolute right-1.5 top-1.5 bottom-1.5 px-6 rounded-xl bg-black text-white text-[14px] font-bold hover:bg-gray-800 transition-all disabled:opacity-50 disabled:hover:bg-black hover:scale-[1.02] active:scale-[0.98] shadow-md flex items-center justify-center min-w-[90px]"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  'Search'
+                )}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={handleSearch}
-              disabled={loading || !phone}
-              className="px-4 rounded-lg bg-[#010101] text-white text-[13px] font-semibold hover:bg-black transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Searching...' : 'Search'}
-            </button>
+            {error && <p className="text-red-500 text-[13px] font-semibold ml-1 mt-2 animate-in fade-in slide-in-from-top-1 flex items-center gap-1"><AlertTriangle className="w-3.5 h-3.5" /> {error}</p>}
           </div>
-          {error && <p className="text-red-500 text-xs mt-1.5">{error}</p>}
-        </div>
 
-        {result && result.found && (
-          <div className="mt-6 border border-[color:var(--rl-border)] rounded-xl overflow-hidden bg-white shadow-sm animate-in fade-in slide-in-from-bottom-2">
-            <div className="p-4 bg-gray-50 border-b border-[color:var(--rl-border)] flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[color:var(--rl-brand-soft)] text-[color:var(--rl-brand-deep)] flex items-center justify-center font-bold text-lg shrink-0">
-                {(result.firstname?.[0] || 'U').toUpperCase()}
+          {/* Search Results */}
+          {result && result.found && (
+            <div className="border border-gray-200/80 rounded-3xl overflow-hidden bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="p-5 bg-gradient-to-b from-gray-50/50 to-white border-b border-gray-100 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-black text-white flex items-center justify-center font-bold text-xl shrink-0 shadow-sm">
+                  {(result.firstname?.[0] || 'U').toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h4 className="text-[17px] font-extrabold text-black truncate">
+                    {result.firstname || 'Walk-in'} {result.lastname || ''}
+                  </h4>
+                  <p className="text-[14px] font-medium text-gray-500 mt-0.5">{result.phone_number}</p>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <h4 className="text-[15px] font-bold text-[color:var(--rl-ink)] truncate">
-                  {result.firstname || 'Walk-in'} {result.lastname || ''}
-                </h4>
-                <p className="text-[13px] text-[color:var(--rl-muted)]">{result.phone_number}</p>
+
+              <div className="p-5 space-y-4">
+                <div className="flex justify-between items-center bg-gray-50/80 p-4 rounded-2xl border border-gray-100/80">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm">
+                      <FileText className="w-4 h-4 text-gray-600" />
+                    </div>
+                    <span className="text-[14px] font-semibold text-gray-600">Previous bookings</span>
+                  </div>
+                  <span className="text-[16px] font-extrabold text-black bg-white px-3 py-1 rounded-full border border-gray-200 shadow-sm">{result.previous_booking_count}</span>
+                </div>
+
+                {result.current_flag_status && (
+                  <div className={`p-4 rounded-2xl border flex gap-3 items-start ${isRisky ? 'bg-red-50/50 border-red-100 text-red-800' : 'bg-blue-50/50 border-blue-100 text-blue-800'}`}>
+                    {isRisky ? <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-red-500" /> : <Info className="w-5 h-5 shrink-0 mt-0.5 text-blue-500" />}
+                    <div className="space-y-1.5">
+                      <p className="text-[14px] font-bold capitalize">{result.current_flag_status.replace(/_/g, ' ')}</p>
+                      {result.latest_note && (
+                        <p className="text-[13px] font-medium opacity-80 leading-relaxed">{result.latest_note}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => onContinue(result)}
+                  className="w-full h-14 mt-2 flex items-center justify-center gap-2.5 rounded-2xl bg-black text-white font-bold text-[15px] hover:bg-gray-900 transition-all hover:shadow-lg hover:shadow-black/10 active:scale-[0.98]"
+                >
+                  <CheckCircle2 className="w-5 h-5" />
+                  Select this Customer
+                </button>
               </div>
             </div>
+          )}
 
-            <div className="p-4 space-y-4">
-              <div className="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-gray-400" />
-                  <span className="text-[13px] text-[color:var(--rl-muted)]">Previous bookings</span>
-                </div>
-                <span className="font-bold text-[color:var(--rl-ink)]">{result.previous_booking_count}</span>
+          {result && !result.found && (
+            <div className="p-8 border-2 border-dashed border-gray-200 rounded-3xl text-center space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500 bg-gray-50/50">
+              <div className="w-14 h-14 bg-white border border-gray-200 shadow-sm rounded-full flex items-center justify-center mx-auto text-gray-400">
+                <UserPlus className="w-6 h-6" />
               </div>
-
-              {result.current_flag_status && (
-                <div className={`p-3 rounded-lg border flex gap-2 ${isRisky ? 'bg-red-50 border-red-100 text-red-700' : 'bg-blue-50 border-blue-100 text-blue-700'}`}>
-                  {isRisky ? <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" /> : <Info className="w-5 h-5 shrink-0 mt-0.5" />}
-                  <div className="space-y-1">
-                    <p className="text-sm font-bold capitalize">{result.current_flag_status.replace(/_/g, ' ')}</p>
-                    {result.latest_note && (
-                      <p className="text-xs opacity-90 line-clamp-2">{result.latest_note}</p>
-                    )}
-                  </div>
-                </div>
-              )}
-
+              <div className="space-y-1">
+                <p className="text-[16px] font-bold text-black">No customer found</p>
+                <p className="text-[14px] text-gray-500">There are no existing customers matching <span className="font-semibold text-gray-700">{phone}</span>.</p>
+              </div>
               <button
                 type="button"
                 onClick={() => onContinue(result)}
-                className="w-full h-11 flex items-center justify-center gap-2 rounded-lg bg-[color:var(--rl-brand)] text-[color:var(--rl-ink)] font-bold text-[14px] hover:scale-[1.02] transition-transform"
+                className="w-full h-12 flex items-center justify-center rounded-xl bg-black text-white font-bold text-[14px] hover:bg-gray-900 transition-all active:scale-[0.98] shadow-md"
               >
-                <CheckCircle2 className="w-4 h-4" />
-                Continue with This Customer
+                Create New Profile
               </button>
             </div>
-          </div>
-        )}
-
-        {result && !result.found && (
-          <div className="mt-6 p-5 border border-dashed border-gray-300 rounded-xl text-center space-y-4 animate-in fade-in">
-            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mx-auto text-gray-400">
-              <UserPlus className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[color:var(--rl-ink)]">No customer found</p>
-              <p className="text-xs text-[color:var(--rl-muted)] mt-1">There are no existing customers matching {phone}.</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => onContinue(result)}
-              className={primaryButtonClass}
-            >
-              Create New Customer & Continue
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       
-      <div className="flex-1" />
-      
-      <div className="p-4 border-t border-[color:var(--rl-border)] flex justify-between">
-        <button type="button" onClick={() => onContinue({ found: false, phone_number: phone })} className="text-[13px] font-semibold text-[color:var(--rl-muted)] hover:text-[color:var(--rl-ink)]">
-          Skip / New Customer
-        </button>
-        <button type="button" onClick={onCancel} className={secondaryButtonClass}>
+      {/* Footer Actions */}
+      <div className="p-6 flex flex-col-reverse sm:flex-row items-center justify-between gap-4 mt-auto border-t border-gray-100 bg-white/80 backdrop-blur-md">
+        <button type="button" onClick={onCancel} className="w-full sm:w-auto h-12 px-8 rounded-xl bg-gray-100 text-gray-600 text-[14px] font-bold hover:bg-gray-200 hover:text-black transition-all active:scale-[0.98]">
           Cancel
+        </button>
+        <button type="button" onClick={() => onContinue({ found: false, phone_number: phone })} className="w-full sm:w-auto h-12 px-6 rounded-xl border border-gray-200 text-gray-600 text-[14px] font-bold hover:border-black hover:text-black hover:bg-gray-50 transition-all active:scale-[0.98]">
+          Skip / Walk-in Customer
         </button>
       </div>
     </div>

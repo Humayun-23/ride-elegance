@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X, Search, CarFront, RefreshCw } from 'lucide-react';
 import { useRentalOS } from './RentalOSContext';
 import { inputClass, EmptyState } from './ui';
@@ -52,21 +53,6 @@ export default function CatalogueModal() {
     }
   }, [catalogueOpen]);
 
-  // Close on Escape and lock body scroll while open.
-  useEffect(() => {
-    if (!catalogueOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeCatalogue();
-    };
-    document.addEventListener('keydown', onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [catalogueOpen, closeCatalogue]);
-
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return vehicles;
@@ -87,10 +73,16 @@ export default function CatalogueModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gray-900/50" role="dialog" aria-modal="true" aria-label="Vehicle catalogue">
-      <button type="button" aria-label="Close catalogue" className="absolute inset-0" onClick={closeCatalogue} />
+    <DialogPrimitive.Root open={catalogueOpen} onOpenChange={(open) => !open && closeCatalogue()}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-[60] bg-gray-900/50" />
+        <DialogPrimitive.Content 
+          className="rentalos fixed inset-0 z-[60] flex flex-col outline-none"
+          aria-describedby={undefined}
+        >
+          <button type="button" aria-label="Close catalogue" className="absolute inset-0 outline-none" onClick={closeCatalogue} />
 
-      <div className="relative mt-auto md:mt-0 md:m-auto flex h-[92vh] md:h-[85vh] w-full md:max-w-4xl flex-col rounded-t-2xl md:rounded-2xl bg-white shadow-xl">
+          <div className="relative mt-auto md:mt-0 md:m-auto flex h-[92vh] md:h-[85vh] w-full md:max-w-4xl flex-col rounded-t-2xl md:rounded-2xl bg-white shadow-xl">
         {/* Header */}
         <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-gray-200">
           <div className="min-w-0">
@@ -151,9 +143,8 @@ export default function CatalogueModal() {
                     type="button"
                     onClick={() => startBooking(vehicle)}
                     disabled={!available}
-                    className={`text-left bg-white border border-gray-200 rounded-xl overflow-hidden transition-colors ${
-                      available ? 'hover:border-emerald-500 hover:ring-2 hover:ring-emerald-500/20' : 'cursor-not-allowed'
-                    } ${status.cardClass}`}
+                    className={`text-left bg-white border border-gray-200 rounded-xl overflow-hidden transition-colors ${available ? 'hover:border-emerald-500 hover:ring-2 hover:ring-emerald-500/20' : 'cursor-not-allowed'
+                      } ${status.cardClass}`}
                   >
                     <div className="aspect-[4/3] bg-gray-100 flex items-center justify-center overflow-hidden">
                       {vehicle.image_url ? (
@@ -185,6 +176,8 @@ export default function CatalogueModal() {
           )}
         </div>
       </div>
-    </div>
+      </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }

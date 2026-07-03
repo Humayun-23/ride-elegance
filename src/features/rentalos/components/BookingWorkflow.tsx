@@ -13,6 +13,7 @@ import {
   uploadBookingDocument,
   uploadHandoverPhoto,
 } from '../services/rentalosService';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
 import { getShop } from '../../shops/services/shopService';
 import { QRCodeSVG } from 'qrcode.react';
 import { inputClass, EmptyState } from './ui';
@@ -60,10 +61,10 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
 
   const [documentType, setDocumentType] = useState('driving_license');
   const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [isDocumentUpdateMode, setIsDocumentUpdateMode] = useState(false);
+  const [showConsentModal, setShowConsentModal] = useState(false);
   const [handoverFile, setHandoverFile] = useState<File | null>(null);
   const [locationAddress, setLocationAddress] = useState('');
-  const [latitude, setLatitude] = useState('');
-  const [longitude, setLongitude] = useState('');
 
   const [paymentType, setPaymentType] = useState<RentalPaymentType>('advance');
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -175,7 +176,11 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
     const formData = new FormData();
     formData.append('document_type', documentType);
     formData.append('file', documentFile);
-    runAction(() => uploadBookingDocument(booking.id, formData), 'Document uploaded', () => setDocumentFile(null));
+    runAction(() => uploadBookingDocument(booking.id, formData), 'Document uploaded', () => {
+      setDocumentFile(null);
+      setIsDocumentUpdateMode(false);
+      setShowConsentModal(false);
+    });
   };
 
   const handleHandoverUpload = () => {
@@ -185,9 +190,7 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
     }
     const formData = new FormData();
     formData.append('file', handoverFile);
-    formData.append('location_permission_granted', String(Boolean(latitude || longitude || locationAddress)));
-    if (latitude) formData.append('latitude', latitude);
-    if (longitude) formData.append('longitude', longitude);
+    formData.append('location_permission_granted', String(Boolean(locationAddress)));
     if (locationAddress) formData.append('location_address', locationAddress);
     formData.append('captured_at', new Date().toISOString());
     runAction(() => uploadHandoverPhoto(booking.id, formData), 'Handover photo uploaded', () => setHandoverFile(null));
@@ -250,43 +253,78 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-20">
         <section className={sectionClass}>
           <h5 className={sectionTitleClass}><FileUp className="w-4 h-4" /> Documents</h5>
-          <select value={documentType} onChange={(e) => setDocumentType(e.target.value)} className={`${inputClass} min-h-[44px]`}>
+          <select 
+            value={documentType} 
+            onChange={(e) => {
+              setDocumentType(e.target.value);
+              setIsDocumentUpdateMode(false);
+              setDocumentFile(null);
+            }} 
+            className={`${inputClass} min-h-[44px]`}
+          >
             <option value="driving_license">Driving license</option>
             <option value="id_proof">ID proof</option>
           </select>
 
-          <div className="flex flex-col gap-2">
-            {!documentFile ? (
-              <div className="flex gap-2">
-                <label className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] text-[13px] font-semibold cursor-pointer border border-gray-200 hover:bg-gray-200 transition-colors">
-                  <Upload className="w-4 h-4" /> Choose file
-                  <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={e => setDocumentFile(e.target.files?.[0] || null)} />
-                </label>
-                <label className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] text-[13px] font-semibold cursor-pointer border border-gray-200 hover:bg-gray-200 transition-colors">
-                  <Camera className="w-4 h-4" /> Take photo
-                  <input type="file" capture="environment" className="hidden" accept="image/*" onChange={e => setDocumentFile(e.target.files?.[0] || null)} />
-                </label>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between p-3 border border-[color:var(--rl-brand)] rounded-lg bg-green-50">
-                <span className="text-[13px] font-medium truncate flex-1 text-[color:var(--rl-ink)]">{documentFile.name}</span>
-                <button type="button" onClick={() => setDocumentFile(null)} className="p-1 text-gray-500 hover:text-red-500 transition-colors">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-          </div>
+          {(() => {
+            // Sort by created_at descending so we get the most recent one
+            const currentDocs = documents.filter(d => d.document_type === documentType).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+            const currentDoc = currentDocs.length > 0 ? currentDocs[0] : null;
 
-          <button type="button" disabled={loading || !documentFile} onClick={handleDocumentUpload} className={actionButtonClass}>
-            Upload document
-          </button>
-          <ul className="space-y-1 mt-2">
-            {documents.map((doc) => (
-              <li key={doc.id} className="text-[12px] text-[color:var(--rl-muted)]">
-                {doc.document_type.replace(/_/g, ' ')} · {doc.file_name || 'Uploaded file'}
-              </li>
-            ))}
-          </ul>
+            return (
+              <>
+                <div className="flex gap-2">
+                  <button 
+                    type="button" 
+                    disabled={!currentDoc}
+                    onClick={() => {
+                      if (currentDoc?.file_url) window.open(currentDoc.file_url, '_blank');
+                    }}
+                    className={`flex-1 h-11 rounded-lg text-[13px] font-semibold border transition-colors ${currentDoc ? 'border-gray-200 bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] hover:bg-gray-200' : 'border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed'}`}
+                  >
+                    View
+                  </button>
+                  <button 
+                    type="button" 
+                    onClick={() => setIsDocumentUpdateMode(!isDocumentUpdateMode)}
+                    className={`flex-1 h-11 rounded-lg text-[13px] font-semibold border transition-colors ${isDocumentUpdateMode ? 'border-[color:var(--rl-brand)] bg-[color:var(--rl-brand-soft)] text-[color:var(--rl-brand-deep)]' : 'border-gray-200 bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] hover:bg-gray-200'}`}
+                  >
+                    Update
+                  </button>
+                </div>
+
+                {isDocumentUpdateMode && (
+                  <>
+                    <div className="flex flex-col gap-2">
+                      {!documentFile ? (
+                        <div className="flex gap-2">
+                          <label className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] text-[13px] font-semibold cursor-pointer border border-gray-200 hover:bg-gray-200 transition-colors">
+                            <Upload className="w-4 h-4" /> Choose file
+                            <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={e => setDocumentFile(e.target.files?.[0] || null)} />
+                          </label>
+                          <label className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] text-[13px] font-semibold cursor-pointer border border-gray-200 hover:bg-gray-200 transition-colors">
+                            <Camera className="w-4 h-4" /> Take photo
+                            <input type="file" capture="environment" className="hidden" accept="image/*" onChange={e => setDocumentFile(e.target.files?.[0] || null)} />
+                          </label>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between p-3 border border-[color:var(--rl-brand)] rounded-lg bg-green-50">
+                          <span className="text-[13px] font-medium truncate flex-1 text-[color:var(--rl-ink)]">{documentFile.name}</span>
+                          <button type="button" onClick={() => setDocumentFile(null)} className="p-1 text-gray-500 hover:text-red-500 transition-colors">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <button type="button" disabled={loading || !documentFile} onClick={() => setShowConsentModal(true)} className={actionButtonClass}>
+                      Upload document
+                    </button>
+                  </>
+                )}
+              </>
+            );
+          })()}
         </section>
 
         <section className={sectionClass}>
@@ -313,10 +351,6 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
             )}
           </div>
           <input value={locationAddress} onChange={(e) => setLocationAddress(e.target.value)} placeholder="Optional handover location" className={`${inputClass} min-h-[44px]`} />
-          <div className="grid grid-cols-2 gap-2">
-            <input value={latitude} onChange={(e) => setLatitude(e.target.value)} placeholder="Latitude" className={`${inputClass} min-h-[44px]`} />
-            <input value={longitude} onChange={(e) => setLongitude(e.target.value)} placeholder="Longitude" className={`${inputClass} min-h-[44px]`} />
-          </div>
           <button type="button" disabled={loading || !handoverFile} onClick={handleHandoverUpload} className={actionButtonClass}>
             Upload handover photo
           </button>
@@ -403,6 +437,39 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
           </a>
         )}
       </div>
+
+      <Dialog open={showConsentModal} onOpenChange={setShowConsentModal}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Document Upload Consent</DialogTitle>
+            <DialogDescription>
+              Please verify that you have obtained the customer's consent before uploading their identity documents.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-gray-600 leading-relaxed">
+              By proceeding, I confirm that the customer has explicitly consented to the collection, processing, and storage of this identity document solely for the purpose of this vehicle rental booking.
+            </p>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <button
+              type="button"
+              onClick={() => setShowConsentModal(false)}
+              className="h-10 px-4 rounded-md bg-gray-100 text-gray-700 text-sm font-semibold hover:bg-gray-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleDocumentUpload}
+              disabled={loading}
+              className="h-10 px-4 rounded-md bg-black text-white text-sm font-semibold hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center justify-center min-w-[100px]"
+            >
+              {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'I Agree & Upload'}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
