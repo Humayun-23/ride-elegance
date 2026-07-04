@@ -10,6 +10,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 // Eagerly load the main entry pages to preserve the index.html Skeleton Shell and protect LCP/CLS
 import Index from './pages/Index';
 import DynamicLanding from './pages/DynamicLanding';
+import DemoEntry from './pages/DemoEntry';
 
 // Lazy load RentalOS
 const RentalOSLayout = lazy(() => import('./features/rentalos/components/RentalOSLayout'));
@@ -67,6 +68,9 @@ function App() {
           <BrowserRouter>
             <ScrollToTop />
             <Routes>
+              {/* RentalOS Demo Entry — one-click demo login, no auth required */}
+              <Route path="/rentalos/demo" element={<DemoEntry />} />
+
               {/* RentalOS Sub-App */}
               <Route path="/rentalos/*" element={
                 <Suspense fallback={<LoadingState type="rentalos" />}>
