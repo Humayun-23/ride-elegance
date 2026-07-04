@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 
 interface LoadingStateProps {
   text?: string;
@@ -22,12 +21,8 @@ export function LoadingState({ text = "Loading...", type = "default" }: LoadingS
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="flex flex-col items-center gap-6"
-      >
+      <div className="flex flex-col items-center gap-6" style={{ animation: 'fadeIn 0.5s ease-out' }}>
+        <style>{`@keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }`}</style>
         <div className="flex items-center justify-center">
           <img src="/logo.png" alt="GoPanda Logo" className="h-12 w-auto object-contain drop-shadow-sm" />
         </div>
@@ -35,7 +30,7 @@ export function LoadingState({ text = "Loading...", type = "default" }: LoadingS
           <div className="w-6 h-6 border-[3px] border-primary/20 border-t-primary rounded-full animate-spin" />
           {text && <span className="text-[11px] text-muted-foreground uppercase tracking-[0.2em] font-medium">{text}</span>}
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

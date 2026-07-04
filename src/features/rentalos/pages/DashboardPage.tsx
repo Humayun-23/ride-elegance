@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -10,6 +10,7 @@ import {
   Clock3,
   FileText,
   Loader2,
+  Plus,
   ReceiptText,
   ShieldCheck,
   Users,
@@ -18,11 +19,12 @@ import {
 import { useRentalOS } from '../components/RentalOSContext';
 import { Card, EmptyState } from '../components/ui';
 import type { RentalBooking } from '../types';
-import AddVehicleModal from '../components/AddVehicleModal';
-import CompleteTripModal from '../components/CompleteTripModal';
 import ActiveTripCard from '../components/ActiveTripCard';
-import RecordPaymentModal from '../components/RecordPaymentModal';
 import { useRentalOSBookings, useRentalOSDashboardSummary } from '../hooks/useRentalOSQueries';
+
+const AddVehicleModal = lazy(() => import('../components/AddVehicleModal'));
+const CompleteTripModal = lazy(() => import('../components/CompleteTripModal'));
+const RecordPaymentModal = lazy(() => import('../components/RecordPaymentModal'));
 
 type SortKey = 'customer' | 'vehicle' | 'end_time' | 'balance_due';
 type SortDirection = 'asc' | 'desc';
@@ -220,7 +222,7 @@ export default function DashboardPage() {
     isLoading: loading,
     isFetching,
     dataUpdatedAt,
-  } = useRentalOSBookings(shopId, undefined, { refetchInterval: 30000 });
+  } = useRentalOSBookings(shopId, { dashboard: true }, { refetchInterval: 30000 });
   const {
     data: summary,
     isFetching: isFetchingSummary,
@@ -233,6 +235,7 @@ export default function DashboardPage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [completeBookingData, setCompleteBookingData] = useState<RentalBooking | null>(null);
   const [paymentBooking, setPaymentBooking] = useState<RentalBooking | null>(null);
+  const [addVehicleOpen, setAddVehicleOpen] = useState(false);
 
   useEffect(() => {
     const latestUpdatedAt = Math.max(dataUpdatedAt || 0, summaryUpdatedAt || 0);
@@ -343,7 +346,14 @@ export default function DashboardPage() {
             <h2 className="text-xl font-bold tracking-tight text-[color:var(--rl-ink)]">{activeShop?.shop_name || 'Rental desk'}</h2>
             {isOwner && (
               <div className="scale-[0.85] origin-right sm:origin-left shrink-0">
-                <AddVehicleModal />
+                <button
+                  type="button"
+                  onClick={() => setAddVehicleOpen(true)}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors shadow-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add vehicle
+                </button>
               </div>
             )}
           </div>
@@ -557,25 +567,40 @@ export default function DashboardPage() {
         </div>
       </div>
       
-      <CompleteTripModal 
-        booking={completeBookingData}
-        isOpen={completeBookingData !== null}
-        onClose={() => setCompleteBookingData(null)}
-        onComplete={() => {
-          setCompleteBookingData(null);
-          refreshBookings();
-        }}
-        onRecordPayment={(booking) => {
-          setCompleteBookingData(null);
-          setPaymentBooking(booking);
-        }}
-      />
-      <RecordPaymentModal
-        booking={paymentBooking}
-        isOpen={paymentBooking !== null}
-        onClose={() => setPaymentBooking(null)}
-        onRecorded={refreshBookings}
-      />
+      {addVehicleOpen && (
+        <Suspense fallback={null}>
+          <AddVehicleModal isOpen={addVehicleOpen} onClose={() => setAddVehicleOpen(false)} />
+        </Suspense>
+      )}
+      
+      {completeBookingData !== null && (
+        <Suspense fallback={null}>
+          <CompleteTripModal 
+            booking={completeBookingData}
+            isOpen={true}
+            onClose={() => setCompleteBookingData(null)}
+            onComplete={() => {
+              setCompleteBookingData(null);
+              refreshBookings();
+            }}
+            onRecordPayment={(booking) => {
+              setCompleteBookingData(null);
+              setPaymentBooking(booking);
+            }}
+          />
+        </Suspense>
+      )}
+
+      {paymentBooking !== null && (
+        <Suspense fallback={null}>
+          <RecordPaymentModal
+            booking={paymentBooking}
+            isOpen={true}
+            onClose={() => setPaymentBooking(null)}
+            onRecorded={refreshBookings}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

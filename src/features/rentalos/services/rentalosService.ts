@@ -55,7 +55,7 @@ export const createCustomer = (payload: Record<string, unknown>) => {
 
 export const getBookings = (
   shopId: number | string,
-  filters?: { status?: string; customer_id?: number; start_date?: string; end_date?: string },
+  filters?: { status?: string; customer_id?: number; start_date?: string; end_date?: string; dashboard?: boolean },
 ) => {
   return api.get<RentalBooking[]>('/rentalos/bookings', { params: { shop_id: shopId, ...filters } });
 };

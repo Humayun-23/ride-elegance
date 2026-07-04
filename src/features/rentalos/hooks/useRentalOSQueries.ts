@@ -14,6 +14,7 @@ export type BookingFilters = {
   customer_id?: number;
   start_date?: string;
   end_date?: string;
+  dashboard?: boolean;
 };
 
 const SHORT_STALE_TIME = 30 * 1000;

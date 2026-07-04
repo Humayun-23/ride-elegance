@@ -55,9 +55,8 @@ function apiErrorMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
-export default function AddVehicleModal() {
+export default function AddVehicleModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { shopId, isOwner, refreshBookings } = useRentalOS();
-  const [open, setOpen] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
@@ -70,7 +69,7 @@ export default function AddVehicleModal() {
   };
 
   const close = () => {
-    setOpen(false);
+    onClose();
     setMessage('');
     setImageFile(null);
   };
@@ -126,18 +125,9 @@ export default function AddVehicleModal() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-bold text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors shadow-sm"
-      >
-        <Plus className="w-4 h-4" />
-        Add vehicle
-      </button>
-
       {createPortal(
         <AnimatePresence>
-          {open && (
+          {isOpen && (
             <>
               <motion.div
                 initial={{ opacity: 0 }}

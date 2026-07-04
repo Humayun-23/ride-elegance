@@ -1,16 +1,15 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import MainLayout from './components/layout/MainLayout';
 import { LoadingState } from './components/common/LoadingState';
 import ScrollToTop from './components/common/ScrollToTop';
 import { AuthProvider } from './features/auth/context/AuthContext';
 import { FavoritesProvider } from './features/vehicles/context/FavoritesContext';
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
-// Eagerly load the main entry pages to preserve the index.html Skeleton Shell and protect LCP/CLS
-import Index from './pages/Index';
-import DynamicLanding from './pages/DynamicLanding';
-import DemoEntry from './pages/DemoEntry';
+const MainLayout = lazy(() => import('./components/layout/MainLayout'));
+const Index = lazy(() => import('./pages/Index'));
+const DynamicLanding = lazy(() => import('./pages/DynamicLanding'));
+const DemoEntry = lazy(() => import('./pages/DemoEntry'));
 
 // Lazy load RentalOS
 const RentalOSLayout = lazy(() => import('./features/rentalos/components/RentalOSLayout'));
@@ -25,18 +24,30 @@ const SavedVehicles = lazy(() => import('./pages/SavedVehicles'));
 const BusinessRentalNetwork = lazy(() => import('./pages/BusinessRentalNetwork'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const ContactUs = lazy(() => import('./pages/ContactUs'));
-const MarkdownPage = lazy(() => import('./pages/MarkdownPage'));
-
 const AboutUs = lazy(() => import('./pages/AboutUs'));
-import blogTravelGuidesContent from './content/blog-travel-guides.md?raw';
-import cancellationPolicyContent from './content/cancellation-and-refund-policy.md?raw';
-import faqContent from './content/faq-help-center.md?raw';
-import partnerWithUsContent from './content/partner-with-us.md?raw';
-import privacyPolicyContent from './content/privacy-policy.md?raw';
-import rentalPartnerTermsContent from './content/rental-partner-terms.md?raw';
-import rentalosDataContent from './content/rentalos-data-handling.md?raw';
-import termsContent from './content/terms-and-conditions.md?raw';
-import trustAndSafetyContent from './content/trust-and-safety.md?raw';
+
+const createMarkdownRoute = (title: string, importFunc: () => Promise<any>) => {
+  return lazy(async () => {
+    const [MarkdownPageModule, contentModule] = await Promise.all([
+      import('./pages/MarkdownPage'),
+      importFunc()
+    ]);
+    const MarkdownPage = MarkdownPageModule.default;
+    return {
+      default: (props: any) => <MarkdownPage title={title} content={contentModule.default} {...props} />
+    };
+  });
+};
+
+const BlogTravelGuides = createMarkdownRoute('Blog & Travel Guides', () => import('./content/blog-travel-guides.md?raw'));
+const CancellationPolicy = createMarkdownRoute('Cancellation and Refund Policy', () => import('./content/cancellation-and-refund-policy.md?raw'));
+const FaqHelpCenter = createMarkdownRoute('FAQ & Help Center', () => import('./content/faq-help-center.md?raw'));
+const PartnerWithUs = createMarkdownRoute('Partner With Us', () => import('./content/partner-with-us.md?raw'));
+const PrivacyPolicy = createMarkdownRoute('Privacy Policy', () => import('./content/privacy-policy.md?raw'));
+const RentalPartnerTerms = createMarkdownRoute('Rental Partner Terms', () => import('./content/rental-partner-terms.md?raw'));
+const RentalosDataHandling = createMarkdownRoute('RentalOS Data Handling', () => import('./content/rentalos-data-handling.md?raw'));
+const TermsAndConditions = createMarkdownRoute('Terms and Conditions', () => import('./content/terms-and-conditions.md?raw'));
+const TrustAndSafety = createMarkdownRoute('Trust and Safety', () => import('./content/trust-and-safety.md?raw'));
 const Shops = lazy(() => import('./features/shops/pages/Shops'));
 const ShopDetail = lazy(() => import('./features/shops/pages/ShopDetail'));
 const Bookings = lazy(() => import('./features/bookings/pages/Bookings'));
@@ -63,13 +74,16 @@ function App() {
 
   return (
     <AuthProvider>
-      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-        <FavoritesProvider>
-          <BrowserRouter>
-            <ScrollToTop />
+      <FavoritesProvider>
+        <BrowserRouter>
+          <ScrollToTop />
             <Routes>
               {/* RentalOS Demo Entry — one-click demo login, no auth required */}
-              <Route path="/rentalos/demo" element={<DemoEntry />} />
+              <Route path="/rentalos/demo" element={
+                <Suspense fallback={<LoadingState type="rentalos" />}>
+                  <DemoEntry />
+                </Suspense>
+              } />
 
               {/* RentalOS Sub-App */}
               <Route path="/rentalos/*" element={
@@ -79,7 +93,13 @@ function App() {
               } />
 
               {/* Public Sub-App */}
-              <Route element={<MainLayout />}>
+              <Route element={
+                <Suspense fallback={<LoadingState />}>
+                  <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+                    <MainLayout />
+                  </GoogleOAuthProvider>
+                </Suspense>
+              }>
                 <Route path="/" element={<Index />} />
                 <Route path="/search-vehicles" element={<SearchVehicles />} />
                 <Route path="/business-rental-network" element={<BusinessRentalNetwork />} />
@@ -90,15 +110,15 @@ function App() {
                 
                 {/* Legal and Content Pages */}
                 <Route path="/about-us" element={<AboutUs />} />
-                <Route path="/blog-travel-guides" element={<MarkdownPage title="Blog & Travel Guides" content={blogTravelGuidesContent} />} />
-                <Route path="/cancellation-and-refund-policy" element={<MarkdownPage title="Cancellation and Refund Policy" content={cancellationPolicyContent} />} />
-                <Route path="/faq-help-center" element={<MarkdownPage title="FAQ & Help Center" content={faqContent} />} />
-                <Route path="/partner-with-us" element={<MarkdownPage title="Partner With Us" content={partnerWithUsContent} />} />
-                <Route path="/privacy-policy" element={<MarkdownPage title="Privacy Policy" content={privacyPolicyContent} />} />
-                <Route path="/rental-partner-terms" element={<MarkdownPage title="Rental Partner Terms" content={rentalPartnerTermsContent} />} />
-                <Route path="/rentalos-data-handling" element={<MarkdownPage title="RentalOS Data Handling" content={rentalosDataContent} />} />
-                <Route path="/terms-and-conditions" element={<MarkdownPage title="Terms and Conditions" content={termsContent} />} />
-                <Route path="/trust-and-safety" element={<MarkdownPage title="Trust and Safety" content={trustAndSafetyContent} />} />
+                <Route path="/blog-travel-guides" element={<BlogTravelGuides />} />
+                <Route path="/cancellation-and-refund-policy" element={<CancellationPolicy />} />
+                <Route path="/faq-help-center" element={<FaqHelpCenter />} />
+                <Route path="/partner-with-us" element={<PartnerWithUs />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/rental-partner-terms" element={<RentalPartnerTerms />} />
+                <Route path="/rentalos-data-handling" element={<RentalosDataHandling />} />
+                <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+                <Route path="/trust-and-safety" element={<TrustAndSafety />} />
 
                 <Route path="/shops" element={<Shops />} />
                 <Route path="/shops/:id" element={<ShopDetail />} />
@@ -130,7 +150,6 @@ function App() {
             </Routes>
           </BrowserRouter>
         </FavoritesProvider>
-      </GoogleOAuthProvider>
     </AuthProvider>
   );
 }
