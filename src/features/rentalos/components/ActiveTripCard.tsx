@@ -125,7 +125,7 @@ export default function ActiveTripCard({ booking, onRecordPayment, onCompleteTri
           onClick={() => onCompleteTrip(booking)}
           className="flex-1 h-12 rounded-2xl bg-gradient-to-b from-[#40c48a] to-[#3bb881] hover:from-[#3bb881] hover:to-[#32a472] text-white font-bold text-[14px] shadow-[0_4px_12px_rgba(59,184,129,0.25)] ring-1 ring-black/5 transition-all flex items-center justify-center gap-1.5 active:scale-[0.98]"
         >
-          Complete Trip <CheckCircle2 className="w-4 h-4 stroke-[2.5px]" />
+          Complete Trip
         </button>
       </div>
 

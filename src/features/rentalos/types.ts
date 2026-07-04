@@ -34,6 +34,7 @@ export interface RentalCustomerSearch {
   found: boolean;
   phone_number: string;
   id: number | null;
+  email: string | null;
   firstname: string | null;
   lastname: string | null;
   current_flag_status: string | null;
@@ -46,6 +47,7 @@ export interface RentalCustomer {
   id: number;
   shop_id: number;
   phone_number: string;
+  email: string | null;
   firstname: string | null;
   lastname: string | null;
   current_flag_status: string | null;
@@ -70,6 +72,7 @@ export interface RentalBooking {
   customer: {
     id: number;
     phone_number: string;
+    email: string | null;
     firstname: string | null;
     lastname: string | null;
     current_flag_status: string | null;

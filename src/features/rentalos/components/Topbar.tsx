@@ -15,7 +15,7 @@ interface TopbarProps {
 }
 
 const TITLES: Record<string, string> = {
-  '/rentalos': 'Command Center',
+  '/rentalos': 'Dashboard',
   '/rentalos/vehicles': 'Vehicles',
   '/rentalos/bookings': 'Bookings',
   '/rentalos/customers': 'Customers',

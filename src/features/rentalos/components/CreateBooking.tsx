@@ -29,15 +29,16 @@ function FormGroup({ icon, title, children }: { icon: React.ReactNode; title: st
 
 export default function CreateBooking({ initialCustomer, onCreated, onCancel }: CreateBookingProps) {
   const { shopId, selectedVehicle, openCatalogue } = useRentalOS();
-  
+
   const [total, setTotal] = useState(1200);
   const [advance, setAdvance] = useState(200);
   const [securityDeposit, setSecurityDeposit] = useState(500);
-  
+
   const [phone, setPhone] = useState(initialCustomer?.phone_number || '');
+  const [email, setEmail] = useState(initialCustomer?.email || '');
   const [firstname, setFirstname] = useState(initialCustomer?.firstname || '');
   const [lastname, setLastname] = useState(initialCustomer?.lastname || '');
-  
+
   const [startTime, setStartTime] = useState(toLocalDateTimeValue(new Date()));
   const [endTime, setEndTime] = useState(toLocalDateTimeValue(new Date(Date.now() + 8 * 60 * 60 * 1000)));
   const [note, setNote] = useState('');
@@ -84,6 +85,7 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
       shop_id: shopId,
       bike_id: parseInt(effectiveBikeId),
       phone_number: phone,
+      email: email || undefined,
       firstname: firstname || undefined,
       lastname: lastname || undefined,
       start_time: new Date(startTime).toISOString(),
@@ -98,7 +100,7 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
     try {
       const res = await createBooking(payload);
       const bookingId = res.data.id;
-      
+
       // Upload Documents
       if (dlFile) {
         const fd = new FormData();
@@ -106,14 +108,14 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
         fd.append('document_type', 'driving_license');
         await uploadBookingDocument(bookingId, fd).catch(e => console.error(e));
       }
-      
+
       if (idProofFile) {
         const fd = new FormData();
         fd.append('file', idProofFile);
         fd.append('document_type', 'id_proof');
         await uploadBookingDocument(bookingId, fd).catch(e => console.error(e));
       }
-      
+
       setMessage('Booking created successfully!');
       onCreated?.(res.data);
     } catch (err: any) {
@@ -183,7 +185,7 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
       )}
 
       <FormGroup icon={<User className="w-4 h-4" />} title={isExisting ? "Existing Customer" : "New Customer"}>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div>
             <label className={labelClass}>Phone number</label>
             <input
@@ -203,6 +205,10 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
           <div>
             <label className={labelClass}>Last name</label>
             <input type="text" value={lastname} onChange={(e) => setLastname(e.target.value)} readOnly={isExisting} className={`${inputClass} ${isExisting ? 'bg-gray-50 text-gray-500' : ''}`} />
+          </div>
+          <div>
+            <label className={labelClass}>Email for invoice</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="customer@example.com" className={inputClass} />
           </div>
         </div>
       </FormGroup>

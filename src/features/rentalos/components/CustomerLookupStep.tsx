@@ -174,7 +174,7 @@ export default function CustomerLookupStep({ onContinue, onCancel }: CustomerLoo
         <button type="button" onClick={onCancel} className="w-full sm:w-auto h-12 px-8 rounded-xl bg-gray-100 text-gray-600 text-[14px] font-bold hover:bg-gray-200 hover:text-black transition-all active:scale-[0.98]">
           Cancel
         </button>
-        <button type="button" onClick={() => onContinue({ found: false, phone_number: phone })} className="w-full sm:w-auto h-12 px-6 rounded-xl border border-gray-200 text-gray-600 text-[14px] font-bold hover:border-black hover:text-black hover:bg-gray-50 transition-all active:scale-[0.98]">
+        <button type="button" onClick={() => onContinue({ found: false, phone_number: phone, id: null, email: null, firstname: null, lastname: null, current_flag_status: null, previous_booking_count: 0, latest_flag: null, latest_note: null })} className="w-full sm:w-auto h-12 px-6 rounded-xl border border-gray-200 text-gray-600 text-[14px] font-bold hover:border-black hover:text-black hover:bg-gray-50 transition-all active:scale-[0.98]">
           Skip / Walk-in Customer
         </button>
       </div>

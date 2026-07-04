@@ -253,13 +253,13 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-20">
         <section className={sectionClass}>
           <h5 className={sectionTitleClass}><FileUp className="w-4 h-4" /> Documents</h5>
-          <select 
-            value={documentType} 
+          <select
+            value={documentType}
             onChange={(e) => {
               setDocumentType(e.target.value);
               setIsDocumentUpdateMode(false);
               setDocumentFile(null);
-            }} 
+            }}
             className={`${inputClass} min-h-[44px]`}
           >
             <option value="driving_license">Driving license</option>
@@ -274,8 +274,8 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
             return (
               <>
                 <div className="flex gap-2">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     disabled={!currentDoc}
                     onClick={() => {
                       if (currentDoc?.file_url) window.open(currentDoc.file_url, '_blank');
@@ -284,8 +284,8 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
                   >
                     View
                   </button>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setIsDocumentUpdateMode(!isDocumentUpdateMode)}
                     className={`flex-1 h-11 rounded-lg text-[13px] font-semibold border transition-colors ${isDocumentUpdateMode ? 'border-[color:var(--rl-brand)] bg-[color:var(--rl-brand-soft)] text-[color:var(--rl-brand-deep)]' : 'border-gray-200 bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] hover:bg-gray-200'}`}
                   >
