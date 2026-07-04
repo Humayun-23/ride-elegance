@@ -5,6 +5,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import BottomNav from './BottomNav';
+import Paywall from './Paywall';
 import { RentalOSContext, type ManageBookingFocus } from './RentalOSContext';
 import type { CatalogVehicle, RentalBooking, RentalOSMe } from '../types';
 import { rentalOSErrorMessage, useInvalidateRentalOS, useRentalOSAccess } from '../hooks/useRentalOSQueries';
@@ -186,6 +187,23 @@ export default function RentalOSLayout() {
           </p>
         </div>
       </div>
+    );
+  }
+
+  if (activeShop && activeShop.subscription_status !== 'active') {
+    return (
+      <RentalOSContext.Provider value={contextValue}>
+        <div className="rentalos flex h-screen font-sans">
+          <Sidebar mobileOpen={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)} />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <Topbar onMenuClick={() => setMobileSidebarOpen(true)} onOpenCommand={openCommand} />
+            <main className="flex-1 overflow-x-hidden overflow-y-auto">
+               <Paywall shopName={activeShop.shop_name} />
+            </main>
+          </div>
+          <BottomNav />
+        </div>
+      </RentalOSContext.Provider>
     );
   }
 

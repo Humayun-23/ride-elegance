@@ -4,6 +4,7 @@ export interface RentalOSAccessShop {
   role: string;
   staff_id: number | null;
   is_active: boolean;
+  subscription_status: string;
 }
 
 export interface RentalOSMe {
