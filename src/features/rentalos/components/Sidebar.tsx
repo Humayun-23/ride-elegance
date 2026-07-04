@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { LayoutDashboard, CarFront, Users, FileText, X, LogOut, ChevronsLeft, ChevronsRight, UserCog } from 'lucide-react';
+import { LayoutDashboard, CarFront, Users, FileText, X, LogOut, ChevronsLeft, ChevronsRight, UserCog, ClipboardList } from 'lucide-react';
 import { useRentalOS } from './RentalOSContext';
 import { useAuth } from '@/features/auth/context/AuthContext';
 
@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { name: 'Dashboard', path: '/rentalos', icon: LayoutDashboard, hint: 'G D' },
   { name: 'Bookings', path: '/rentalos/bookings', icon: FileText, hint: 'G B' },
   { name: 'Vehicles', path: '/rentalos/vehicles', icon: CarFront, hint: 'G V' },
+  { name: 'Inventory', path: '/rentalos/inventory', icon: ClipboardList, hint: 'G I' },
   { name: 'Customers', path: '/rentalos/customers', icon: Users, hint: 'G C' },
   { name: 'Staff', path: '/rentalos/staff', icon: UserCog, hint: 'G S' },
 ];
@@ -51,7 +52,11 @@ function Rail({ collapsed, onClose, onToggle }: { collapsed: boolean; onClose?: 
             Workspace
           </div>
         )}
-        {NAV_ITEMS.filter((item) => item.name !== 'Staff' || isOwner).map((item) => {
+        {NAV_ITEMS.filter((item) => {
+          if (item.name === 'Staff' && !isOwner) return false;
+          if (item.name === 'Inventory' && !isOwner) return false;
+          return true;
+        }).map((item) => {
           const isActive = item.path === '/rentalos' ? pathname === '/rentalos' : pathname.startsWith(item.path);
           return (
             <Link

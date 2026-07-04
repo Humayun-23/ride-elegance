@@ -31,6 +31,10 @@ export const createVehicle = (payload: Record<string, unknown>) => {
   return api.post('/bikes/', payload);
 };
 
+export const updateVehicle = (bikeId: number | string, payload: Record<string, unknown>) => {
+  return api.put(`/bikes/${bikeId}`, payload);
+};
+
 export const uploadVehicleImages = (bikeId: number | string, formData: FormData) => {
   return api.post(`/bikes/${bikeId}/images`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },

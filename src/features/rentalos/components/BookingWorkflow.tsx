@@ -16,7 +16,7 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
 import { getShop } from '../../shops/services/shopService';
 import { QRCodeSVG } from 'qrcode.react';
-import { inputClass, EmptyState } from './ui';
+import { EmptyState } from './ui';
 import type {
   RentalBooking,
   RentalBookingNote,
@@ -37,9 +37,20 @@ interface BookingWorkflowProps {
   onChanged?: () => void;
 }
 
-const sectionClass = 'border border-gray-200 rounded-lg p-4 space-y-3 bg-white scroll-mt-6';
-const sectionTitleClass = 'text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2';
-const actionButtonClass = 'w-full h-[44px] rounded-lg bg-black text-white text-sm font-semibold hover:bg-gray-800 transition-colors disabled:opacity-50';
+const customInput =
+  'w-full bg-slate-50 border border-slate-200 text-slate-900 text-[14px] rounded-xl focus:ring-4 focus:ring-[#3bb881]/10 focus:border-[#3bb881] block px-4 py-3.5 outline-none transition-all placeholder:text-slate-400 font-semibold shadow-sm disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-slate-100';
+const customLabel = 'block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2.5';
+
+const sectionClass = 'bg-white p-5 sm:p-6 rounded-2xl border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] scroll-mt-6';
+const sectionTitleClass = 'text-[15px] font-black text-slate-800 tracking-tight flex items-center gap-2.5 mb-5 pb-4 border-b border-slate-100/80';
+const actionButtonClass = 'w-full px-8 py-3.5 rounded-xl font-bold text-white bg-slate-900 hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:pointer-events-none flex items-center justify-center gap-2 text-[14px] mt-2';
+
+const SectionHeader = ({ icon, title }: { icon: React.ReactNode; title: string }) => (
+  <h5 className={sectionTitleClass}>
+    <div className="p-1.5 bg-slate-50 rounded-lg text-slate-600 border border-slate-100 shadow-sm">{icon}</div>
+    {title}
+  </h5>
+);
 
 type WorkflowShop = {
   name?: string;
@@ -226,236 +237,277 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
   const isError = message.includes('failed') || message.includes('Choose') || message.includes('Enter');
 
   return (
-    <div className="flex flex-col h-full space-y-5 pb-[env(safe-area-inset-bottom)]">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100">
+    <div className="flex flex-col h-full space-y-6 pb-[env(safe-area-inset-bottom)]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-gray-100">
         <div>
-          <h4 className="text-[15px] font-bold text-[color:var(--rl-ink)]">
+          <h4 className="text-[16px] font-black text-slate-900 tracking-tight">
             Booking #{booking.id} · {detail?.customer?.firstname || 'Walk-in'} {detail?.customer?.lastname}
           </h4>
-          <p className="text-[13px] text-[color:var(--rl-muted)] mt-0.5 font-medium">
-            {detail?.bike?.name || `Bike ${booking.bike_id}`} · <span className="uppercase text-[11px] font-bold tracking-wide">{detail?.status}</span> · Balance ₹{detail?.balance_due ?? booking.balance_due}
+          <p className="text-[13px] text-slate-500 mt-1 font-bold">
+            {detail?.bike?.name || `Bike ${booking.bike_id}`} · <span className="uppercase text-[10px] font-black tracking-widest px-2 py-0.5 bg-slate-100 rounded-md ml-1">{detail?.status}</span> · <span className="text-red-500">Balance ₹{detail?.balance_due ?? booking.balance_due}</span>
           </p>
         </div>
-        <div className="flex gap-2">
-          <button type="button" onClick={loadWorkflow} className="h-10 px-3 rounded-lg bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] text-[13px] font-semibold flex items-center gap-1.5 hover:bg-gray-200 transition-colors">
+        <div className="flex gap-3">
+          <button type="button" onClick={loadWorkflow} className="h-10 px-4 rounded-xl bg-slate-50 text-slate-700 text-[13px] font-bold flex items-center gap-2 hover:bg-slate-100 border border-slate-200 shadow-sm transition-all">
             <RefreshCcw className="w-4 h-4" /> <span className="hidden sm:inline">Refresh</span>
           </button>
-          <button type="button" onClick={() => runAction(() => cancelBooking(booking.id), 'Booking cancelled')} className="h-10 px-3 rounded-lg bg-[color:var(--rl-danger-soft)] text-[color:var(--rl-danger)] text-[13px] font-semibold flex items-center gap-1.5 hover:bg-red-100 transition-colors">
+          <button type="button" onClick={() => runAction(() => cancelBooking(booking.id), 'Booking cancelled')} className="h-10 px-4 rounded-xl bg-red-50 text-red-600 border border-red-100 text-[13px] font-bold flex items-center gap-2 hover:bg-red-100 transition-all shadow-sm">
             <XCircle className="w-4 h-4" /> <span className="hidden sm:inline">Cancel</span>
           </button>
         </div>
       </div>
 
       {message && (
-        <div className={`text-[13px] font-semibold px-3 py-2 rounded-md ${isError ? 'bg-[color:var(--rl-danger-soft)] text-[color:var(--rl-danger)]' : 'bg-green-50 text-green-700'}`}>{message}</div>
+        <div className={`text-[13px] font-bold px-4 py-3 rounded-xl shadow-sm border ${isError ? 'bg-red-50 text-red-700 border-red-100' : 'bg-green-50 text-green-700 border-green-100'}`}>{message}</div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-20">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 pb-24">
         <section className={sectionClass}>
-          <h5 className={sectionTitleClass}><FileUp className="w-4 h-4" /> Documents</h5>
-          <select
-            value={documentType}
-            onChange={(e) => {
-              setDocumentType(e.target.value);
-              setIsDocumentUpdateMode(false);
-              setDocumentFile(null);
-            }}
-            className={`${inputClass} min-h-[44px]`}
-          >
-            <option value="driving_license">Driving license</option>
-            <option value="id_proof">ID proof</option>
-          </select>
+          <SectionHeader icon={<FileUp className="w-4 h-4" />} title="Documents" />
+          <div className="space-y-4">
+            <div>
+              <label className={customLabel}>Document Type</label>
+              <select
+                value={documentType}
+                onChange={(e) => {
+                  setDocumentType(e.target.value);
+                  setIsDocumentUpdateMode(false);
+                  setDocumentFile(null);
+                }}
+                className={customInput}
+              >
+                <option value="driving_license">Driving license</option>
+                <option value="id_proof">ID proof</option>
+              </select>
+            </div>
 
-          {(() => {
-            // Sort by created_at descending so we get the most recent one
-            const currentDocs = documents.filter(d => d.document_type === documentType).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-            const currentDoc = currentDocs.length > 0 ? currentDocs[0] : null;
+            {(() => {
+              // Sort by created_at descending so we get the most recent one
+              const currentDocs = documents.filter(d => d.document_type === documentType).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+              const currentDoc = currentDocs.length > 0 ? currentDocs[0] : null;
 
-            return (
-              <>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    disabled={!currentDoc}
-                    onClick={() => {
-                      if (currentDoc?.file_url) window.open(currentDoc.file_url, '_blank');
-                    }}
-                    className={`flex-1 h-11 rounded-lg text-[13px] font-semibold border transition-colors ${currentDoc ? 'border-gray-200 bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] hover:bg-gray-200' : 'border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed'}`}
-                  >
-                    View
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsDocumentUpdateMode(!isDocumentUpdateMode)}
-                    className={`flex-1 h-11 rounded-lg text-[13px] font-semibold border transition-colors ${isDocumentUpdateMode ? 'border-[color:var(--rl-brand)] bg-[color:var(--rl-brand-soft)] text-[color:var(--rl-brand-deep)]' : 'border-gray-200 bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] hover:bg-gray-200'}`}
-                  >
-                    Update
-                  </button>
-                </div>
+              return (
+                <div className="space-y-4">
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      disabled={!currentDoc}
+                      onClick={() => {
+                        if (currentDoc?.file_url) window.open(currentDoc.file_url, '_blank');
+                      }}
+                      className={`flex-1 h-12 rounded-xl text-[13px] font-bold transition-all shadow-sm ${currentDoc ? 'bg-slate-900 text-white hover:bg-slate-800' : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
+                    >
+                      View Current
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsDocumentUpdateMode(!isDocumentUpdateMode)}
+                      className={`flex-1 h-12 rounded-xl text-[13px] font-bold border transition-all shadow-sm ${isDocumentUpdateMode ? 'border-[#3bb881]/30 bg-[#3bb881]/10 text-[#3bb881] ring-2 ring-[#3bb881]/20' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}
+                    >
+                      Upload New
+                    </button>
+                  </div>
 
-                {isDocumentUpdateMode && (
-                  <>
-                    <div className="flex flex-col gap-2">
+                  {isDocumentUpdateMode && (
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-4">
                       {!documentFile ? (
-                        <div className="flex gap-2">
-                          <label className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] text-[13px] font-semibold cursor-pointer border border-gray-200 hover:bg-gray-200 transition-colors">
-                            <Upload className="w-4 h-4" /> Choose file
+                        <div className="flex gap-3">
+                          <label className="flex-1 flex items-center justify-center gap-2 h-12 rounded-xl bg-white text-slate-700 text-[13px] font-bold cursor-pointer border border-slate-200 border-dashed hover:border-slate-300 transition-all shadow-sm">
+                            <Upload className="w-4 h-4 text-slate-400" /> Choose file
                             <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={e => setDocumentFile(e.target.files?.[0] || null)} />
                           </label>
-                          <label className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] text-[13px] font-semibold cursor-pointer border border-gray-200 hover:bg-gray-200 transition-colors">
-                            <Camera className="w-4 h-4" /> Take photo
+                          <label className="flex-1 flex items-center justify-center gap-2 h-12 rounded-xl bg-white text-slate-700 text-[13px] font-bold cursor-pointer border border-slate-200 border-dashed hover:border-slate-300 transition-all shadow-sm">
+                            <Camera className="w-4 h-4 text-slate-400" /> Take photo
                             <input type="file" capture="environment" className="hidden" accept="image/*" onChange={e => setDocumentFile(e.target.files?.[0] || null)} />
                           </label>
                         </div>
                       ) : (
-                        <div className="flex items-center justify-between p-3 border border-[color:var(--rl-brand)] rounded-lg bg-green-50">
-                          <span className="text-[13px] font-medium truncate flex-1 text-[color:var(--rl-ink)]">{documentFile.name}</span>
-                          <button type="button" onClick={() => setDocumentFile(null)} className="p-1 text-gray-500 hover:text-red-500 transition-colors">
+                        <div className="flex items-center justify-between p-3.5 border border-[#3bb881]/30 rounded-xl bg-[#3bb881]/5 shadow-sm">
+                          <span className="text-[13px] font-bold truncate flex-1 text-[#3bb881]">{documentFile.name}</span>
+                          <button type="button" onClick={() => setDocumentFile(null)} className="p-1.5 text-[#3bb881] hover:bg-[#3bb881]/10 rounded-full transition-colors">
                             <X className="w-4 h-4" />
                           </button>
                         </div>
                       )}
-                    </div>
 
-                    <button type="button" disabled={loading || !documentFile} onClick={() => setShowConsentModal(true)} className={actionButtonClass}>
-                      Upload document
-                    </button>
-                  </>
-                )}
-              </>
-            );
-          })()}
+                      <button type="button" disabled={loading || !documentFile} onClick={() => setShowConsentModal(true)} className={actionButtonClass}>
+                        Upload Document
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
         </section>
 
         <section className={sectionClass}>
-          <h5 className={sectionTitleClass}><ImageIcon className="w-4 h-4" /> Handover photo</h5>
-          <div className="flex flex-col gap-2">
+          <SectionHeader icon={<ImageIcon className="w-4 h-4" />} title="Handover Photo" />
+          <div className="space-y-4">
             {!handoverFile ? (
-              <div className="flex gap-2">
-                <label className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] text-[13px] font-semibold cursor-pointer border border-gray-200 hover:bg-gray-200 transition-colors">
-                  <Upload className="w-4 h-4" /> Choose file
+              <div className="flex gap-3">
+                <label className="flex-1 flex items-center justify-center gap-2 h-12 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-[13px] font-bold cursor-pointer border border-slate-200 border-dashed transition-all shadow-sm">
+                  <Upload className="w-4 h-4 text-slate-400" /> Choose file
                   <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp" onChange={e => setHandoverFile(e.target.files?.[0] || null)} />
                 </label>
-                <label className="flex-1 flex items-center justify-center gap-2 h-11 rounded-lg bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] text-[13px] font-semibold cursor-pointer border border-gray-200 hover:bg-gray-200 transition-colors">
-                  <Camera className="w-4 h-4" /> Take photo
+                <label className="flex-1 flex items-center justify-center gap-2 h-12 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-[13px] font-bold cursor-pointer border border-slate-200 border-dashed transition-all shadow-sm">
+                  <Camera className="w-4 h-4 text-slate-400" /> Take photo
                   <input type="file" capture="environment" className="hidden" accept="image/*" onChange={e => setHandoverFile(e.target.files?.[0] || null)} />
                 </label>
               </div>
             ) : (
-              <div className="flex items-center justify-between p-3 border border-[color:var(--rl-brand)] rounded-lg bg-green-50">
-                <span className="text-[13px] font-medium truncate flex-1 text-[color:var(--rl-ink)]">{handoverFile.name}</span>
-                <button type="button" onClick={() => setHandoverFile(null)} className="p-1 text-gray-500 hover:text-red-500 transition-colors">
+              <div className="flex items-center justify-between p-3.5 border border-[#3bb881]/30 rounded-xl bg-[#3bb881]/5 shadow-sm">
+                <span className="text-[13px] font-bold truncate flex-1 text-[#3bb881]">{handoverFile.name}</span>
+                <button type="button" onClick={() => setHandoverFile(null)} className="p-1.5 text-[#3bb881] hover:bg-[#3bb881]/10 rounded-full transition-colors">
                   <X className="w-4 h-4" />
                 </button>
               </div>
             )}
+            
+            <div>
+              <label className={customLabel}>Location (Optional)</label>
+              <input value={locationAddress} onChange={(e) => setLocationAddress(e.target.value)} placeholder="e.g. Airport Terminal 1" className={customInput} />
+            </div>
+
+            <button type="button" disabled={loading || !handoverFile} onClick={handleHandoverUpload} className={actionButtonClass}>
+              Upload Handover Photo
+            </button>
+            <p className="text-[12px] font-bold text-slate-400 text-center">{photos.length} photo(s) uploaded</p>
           </div>
-          <input value={locationAddress} onChange={(e) => setLocationAddress(e.target.value)} placeholder="Optional handover location" className={`${inputClass} min-h-[44px]`} />
-          <button type="button" disabled={loading || !handoverFile} onClick={handleHandoverUpload} className={actionButtonClass}>
-            Upload handover photo
-          </button>
-          <p className="text-[12px] text-[color:var(--rl-muted)] mt-2">{photos.length} handover photo(s) uploaded</p>
         </section>
 
         <section id="payment-section" className={sectionClass}>
-          <h5 className={sectionTitleClass}><Wallet className="w-4 h-4" /> Offline payment</h5>
-          <div className="grid grid-cols-2 gap-2">
-            <select value={paymentType} onChange={(e) => setPaymentType(e.target.value as RentalPaymentType)} className={`${inputClass} min-h-[44px]`}>
-              <option value="advance">Advance</option>
-              <option value="balance">Balance</option>
-              <option value="security_deposit">Security deposit</option>
-              <option value="refund">Refund</option>
-              <option value="extra_charge">Extra charge</option>
-            </select>
-            <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as RentalPaymentMethod)} className={`${inputClass} min-h-[44px]`}>
-              <option value="cash">Cash</option>
-              <option value="upi">UPI</option>
-              <option value="card">Card</option>
-              <option value="bank_transfer">Bank transfer</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <input ref={paymentAmountRef} type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="Amount" className={`${inputClass} min-h-[44px] text-lg font-mono`} />
-          <input value={referenceNumber} onChange={(e) => setReferenceNumber(e.target.value)} placeholder="Optional reference number" className={`${inputClass} min-h-[44px]`} />
-          <button type="button" disabled={loading} onClick={handlePayment} className={actionButtonClass}>
-            Record payment
-          </button>
-          <p className="text-[12px] text-[color:var(--rl-muted)] mt-2">{payments.length} payment(s) recorded</p>
-
-          {paymentMethod === 'upi' && detail && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <h6 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-1.5"><QrCode className="w-3.5 h-3.5" /> Scan to pay</h6>
-              {shop?.upi_id ? (
-                <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-100">
-                  <div className="flex flex-col gap-1 items-center md:items-start text-center md:text-left">
-                    <span className="font-mono font-bold text-xl text-[color:var(--rl-ink)]">₹{paymentAmount || (detail.balance_due ?? booking.balance_due)}.00</span>
-                    <span className="text-[10px] uppercase font-bold tracking-widest text-gray-500">Scan or Click to Pay</span>
-                  </div>
-
-                  <div className="bg-white p-2 rounded-xl shadow-sm border border-gray-200 shrink-0">
-                    <QRCodeSVG
-                      value={`upi://pay?pa=${shop.upi_id}&pn=${encodeURIComponent(shop.name || "Shop Owner")}&am=${paymentAmount || (detail.balance_due ?? booking.balance_due)}.00&cu=INR&tn=${encodeURIComponent(`Booking #${booking.id} ${paymentAmount ? 'Payment' : 'Balance'}`)}`}
-                      size={80}
-                      level="L"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 p-3 bg-red-50 text-red-600 rounded-lg border border-red-100 text-sm">
-                  <XCircle className="w-4 h-4 shrink-0" />
-                  <p>UPI ID is not configured for this shop. Please update it in Shop Settings to generate QR codes.</p>
-                </div>
-              )}
+          <SectionHeader icon={<Wallet className="w-4 h-4" />} title="Offline Payment" />
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={customLabel}>Payment Type</label>
+                <select value={paymentType} onChange={(e) => setPaymentType(e.target.value as RentalPaymentType)} className={customInput}>
+                  <option value="advance">Advance</option>
+                  <option value="balance">Balance</option>
+                  <option value="security_deposit">Security deposit</option>
+                  <option value="refund">Refund</option>
+                  <option value="extra_charge">Extra charge</option>
+                </select>
+              </div>
+              <div>
+                <label className={customLabel}>Method</label>
+                <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as RentalPaymentMethod)} className={customInput}>
+                  <option value="cash">Cash</option>
+                  <option value="upi">UPI</option>
+                  <option value="card">Card</option>
+                  <option value="bank_transfer">Bank transfer</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
             </div>
-          )}
+            
+            <div>
+              <label className={customLabel}>Amount</label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <span className="text-slate-400 font-bold group-focus-within:text-[#3bb881] transition-colors">₹</span>
+                </div>
+                <input ref={paymentAmountRef} type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="0.00" className={`${customInput} pl-9 text-lg font-mono`} />
+              </div>
+            </div>
+            
+            <div>
+              <label className={customLabel}>Reference Number (Optional)</label>
+              <input value={referenceNumber} onChange={(e) => setReferenceNumber(e.target.value)} placeholder="Transaction ID..." className={customInput} />
+            </div>
+
+            <button type="button" disabled={loading} onClick={handlePayment} className={actionButtonClass}>
+              Record Payment
+            </button>
+            <p className="text-[12px] font-bold text-slate-400 text-center">{payments.length} payment(s) recorded</p>
+
+            {paymentMethod === 'upi' && detail && (
+              <div className="mt-6 pt-5 border-t border-slate-100">
+                <label className={customLabel}>Scan to Pay</label>
+                {shop?.upi_id ? (
+                  <div className="flex flex-col md:flex-row gap-5 items-center justify-between bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                    <div className="flex flex-col gap-1.5 items-center md:items-start text-center md:text-left">
+                      <span className="font-mono font-black text-2xl text-slate-800 tracking-tight">₹{paymentAmount || (detail.balance_due ?? booking.balance_due)}.00</span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Scan via any UPI App</span>
+                    </div>
+
+                    <div className="bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200 shrink-0">
+                      <QRCodeSVG
+                        value={`upi://pay?pa=${shop.upi_id}&pn=${encodeURIComponent(shop.name || "Shop Owner")}&am=${paymentAmount || (detail.balance_due ?? booking.balance_due)}.00&cu=INR&tn=${encodeURIComponent(`Booking #${booking.id} ${paymentAmount ? 'Payment' : 'Balance'}`)}`}
+                        size={80}
+                        level="L"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 p-4 bg-red-50 text-red-700 rounded-xl border border-red-100 text-sm font-bold shadow-sm">
+                    <XCircle className="w-5 h-5 shrink-0" />
+                    <p>UPI ID is not configured. Update it in Shop Settings to use QR codes.</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </section>
 
         <section className={sectionClass}>
-          <h5 className={sectionTitleClass}><NotebookPen className="w-4 h-4" /> Notes</h5>
-          <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional customer or trip note" className={`${inputClass} min-h-[88px] py-3`} />
-          <button type="button" disabled={loading} onClick={handleNote} className={actionButtonClass}>
-            Add note
-          </button>
-          <ul className="space-y-1 mt-2">
-            {notes.slice(0, 3).map((item) => (
-              <li key={item.id} className="text-[13px] text-[color:var(--rl-ink)] bg-[color:var(--rl-warn-soft)] p-2 rounded-md">{item.note}</li>
-            ))}
-          </ul>
+          <SectionHeader icon={<NotebookPen className="w-4 h-4" />} title="Booking Notes" />
+          <div className="space-y-4">
+            <div>
+              <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add a note for this booking..." className={`${customInput} min-h-[100px] py-4`} />
+            </div>
+            <button type="button" disabled={loading} onClick={handleNote} className={actionButtonClass}>
+              Add Note
+            </button>
+            {notes.length > 0 && (
+              <div className="mt-6 pt-5 border-t border-slate-100">
+                <label className={customLabel}>Recent Notes</label>
+                <ul className="space-y-3 mt-2">
+                  {notes.slice(0, 3).map((item) => (
+                    <li key={item.id} className="text-[13px] font-semibold text-slate-700 bg-amber-50/50 border border-amber-100 p-3 rounded-xl shadow-sm">
+                      {item.note}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </section>
 
       </div>
 
       {/* Sticky Bottom Actions */}
-      <div className="sticky bottom-0 -mx-6 -mb-6 px-4 py-3 bg-white/90 backdrop-blur-md border-t flex gap-2 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+      <div className="sticky bottom-0 -mx-5 -mb-5 px-5 py-4 bg-white/90 backdrop-blur-xl border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] z-10 mt-auto">
         {detail?.customer?.phone_number && (
           <a
             href={`tel:${detail.customer.phone_number}`}
-            className="flex-1 h-12 flex items-center justify-center gap-2 rounded-xl bg-[color:var(--rl-hover)] text-[color:var(--rl-ink)] font-bold text-[14px] transition-colors border"
+            className="w-full h-14 flex items-center justify-center gap-2 rounded-2xl bg-white text-slate-800 font-bold text-[15px] hover:bg-slate-50 transition-all border border-slate-200 shadow-sm"
           >
-            <Phone className="w-4 h-4" />
-            Call
+            <Phone className="w-5 h-5 text-slate-500" />
+            Call Customer
           </a>
         )}
       </div>
 
       <Dialog open={showConsentModal} onOpenChange={setShowConsentModal}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Document Upload Consent</DialogTitle>
-            <DialogDescription>
-              Please verify that you have obtained the customer's consent before uploading their identity documents.
+            <DialogTitle className="text-xl font-black text-slate-800">Document Upload Consent</DialogTitle>
+            <DialogDescription className="font-semibold text-slate-500">
+              Please verify that you have obtained the customer's consent.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <p className="text-[14px] text-slate-600 font-medium leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
               By proceeding, I confirm that the customer has explicitly consented to the collection, processing, and storage of this identity document solely for the purpose of this vehicle rental booking.
             </p>
           </div>
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-3 sm:gap-0 mt-2">
             <button
               type="button"
               onClick={() => setShowConsentModal(false)}
-              className="h-10 px-4 rounded-md bg-gray-100 text-gray-700 text-sm font-semibold hover:bg-gray-200 transition-colors"
+              className="h-12 px-6 rounded-xl bg-slate-100 text-slate-700 text-[14px] font-bold hover:bg-slate-200 transition-colors"
             >
               Cancel
             </button>
@@ -463,9 +515,9 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
               type="button"
               onClick={handleDocumentUpload}
               disabled={loading}
-              className="h-10 px-4 rounded-md bg-black text-white text-sm font-semibold hover:bg-gray-900 transition-colors disabled:opacity-50 flex items-center justify-center min-w-[100px]"
+              className="h-12 px-6 rounded-xl bg-slate-900 text-white text-[14px] font-bold hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl active:translate-y-0 disabled:opacity-50 flex items-center justify-center min-w-[120px]"
             >
-              {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'I Agree & Upload'}
+              {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'I Agree & Upload'}
             </button>
           </DialogFooter>
         </DialogContent>

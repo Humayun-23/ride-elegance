@@ -15,6 +15,7 @@ const VehiclesPage = lazy(() => import('../pages/VehiclesPage'));
 const BookingsPage = lazy(() => import('../pages/BookingsPage'));
 const CustomersPage = lazy(() => import('../pages/CustomersPage'));
 const StaffPage = lazy(() => import('../pages/StaffPage'));
+const InventoryPage = lazy(() => import('../pages/InventoryPage'));
 const CatalogueModal = lazy(() => import('./CatalogueModal'));
 const BookingModal = lazy(() => import('./BookingModal'));
 const CommandPalette = lazy(() => import('./CommandPalette'));
@@ -222,6 +223,7 @@ export default function RentalOSLayout() {
                   <Routes location={location} key={location.pathname}>
                     <Route path="/" element={<PageTransition><DashboardPage /></PageTransition>} />
                     <Route path="/vehicles" element={<PageTransition><VehiclesPage /></PageTransition>} />
+                    <Route path="/inventory" element={<PageTransition><InventoryPage /></PageTransition>} />
                     <Route path="/bookings" element={<PageTransition><BookingsPage /></PageTransition>} />
                     <Route path="/customers" element={<PageTransition><CustomersPage /></PageTransition>} />
                     <Route path="/staff" element={<PageTransition><StaffPage /></PageTransition>} />

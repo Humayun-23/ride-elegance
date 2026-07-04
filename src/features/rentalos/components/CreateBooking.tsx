@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Plus, User, CarFront, Wallet, CheckCircle2, FileUp, Camera, Upload, X } from 'lucide-react';
 import { createBooking, uploadBookingDocument } from '../services/rentalosService';
 import { useRentalOS } from './RentalOSContext';
-import { inputClass, labelClass, primaryButtonClass } from './ui';
 import type { RentalCustomerSearch } from '../types';
 
 interface CreateBookingProps {
@@ -15,12 +14,16 @@ const toLocalDateTimeValue = (date: Date) => {
   return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 };
 
+const customInput =
+  'w-full bg-slate-50 border border-slate-200 text-slate-900 text-[14px] rounded-xl focus:ring-4 focus:ring-[#3bb881]/10 focus:border-[#3bb881] block px-4 py-3.5 outline-none transition-all placeholder:text-slate-400 font-semibold shadow-sm disabled:opacity-60 disabled:cursor-not-allowed disabled:bg-slate-100';
+const customLabel = 'block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2.5';
+
 function FormGroup({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
-    <section>
-      <div className="flex items-center gap-2 mb-3">
-        <span className="text-[color:var(--rl-brand-deep)]">{icon}</span>
-        <h4 className="text-sm font-semibold text-gray-900">{title}</h4>
+    <section className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] mb-6">
+      <div className="flex items-center gap-2.5 mb-6 pb-4 border-b border-slate-100/80">
+        <div className="p-1.5 bg-slate-50 rounded-lg text-slate-600 border border-slate-100 shadow-sm">{icon}</div>
+        <h4 className="text-[15px] font-black text-slate-800 tracking-tight">{title}</h4>
       </div>
       {children}
     </section>
@@ -68,7 +71,7 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
       setMessage('Bike, phone, start time, and end time are required.');
       return;
     }
-    const phoneDigits = phone.replace(/\D/g, "");
+    const phoneDigits = phone.replace(/\D/g, '');
     if (phoneDigits.length < 10 || phoneDigits.length > 20) {
       setMessage('Please enter a valid 10-digit phone number');
       return;
@@ -106,14 +109,14 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
         const fd = new FormData();
         fd.append('file', dlFile);
         fd.append('document_type', 'driving_license');
-        await uploadBookingDocument(bookingId, fd).catch(e => console.error(e));
+        await uploadBookingDocument(bookingId, fd).catch((e) => console.error(e));
       }
 
       if (idProofFile) {
         const fd = new FormData();
         fd.append('file', idProofFile);
         fd.append('document_type', 'id_proof');
-        await uploadBookingDocument(bookingId, fd).catch(e => console.error(e));
+        await uploadBookingDocument(bookingId, fd).catch((e) => console.error(e));
       }
 
       setMessage('Booking created successfully!');
@@ -139,11 +142,11 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
     uploadAccept?: string;
   }) => (
     <div className="flex-1">
-      <label className={labelClass}>{label}</label>
+      <label className={customLabel}>{label}</label>
       {!file ? (
-        <div className="grid grid-cols-2 gap-2">
-          <label className="flex items-center justify-center gap-2 h-11 rounded-lg bg-white text-[color:var(--rl-ink)] text-[13px] font-semibold cursor-pointer border border-gray-200 hover:bg-[color:var(--rl-hover)] transition-colors">
-            <Upload className="w-4 h-4" />
+        <div className="grid grid-cols-2 gap-3">
+          <label className="flex items-center justify-center gap-2 h-12 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-[13px] font-bold cursor-pointer border border-slate-200 border-dashed hover:border-slate-300 hover:text-slate-900 transition-all shadow-sm">
+            <Upload className="w-4 h-4 text-slate-400" />
             Upload
             <input
               type="file"
@@ -152,8 +155,8 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
               className="hidden"
             />
           </label>
-          <label className="flex items-center justify-center gap-2 h-11 rounded-lg bg-white text-[color:var(--rl-ink)] text-[13px] font-semibold cursor-pointer border border-gray-200 hover:bg-[color:var(--rl-hover)] transition-colors">
-            <Camera className="w-4 h-4" />
+          <label className="flex items-center justify-center gap-2 h-12 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-[13px] font-bold cursor-pointer border border-slate-200 border-dashed hover:border-slate-300 hover:text-slate-900 transition-all shadow-sm">
+            <Camera className="w-4 h-4 text-slate-400" />
             Capture
             <input
               type="file"
@@ -165,10 +168,14 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
           </label>
         </div>
       ) : (
-        <div className="h-11 px-3 flex items-center justify-between gap-2 border rounded-lg text-[13px] border-[color:var(--rl-brand)] bg-[color:var(--rl-brand-soft)] text-[color:var(--rl-brand-deep)]">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <span className="truncate flex-1">{file.name}</span>
-          <button type="button" onClick={() => setFile(null)} className="p-1 text-[color:var(--rl-muted)] hover:text-[color:var(--rl-danger)] transition-colors">
+        <div className="h-12 px-4 flex items-center justify-between gap-3 rounded-xl border border-[#3bb881]/20 bg-[#3bb881]/5 shadow-sm">
+          <CheckCircle2 className="w-5 h-5 shrink-0 text-[#3bb881]" />
+          <span className="truncate flex-1 text-[13px] font-bold text-[#3bb881]">{file.name}</span>
+          <button
+            type="button"
+            onClick={() => setFile(null)}
+            className="p-1.5 rounded-full text-[#3bb881] hover:bg-[#3bb881]/10 transition-colors"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -177,17 +184,45 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
   );
 
   return (
-    <div className="space-y-6 pb-6">
+    <div className="pb-8">
       {onCancel && (
-        <button type="button" onClick={onCancel} className="text-[12px] font-semibold text-[color:var(--rl-brand-deep)] hover:underline mb-2 block">
-          &larr; Back to customer search
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-[12px] font-black tracking-wider uppercase text-slate-400 hover:text-slate-800 transition-colors mb-4 flex items-center gap-1"
+        >
+          &larr; Back to Search
         </button>
       )}
 
-      <FormGroup icon={<User className="w-4 h-4" />} title={isExisting ? "Existing Customer" : "New Customer"}>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+      <FormGroup icon={<User className="w-4 h-4" />} title={isExisting ? 'Existing Customer' : 'New Customer'}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
           <div>
-            <label className={labelClass}>Phone number</label>
+            <label className={customLabel}>First Name</label>
+            <input
+              type="text"
+              value={firstname}
+              onChange={(e) => setFirstname(e.target.value)}
+              readOnly={isExisting}
+              className={customInput}
+              placeholder="e.g. John"
+            />
+          </div>
+          <div>
+            <label className={customLabel}>Last Name</label>
+            <input
+              type="text"
+              value={lastname}
+              onChange={(e) => setLastname(e.target.value)}
+              readOnly={isExisting}
+              className={customInput}
+              placeholder="e.g. Doe"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div>
+            <label className={customLabel}>Phone Number</label>
             <input
               type="tel"
               inputMode="numeric"
@@ -195,90 +230,155 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
               value={phone}
               onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
               readOnly={isExisting}
-              className={`${inputClass} ${isExisting ? 'bg-gray-50 text-gray-500' : ''}`}
+              className={customInput}
+              placeholder="10-digit number"
             />
           </div>
           <div>
-            <label className={labelClass}>First name</label>
-            <input type="text" value={firstname} onChange={(e) => setFirstname(e.target.value)} readOnly={isExisting} className={`${inputClass} ${isExisting ? 'bg-gray-50 text-gray-500' : ''}`} />
-          </div>
-          <div>
-            <label className={labelClass}>Last name</label>
-            <input type="text" value={lastname} onChange={(e) => setLastname(e.target.value)} readOnly={isExisting} className={`${inputClass} ${isExisting ? 'bg-gray-50 text-gray-500' : ''}`} />
-          </div>
-          <div>
-            <label className={labelClass}>Email for invoice</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="customer@example.com" className={inputClass} />
+            <label className={customLabel}>Email Address</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="For digital invoice"
+              className={customInput}
+            />
           </div>
         </div>
       </FormGroup>
 
-      <FormGroup icon={<CarFront className="w-4 h-4" />} title="Vehicle & dates">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label className={labelClass}>Vehicle</label>
+      <FormGroup icon={<CarFront className="w-4 h-4" />} title="Vehicle & Duration">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="sm:col-span-3">
+            <label className={customLabel}>Selected Vehicle</label>
             <button
               type="button"
               onClick={openCatalogue}
-              className={`${inputClass} flex items-center justify-between text-left ${!selectedVehicle ? 'text-[color:var(--rl-muted)]' : 'text-[color:var(--rl-ink)] font-semibold'}`}
+              className={`${customInput} flex items-center justify-between text-left ${
+                !selectedVehicle ? 'text-slate-400' : 'text-slate-900'
+              }`}
             >
-              <span className="truncate">{selectedVehicle ? selectedVehicle.name : 'Choose vehicle'}</span>
-              <CarFront className="w-4 h-4 opacity-50 shrink-0" />
+              <span className="truncate">
+                {selectedVehicle ? `${selectedVehicle.name} - ${selectedVehicle.model}` : 'Tap to select vehicle'}
+              </span>
+              <CarFront className="w-5 h-5 text-slate-300 shrink-0" />
             </button>
           </div>
-          <div>
-            <label className={labelClass}>Start time</label>
-            <input type="datetime-local" value={startTime} onChange={(e) => setStartTime(e.target.value)} className={inputClass} />
+          <div className="sm:col-span-1">
+            <label className={customLabel}>Pickup Time</label>
+            <input
+              type="datetime-local"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              className={customInput}
+            />
           </div>
-          <div>
-            <label className={labelClass}>End time</label>
-            <input type="datetime-local" value={endTime} onChange={(e) => setEndTime(e.target.value)} className={inputClass} />
+          <div className="sm:col-span-1">
+            <label className={customLabel}>Dropoff Time</label>
+            <input
+              type="datetime-local"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              className={customInput}
+            />
           </div>
         </div>
       </FormGroup>
 
-      <FormGroup icon={<Wallet className="w-4 h-4" />} title="Payment">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div>
-            <label className={labelClass}>Total</label>
-            <input type="number" value={total} onChange={(e) => setTotal(Number(e.target.value))} className={inputClass} />
+      <FormGroup icon={<Wallet className="w-4 h-4" />} title="Payment Details">
+        <div className="grid grid-cols-2 sm:grid-cols-2 gap-5 mb-5">
+          <div className="relative group">
+            <label className={customLabel}>Total Fare</label>
+            <div className="absolute top-[34px] left-0 pl-4 flex items-center pointer-events-none">
+              <span className="text-slate-400 font-bold group-focus-within:text-[#3bb881] transition-colors">₹</span>
+            </div>
+            <input
+              type="number"
+              value={total}
+              onChange={(e) => setTotal(Number(e.target.value))}
+              className={`${customInput} pl-9`}
+            />
           </div>
-          <div>
-            <label className={labelClass}>Advance</label>
-            <input type="number" value={advance} onChange={(e) => setAdvance(Number(e.target.value))} className={inputClass} />
+          <div className="relative group">
+            <label className={customLabel}>Advance Paid</label>
+            <div className="absolute top-[34px] left-0 pl-4 flex items-center pointer-events-none">
+              <span className="text-slate-400 font-bold group-focus-within:text-[#3bb881] transition-colors">₹</span>
+            </div>
+            <input
+              type="number"
+              value={advance}
+              onChange={(e) => setAdvance(Number(e.target.value))}
+              className={`${customInput} pl-9`}
+            />
           </div>
-          <div>
-            <label className={labelClass}>Balance due</label>
-            <input type="number" value={Math.max(total - advance, 0)} readOnly className={`${inputClass} bg-gray-50 text-gray-500`} />
+          <div className="relative group">
+            <label className={customLabel}>Balance Due</label>
+            <div className="absolute top-[34px] left-0 pl-4 flex items-center pointer-events-none">
+              <span className="text-slate-400 font-bold">₹</span>
+            </div>
+            <input
+              type="number"
+              value={Math.max(total - advance, 0)}
+              readOnly
+              disabled
+              className={`${customInput} pl-9 text-slate-500 bg-slate-100/70`}
+            />
           </div>
-          <div>
-            <label className={labelClass}>Deposit</label>
-            <input type="number" value={securityDeposit} onChange={(e) => setSecurityDeposit(Number(e.target.value))} className={inputClass} />
+          <div className="relative group">
+            <label className={customLabel}>Security Deposit</label>
+            <div className="absolute top-[34px] left-0 pl-4 flex items-center pointer-events-none">
+              <span className="text-slate-400 font-bold group-focus-within:text-[#3bb881] transition-colors">₹</span>
+            </div>
+            <input
+              type="number"
+              value={securityDeposit}
+              onChange={(e) => setSecurityDeposit(Number(e.target.value))}
+              className={`${customInput} pl-9`}
+            />
           </div>
         </div>
-        <div className="mt-3">
-          <label className={labelClass}>Note (optional)</label>
-          <input type="text" placeholder="Counter note..." value={note} onChange={(e) => setNote(e.target.value)} className={inputClass} />
+        <div>
+          <label className={customLabel}>Booking Notes</label>
+          <input
+            type="text"
+            placeholder="Special requests or notes..."
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            className={customInput}
+          />
         </div>
       </FormGroup>
 
-      <FormGroup icon={<FileUp className="w-4 h-4" />} title="Documents (Optional)">
-        <div className="flex flex-col sm:flex-row gap-3">
+      <FormGroup icon={<FileUp className="w-4 h-4" />} title="Customer Documents (Optional)">
+        <div className="flex flex-col sm:flex-row gap-5">
           <FileUploader label="Driving License" file={dlFile} setFile={setDlFile} />
-          <FileUploader label="ID Proof" file={idProofFile} setFile={setIdProofFile} />
+          <FileUploader label="ID Proof (Aadhar/Passport)" file={idProofFile} setFile={setIdProofFile} />
         </div>
       </FormGroup>
 
       {message && (
-        <div className={`flex items-center gap-2 text-sm font-semibold p-3 rounded-lg ${isSuccess ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-          {isSuccess && <CheckCircle2 className="w-5 h-5" />}
+        <div
+          className={`flex items-center gap-3 text-[13px] font-bold p-4 rounded-xl mb-6 shadow-sm border ${
+            isSuccess ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'
+          }`}
+        >
+          {isSuccess && <CheckCircle2 className="w-5 h-5 shrink-0" />}
           {message}
         </div>
       )}
 
-      <button onClick={handleCreate} disabled={loading} className={`${primaryButtonClass} w-full h-12 text-[15px]`}>
-        <Plus className="w-5 h-5 mr-1" />
-        {loading ? 'Processing...' : 'Confirm booking'}
+      <button
+        onClick={handleCreate}
+        disabled={loading}
+        className="w-full px-8 py-4 rounded-2xl font-bold text-white bg-slate-900 hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:pointer-events-none flex items-center justify-center gap-2 text-[15px]"
+      >
+        {loading ? (
+          'Processing...'
+        ) : (
+          <>
+            <CheckCircle2 className="w-5 h-5" /> Confirm Booking
+          </>
+        )}
       </button>
     </div>
   );
