@@ -51,7 +51,7 @@ function Rail({ collapsed, onClose, onToggle }: { collapsed: boolean; onClose?: 
             Workspace
           </div>
         )}
-        {NAV_ITEMS.map((item) => {
+        {NAV_ITEMS.filter((item) => item.name !== 'Staff' || isOwner).map((item) => {
           const isActive = item.path === '/rentalos' ? pathname === '/rentalos' : pathname.startsWith(item.path);
           return (
             <Link
@@ -59,9 +59,8 @@ function Rail({ collapsed, onClose, onToggle }: { collapsed: boolean; onClose?: 
               to={item.path}
               onClick={onClose}
               data-active={isActive}
-              className={`rl-rail-item group flex items-center rounded-md text-[13px] ${
-                collapsed ? 'justify-center h-9 w-9 mx-auto' : 'gap-2.5 px-2.5 h-9'
-              }`}
+              className={`rl-rail-item group flex items-center rounded-md text-[13px] ${collapsed ? 'justify-center h-9 w-9 mx-auto' : 'gap-2.5 px-2.5 h-9'
+                }`}
               title={collapsed ? item.name : undefined}
             >
               <item.icon className="w-4 h-4 shrink-0" />
@@ -133,9 +132,8 @@ export default function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
   return (
     <>
       <aside
-        className={`hidden md:flex shrink-0 transition-[width] duration-200 ${
-          sidebarCollapsed ? 'w-[56px]' : 'w-[220px]'
-        }`}
+        className={`hidden md:flex shrink-0 transition-[width] duration-200 ${sidebarCollapsed ? 'w-[56px]' : 'w-[220px]'
+          }`}
       >
         <Rail collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
       </aside>

@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, CarFront, Users, FileText, Plus, UserCog } from 'lucide-react';
+import { LayoutDashboard, CarFront, Users, FileText, Plus } from 'lucide-react';
 import { useRentalOS } from './RentalOSContext';
 
 const NAV_ITEMS = [
@@ -10,7 +10,6 @@ const NAV_ITEMS = [
 const RIGHT_NAV_ITEMS = [
   { name: 'Vehicles', path: '/rentalos/vehicles', icon: CarFront },
   { name: 'Customers', path: '/rentalos/customers', icon: Users },
-  { name: 'Staff', path: '/rentalos/staff', icon: UserCog },
 ];
 
 export default function BottomNav() {
@@ -31,9 +30,8 @@ export default function BottomNav() {
           <Link
             key={item.name}
             to={item.path}
-            className={`flex flex-col items-center justify-center min-w-[3rem] h-full gap-1 transition-colors ${
-              isActive ? 'text-[color:var(--rl-brand-deep)]' : 'text-[color:var(--rl-muted)]'
-            }`}
+            className={`flex flex-col items-center justify-center min-w-[3rem] h-full gap-1 transition-colors ${isActive ? 'text-[color:var(--rl-brand-deep)]' : 'text-[color:var(--rl-muted)]'
+              }`}
           >
             <item.icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5px]' : ''}`} />
             <span className="text-[10px] font-medium">{item.name}</span>
@@ -57,9 +55,8 @@ export default function BottomNav() {
           <Link
             key={item.name}
             to={item.path}
-            className={`flex flex-col items-center justify-center min-w-[3rem] h-full gap-1 transition-colors ${
-              isActive ? 'text-[color:var(--rl-brand-deep)]' : 'text-[color:var(--rl-muted)]'
-            }`}
+            className={`flex flex-col items-center justify-center min-w-[3rem] h-full gap-1 transition-colors ${isActive ? 'text-[color:var(--rl-brand-deep)]' : 'text-[color:var(--rl-muted)]'
+              }`}
           >
             <item.icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5px]' : ''}`} />
             <span className="text-[10px] font-medium">{item.name}</span>
