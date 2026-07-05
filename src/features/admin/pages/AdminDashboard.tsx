@@ -52,6 +52,7 @@ export default function AdminDashboard() {
   const [shopName, setShopName] = useState("");
   const [shopPhone, setShopPhone] = useState("");
   const [shopAddress, setShopAddress] = useState("");
+  const [shopLocationMapLink, setShopLocationMapLink] = useState("");
   const [shopCity, setShopCity] = useState("");
   const [shopState, setShopState] = useState("");
   const [shopZipCode, setShopZipCode] = useState("");
@@ -105,7 +106,7 @@ export default function AdminDashboard() {
   }, [user]);
 
   const resetShopForm = () => {
-    setShopName(""); setShopPhone(""); setShopAddress(""); setShopCity("");
+    setShopName(""); setShopPhone(""); setShopAddress(""); setShopLocationMapLink(""); setShopCity("");
     setShopState(""); setShopZipCode(""); setShopDesc("");
     setShopOpeningTime(""); setShopClosingTime(""); setShopUpiId(""); setShopImage(null);
   };
@@ -138,6 +139,7 @@ export default function AdminDashboard() {
         name: shopName,
         phone_number: shopPhone,
         address: shopAddress,
+        location_map_link: shopLocationMapLink,
         city: shopCity,
       };
       if (shopDesc) payload.description = shopDesc;
@@ -422,6 +424,10 @@ export default function AdminDashboard() {
               <div className="space-y-2">
                 <Label>Address <span className="text-destructive">*</span></Label>
                 <Input value={shopAddress} onChange={(e) => setShopAddress(e.target.value)} className="bg-background" />
+              </div>
+              <div className="space-y-2">
+                <Label>Shop Location Map Link</Label>
+                <Input value={shopLocationMapLink} onChange={(e) => setShopLocationMapLink(e.target.value)} placeholder="Google Maps Link" className="bg-background" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
