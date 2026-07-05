@@ -122,6 +122,10 @@ export default function AdminShop() {
                   <Label>Address</Label>
                   <Input value={selected.address || ""} onChange={(e) => set("address", e.target.value)} />
                 </div>
+                <div className="space-y-1.5 md:col-span-2">
+                  <Label>Shop Location Map Link</Label>
+                  <Input value={selected.location_map_link || ""} onChange={(e) => set("location_map_link", e.target.value)} placeholder="Google Maps Link" />
+                </div>
                 <div className="space-y-1.5">
                   <Label>City</Label>
                   <Input value={selected.city || ""} onChange={(e) => set("city", e.target.value)} />

@@ -185,7 +185,7 @@ export default function VehicleDetail() {
       reference: upiReference,
     })
     : "";
-  const mapUrl = shop?.shop_location || shop?.googleMapsUrl || shop?.gmapLink || shop?.mapUrl || shop?.locationUrl || "";
+  const mapUrl = shop?.location_map_link || shop?.shop_location || shop?.googleMapsUrl || shop?.gmapLink || shop?.mapUrl || shop?.locationUrl || "";
   const contactShopUrl = shop?.phone_number ? `tel:${shop.phone_number.replace(/\D/g, '')}` : "";
 
   const formattedStart = startTime ? new Date(startTime).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "";
@@ -828,6 +828,22 @@ ${rejectLink}`;
                         <span className="text-xs text-muted-foreground font-display">New Shop</span>
                       </div>
                     )}
+                    {mapUrl && (
+                      <div className="pt-3">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full gap-2 text-emerald-600 border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.open(mapUrl, "_blank");
+                          }}
+                        >
+                          <MapPinned className="h-4 w-4" /> Locate us
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -863,7 +879,7 @@ ${rejectLink}`;
               href={mapUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-11 items-center justify-center rounded-xl bg-emerald-500 px-2 text-xs font-bold text-white transition-colors hover:bg-emerald-600"
+              className="inline-flex h-11 items-center justify-center rounded-xl border border-border bg-white px-2 text-xs font-bold text-foreground transition-colors hover:bg-secondary"
             >
               <MapPinned className="mr-1 h-4 w-4" /> Locate
             </a>
