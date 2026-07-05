@@ -37,7 +37,6 @@ const FOOTER_COLUMNS = [
   {
     title: "Company",
     links: [
-      { label: "About Us", href: "/about-us" },
       { label: "How It Works", href: "/#how-it-works" },
       { label: "Blog & Travel Guides", href: "/blog-travel-guides" },
       { label: "Contact Us", href: "/contact" },

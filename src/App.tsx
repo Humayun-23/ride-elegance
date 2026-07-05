@@ -109,7 +109,6 @@ function App() {
                 <Route path="/rent/:vehicleType" element={<DynamicLanding />} />
                 
                 {/* Legal and Content Pages */}
-                <Route path="/about-us" element={<AboutUs />} />
                 <Route path="/blog-travel-guides" element={<BlogTravelGuides />} />
                 <Route path="/cancellation-and-refund-policy" element={<CancellationPolicy />} />
                 <Route path="/faq-help-center" element={<FaqHelpCenter />} />
