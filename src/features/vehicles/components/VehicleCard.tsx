@@ -35,8 +35,6 @@ const TYPE_ICON: Record<string, any> = {
   scooty: Bike,
   bike: Bike,
   car: Car,
-  mountain: Bike,
-  road: Bike,
   hybrid: Zap,
   electric: Zap,
   shop: Store,
@@ -46,8 +44,6 @@ const TYPE_LABEL: Record<string, string> = {
   scooty: "Scooty",
   bike: "Bike",
   car: "Car",
-  mountain: "Mountain",
-  road: "Road",
   hybrid: "Hybrid",
   electric: "Electric",
 };

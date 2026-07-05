@@ -13,8 +13,6 @@ const TYPES = [
   { id: 'car', label: 'Car' },
   { id: 'electric', label: 'Electric' },
   { id: 'hybrid', label: 'Hybrid' },
-  { id: 'mountain', label: 'Mountain' },
-  { id: 'road', label: 'Road' },
 ];
 
 const customInput =

@@ -32,8 +32,6 @@ const TYPE_ICON: Record<string, any> = {
   scooty: Bike,
   bike: Bike,
   car: Car,
-  mountain: Bike,
-  road: Bike,
   hybrid: Zap,
   electric: Zap,
 };

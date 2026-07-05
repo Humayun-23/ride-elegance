@@ -26,8 +26,6 @@ const TYPES = [
   { id: 'car', label: 'Car' },
   { id: 'electric', label: 'Electric' },
   { id: 'hybrid', label: 'Hybrid' },
-  { id: 'mountain', label: 'Mountain' },
-  { id: 'road', label: 'Road' },
 ];
 
 export default function EditVehicleModal({ vehicle, isOpen, onClose }: EditVehicleModalProps) {

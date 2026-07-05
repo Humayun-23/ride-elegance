@@ -21,7 +21,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Package, Plus, Trash2, ArrowLeft, Pencil } from "lucide-react";
 
-const TYPES = ["scooty", "bike", "car", "mountain", "road", "hybrid", "electric"];
+const TYPES = ["scooty", "bike", "car", "hybrid", "electric"];
 
 export default function AdminInventory() {
   const navigate = useNavigate();

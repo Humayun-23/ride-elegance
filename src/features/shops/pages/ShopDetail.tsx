@@ -326,7 +326,7 @@ export default function ShopDetail() {
                         <Select value={vehicleForm.bike_type} onValueChange={(v) => setVehicleForm((f) => ({ ...f, bike_type: v }))}>
                           <SelectTrigger aria-label="Vehicle type" className="bg-background rounded-xl"><SelectValue /></SelectTrigger>
                           <SelectContent>
-                            {["scooty", "bike", "car", "mountain", "road", "hybrid", "electric"].map((t) => (
+                            {["scooty", "bike", "car", "hybrid", "electric"].map((t) => (
                               <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
                             ))}
                           </SelectContent>
