@@ -405,17 +405,28 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* Invisible Create Shop Modal */}
+        {/* Create Shop Modal */}
         <Dialog open={isShopModalOpen} onOpenChange={setIsShopModalOpen}>
           <DialogTrigger asChild>
             <Button className="font-display gap-2"><Plus className="h-4 w-4" /> Add Shop</Button>
           </DialogTrigger>
-          <DialogContent className="bg-card border-border max-h-[85vh] overflow-y-auto">
+          <DialogContent 
+            className="bg-card border-border max-h-[85vh] overflow-y-auto"
+            onOpenAutoFocus={(e) => {
+              e.preventDefault();
+              // Prevent browser from scrolling the window down to the portal's DOM location
+              setTimeout(() => {
+                document.getElementById('shop-name-input')?.focus({ preventScroll: true });
+                document.getElementById('dialog-content-scroll')?.scrollTo(0, 0);
+              }, 10);
+            }}
+            id="dialog-content-scroll"
+          >
             <DialogHeader><DialogTitle className="font-display">Create New Shop</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Name <span className="text-destructive">*</span></Label>
-                <Input value={shopName} onChange={(e) => setShopName(e.target.value)} className="bg-background" />
+                <Input id="shop-name-input" value={shopName} onChange={(e) => setShopName(e.target.value)} className="bg-background" />
               </div>
               <div className="space-y-2">
                 <Label>Phone Number <span className="text-destructive">*</span></Label>

@@ -10,7 +10,7 @@ import { LoadingState } from "@/components/common/LoadingState";
 
 export default function SavedVehicles() {
   const { favorites } = useFavorites();
-  const { data: allVehicles, isLoading } = useSearchVehicles({ limit: 500 });
+  const { data: allVehicles, isLoading } = useSearchVehicles({ limit: 100 });
   
   const savedVehicles = useMemo(() => {
     if (!allVehicles || !Array.isArray(allVehicles)) return [];
