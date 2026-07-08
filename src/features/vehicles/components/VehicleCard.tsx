@@ -83,7 +83,7 @@ export default function VehicleCard({
   const targetHref = href ?? `/bikes/${vehicle.id}${linkParams.toString() ? `?${linkParams.toString()}` : ""}`;
 
   return (
-    <Link to={targetHref} className="group block h-full">
+    <Link to={targetHref} className="group block h-full content-visibility-auto">
       <div className="overflow-hidden rounded-3xl card-elevated h-full flex flex-col relative z-10">
         {/* Image — bigger, cleaner */}
         <div className={`${compact ? "aspect-[16/9]" : "aspect-[3/2]"} bg-muted relative overflow-hidden`}>
