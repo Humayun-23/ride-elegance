@@ -66,7 +66,7 @@ export default defineConfig(({ mode }) => ({
         navigateFallbackAllowlist: [/^\/rentalos/],
       },
       devOptions: {
-        enabled: true,
+        enabled: false,
         type: 'module',
       }
     })
