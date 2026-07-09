@@ -21,9 +21,11 @@ const BookingModal = lazy(() => import('./BookingModal'));
 const CommandPalette = lazy(() => import('./CommandPalette'));
 
 function RouteFallback() {
-  // Return a completely transparent spacer instead of "Loading view..." 
-  // so we don't get an ugly text flash when navigating between pages
-  return <div className="min-h-[60vh]" />;
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+    </div>
+  );
 }
 
 function PageTransition({ children }: { children: React.ReactNode }) {
@@ -37,6 +39,16 @@ function PageTransition({ children }: { children: React.ReactNode }) {
     >
       {children}
     </motion.div>
+  );
+}
+
+function LazyPage({ children }: { children: React.ReactNode }) {
+  return (
+    <PageTransition>
+      <Suspense fallback={<RouteFallback />}>
+        {children}
+      </Suspense>
+    </PageTransition>
   );
 }
 
@@ -218,19 +230,17 @@ export default function RentalOSLayout() {
 
           <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-5 pb-20 md:pb-5">
             <div className="mx-auto w-full max-w-[1400px]">
-              <Suspense fallback={<RouteFallback />}>
-                <AnimatePresence mode="wait">
-                  <Routes location={location} key={location.pathname}>
-                    <Route path="/" element={<PageTransition><DashboardPage /></PageTransition>} />
-                    <Route path="/vehicles" element={<PageTransition><VehiclesPage /></PageTransition>} />
-                    <Route path="/inventory" element={<PageTransition><InventoryPage /></PageTransition>} />
-                    <Route path="/bookings" element={<PageTransition><BookingsPage /></PageTransition>} />
-                    <Route path="/customers" element={<PageTransition><CustomersPage /></PageTransition>} />
-                    <Route path="/staff" element={<PageTransition><StaffPage /></PageTransition>} />
-                    <Route path="*" element={<PageTransition><DashboardPage /></PageTransition>} />
-                  </Routes>
-                </AnimatePresence>
-              </Suspense>
+              <AnimatePresence mode="wait">
+                <Routes location={location} key={location.pathname}>
+                  <Route path="/" element={<LazyPage><DashboardPage /></LazyPage>} />
+                  <Route path="/vehicles" element={<LazyPage><VehiclesPage /></LazyPage>} />
+                  <Route path="/inventory" element={<LazyPage><InventoryPage /></LazyPage>} />
+                  <Route path="/bookings" element={<LazyPage><BookingsPage /></LazyPage>} />
+                  <Route path="/customers" element={<LazyPage><CustomersPage /></LazyPage>} />
+                  <Route path="/staff" element={<LazyPage><StaffPage /></LazyPage>} />
+                  <Route path="*" element={<LazyPage><DashboardPage /></LazyPage>} />
+                </Routes>
+              </AnimatePresence>
             </div>
           </main>
         </div>

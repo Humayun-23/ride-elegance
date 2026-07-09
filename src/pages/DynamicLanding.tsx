@@ -166,7 +166,6 @@ export default function DynamicLanding() {
         canonical={canonicalUrl}
         url={canonicalUrl}
         schema={schema}
-        noindex={!isLoading && vehicles.length === 0}
       />
       
       <div className="container px-4 space-y-10">

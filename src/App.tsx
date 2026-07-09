@@ -7,7 +7,7 @@ import { FavoritesProvider } from './features/vehicles/context/FavoritesContext'
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Toaster } from './components/ui/toaster';
 
-const MainLayout = lazy(() => import('./components/layout/MainLayout'));
+import MainLayout from './components/layout/MainLayout';
 const Index = lazy(() => import('./pages/Index'));
 const DynamicLanding = lazy(() => import('./pages/DynamicLanding'));
 const DemoEntry = lazy(() => import('./pages/DemoEntry'));
@@ -95,11 +95,9 @@ function App() {
 
               {/* Public Sub-App */}
               <Route element={
-                <Suspense fallback={<LoadingState />}>
-                  <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-                    <MainLayout />
-                  </GoogleOAuthProvider>
-                </Suspense>
+                <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+                  <MainLayout />
+                </GoogleOAuthProvider>
               }>
                 <Route path="/" element={<Index />} />
                 <Route path="/search-vehicles" element={<SearchVehicles />} />

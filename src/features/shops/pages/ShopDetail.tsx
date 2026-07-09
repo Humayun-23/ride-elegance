@@ -185,6 +185,7 @@ export default function ShopDetail() {
         keywords={`${shop.name}, bike rental ${shop.city || 'guwahati'}, car rental ${shop.city || 'guwahati'}, vehicle rental near me`}
         canonical={`https://www.gopanda.in/shops/${id}`}
         schema={shopSchema}
+        image={id === "8" ? "https://www.gopanda.in/og-jorhat.png" : undefined}
       />
       <div className="container px-4 max-w-6xl space-y-10">
         <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-2 text-muted-foreground -ml-2">
