@@ -40,7 +40,7 @@ export default function AuthPage() {
   const [regEmail, setRegEmail] = useState("");
   const [regPassword, setRegPassword] = useState("");
   const [phone, setPhone] = useState("");
-  const [userType, setUserType] = useState<"customer" | "shop_owner">("customer");
+  const [userType, setUserType] = useState<"customer" | "shop_owner">(location.state?.userType || "customer");
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [regLoading, setRegLoading] = useState(false);
 
@@ -170,15 +170,18 @@ export default function AuthPage() {
                 </motion.div>
               )}
 
-              <div className="mb-6 flex justify-center">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={() => toast({ title: "Google login failed", variant: "destructive" })}
-                  shape="rectangular"
-                  theme="outline"
-                  text={activeTab === "login" ? "signin_with" : "signup_with"}
-                  size="large"
-                />
+              <div className="mb-6 flex justify-center w-full">
+                <div className="w-full flex justify-center scale-105 transform hover:scale-110 transition-transform duration-300">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => toast({ title: "Google login failed", variant: "destructive" })}
+                    shape="rectangular"
+                    theme="filled_black"
+                    text={activeTab === "login" ? "signin_with" : "signup_with"}
+                    size="large"
+                    width="100%"
+                  />
+                </div>
               </div>
 
               <div className="relative mb-6">

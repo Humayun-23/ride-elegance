@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { LayoutDashboard, CarFront, Users, FileText, X, LogOut, ChevronsLeft, ChevronsRight, UserCog, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, CarFront, Users, FileText, X, LogOut, ChevronsLeft, ChevronsRight, UserCog, ClipboardList, ChevronDown, Check } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useRentalOS } from './RentalOSContext';
 import { useAuth } from '@/features/auth/context/AuthContext';
 
@@ -20,7 +21,7 @@ interface SidebarProps {
 
 function Rail({ collapsed, onClose, onToggle }: { collapsed: boolean; onClose?: () => void; onToggle?: () => void }) {
   const { pathname } = useLocation();
-  const { activeShop, isOwner } = useRentalOS();
+  const { activeShop, isOwner, shops, setActiveShopId } = useRentalOS();
   const { user, logout } = useAuth();
 
   return (
@@ -30,8 +31,42 @@ function Rail({ collapsed, onClose, onToggle }: { collapsed: boolean; onClose?: 
         <div className="w-7 h-7 rounded-md bg-[#3bb881] flex items-center justify-center shrink-0">
           <span className="text-[#010101] font-black text-sm">R</span>
         </div>
-        {!collapsed && (
-          <div className="ml-2.5 flex-1 min-w-0">
+        {!collapsed && shops && shops.length > 0 ? (
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="ml-3 flex-1 min-w-0 flex items-center justify-between text-left hover:bg-white/5 rounded px-2 py-1 transition-colors group">
+                <div className="flex-1 min-w-0">
+                  <div className="text-[13px] font-bold text-white leading-tight tracking-tight">RentalOS</div>
+                  <div className="text-[10px] text-white/40 uppercase tracking-wider truncate group-hover:text-white/60 transition-colors">
+                    {activeShop?.shop_name || 'No shop'}
+                  </div>
+                </div>
+                <ChevronDown className="w-3.5 h-3.5 text-white/40 group-hover:text-white/60 md:hidden ml-1" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-64 p-1 z-[100]">
+               <div className="px-2 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">Switch shop</div>
+               {shops.map((shop) => {
+                 const active = shop.shop_id === activeShop?.shop_id;
+                 return (
+                   <button
+                     key={`${shop.role}-${shop.shop_id}`}
+                     onClick={() => { setActiveShopId(shop.shop_id); onClose?.(); }}
+                     className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-[13px] text-left hover:bg-[color:var(--rl-hover)] ${active ? 'font-semibold' : ''}`}
+                     style={{ color: 'var(--rl-ink)' }}
+                   >
+                     <div className="flex-1 min-w-0">
+                       <div className="truncate">{shop.shop_name}</div>
+                       <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--rl-faint)' }}>{shop.role}</div>
+                     </div>
+                     {active && <Check className="w-4 h-4" style={{ color: 'var(--rl-brand)' }} />}
+                   </button>
+                 );
+               })}
+            </PopoverContent>
+          </Popover>
+        ) : !collapsed && (
+          <div className="ml-5 flex-1 min-w-0">
             <div className="text-[13px] font-bold text-white leading-tight tracking-tight">RentalOS</div>
             <div className="text-[10px] text-white/40 uppercase tracking-wider truncate">
               {activeShop?.shop_name || 'No shop'}

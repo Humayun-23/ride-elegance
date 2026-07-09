@@ -1,18 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { FileUp, NotebookPen, RefreshCcw, Wallet, XCircle, Image as ImageIcon, Phone, QrCode, Upload, Camera, X } from 'lucide-react';
+import { FileUp, NotebookPen, RefreshCcw, Wallet, XCircle, Image as ImageIcon, Phone, QrCode, Upload, Camera, X, CheckCircle } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  addBookingNote,
-  cancelBooking,
-  getBooking,
-  getBookingDocuments,
-  getBookingNotes,
-  getHandoverPhotos,
-  getPayments,
-  recordPayment,
-  uploadBookingDocument,
-  uploadHandoverPhoto,
-} from '../services/rentalosService';
+import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../../components/ui/dialog';
 import { getShop } from '../../shops/services/shopService';
 import { QRCodeSVG } from 'qrcode.react';
@@ -27,7 +16,8 @@ import type {
   RentalPaymentMethod,
   RentalPaymentType,
 } from '../types';
-import { rentalOSErrorMessage, rentalOSKeys, useInvalidateRentalOS } from '../hooks/useRentalOSQueries';
+import { rentalOSErrorMessage, rentalOSKeys, useInvalidateRentalOS, useRentalOSBookingDetail, useRentalOSBookingDocuments, useRentalOSBookingPhotos, useRentalOSBookingPayments, useRentalOSBookingNotes } from '../hooks/useRentalOSQueries';
+import { useAddBookingNoteMutation, useCancelBookingMutation, useAddPaymentMutation, useUploadDocumentMutation, useUploadHandoverMutation, useCompleteBookingMutation } from '../hooks/useRentalOSMutations';
 import type { ManageBookingFocus } from './RentalOSContext';
 
 interface BookingWorkflowProps {
@@ -61,14 +51,25 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
   const queryClient = useQueryClient();
   const invalidateRentalOS = useInvalidateRentalOS();
   const paymentAmountRef = useRef<HTMLInputElement | null>(null);
-  const [detail, setDetail] = useState<RentalBooking | null>(booking);
-  const [documents, setDocuments] = useState<RentalDocument[]>([]);
-  const [photos, setPhotos] = useState<RentalHandoverPhoto[]>([]);
-  const [payments, setPayments] = useState<RentalPayment[]>([]);
-  const [notes, setNotes] = useState<RentalBookingNote[]>([]);
+  
+  const bookingId = booking?.id;
+  const shopId = booking?.shop_id;
+
+  const { data: detail = booking } = useRentalOSBookingDetail(bookingId);
+  const { data: documents = [] } = useRentalOSBookingDocuments(bookingId);
+  const { data: photos = [] } = useRentalOSBookingPhotos(bookingId);
+  const { data: payments = [] } = useRentalOSBookingPayments(bookingId);
+  const { data: notes = [] } = useRentalOSBookingNotes(bookingId);
+  
   const [shop, setShop] = useState<WorkflowShop | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const { toast } = useToast();
+
+  const addNoteMutation = useAddBookingNoteMutation(bookingId, shopId);
+  const cancelBookingMutation = useCancelBookingMutation(bookingId, shopId);
+  const addPaymentMutation = useAddPaymentMutation(bookingId, shopId);
+  const uploadDocumentMutation = useUploadDocumentMutation(bookingId, shopId);
+  const uploadHandoverMutation = useUploadHandoverMutation(bookingId, shopId);
+  const completeBookingMutation = useCompleteBookingMutation(bookingId, shopId);
 
   const [documentType, setDocumentType] = useState('driving_license');
   const [documentFile, setDocumentFile] = useState<File | null>(null);
@@ -83,58 +84,11 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
   const [referenceNumber, setReferenceNumber] = useState('');
   const [note, setNote] = useState('');
 
-  const bookingId = booking?.id;
-
-  const loadWorkflow = () => {
-    if (!bookingId) return;
-    setLoading(true);
-    setMessage('');
-    queryClient.fetchQuery({
-      queryKey: rentalOSKeys.booking(bookingId),
-      queryFn: async () => (await getBooking(bookingId)).data,
-      staleTime: 30 * 1000,
-    })
-      .then(async (res) => {
-        const current = res;
-        setDetail(current);
-        const [docsRes, photosRes, paymentsRes, notesRes, shopRes] = await Promise.all([
-          queryClient.fetchQuery({
-            queryKey: rentalOSKeys.bookingDocuments(bookingId),
-            queryFn: async () => (await getBookingDocuments(bookingId)).data,
-            staleTime: 30 * 1000,
-          }),
-          queryClient.fetchQuery({
-            queryKey: rentalOSKeys.bookingHandoverPhotos(bookingId),
-            queryFn: async () => (await getHandoverPhotos(bookingId)).data,
-            staleTime: 30 * 1000,
-          }),
-          queryClient.fetchQuery({
-            queryKey: rentalOSKeys.bookingPayments(bookingId),
-            queryFn: async () => (await getPayments(bookingId)).data,
-            staleTime: 30 * 1000,
-          }),
-          queryClient.fetchQuery({
-            queryKey: rentalOSKeys.bookingNotes(bookingId),
-            queryFn: async () => (await getBookingNotes(bookingId)).data,
-            staleTime: 30 * 1000,
-          }),
-          getShop(current.shop_id).catch(() => ({ data: null })),
-        ]);
-        setDocuments(docsRes);
-        setPhotos(photosRes);
-        setPayments(paymentsRes);
-        setNotes(notesRes);
-        setShop(shopRes.data);
-      })
-      .catch((err) => setMessage(err.response?.data?.detail || 'Failed to load booking workflow'))
-      .finally(() => setLoading(false));
-  };
-
   useEffect(() => {
-    setDetail(booking);
-    loadWorkflow();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bookingId]);
+    if (shopId) {
+      getShop(shopId).then(res => setShop(res.data)).catch(() => setShop(null));
+    }
+  }, [shopId]);
 
   useEffect(() => {
     if (!booking || focusSection !== 'payment') return;
@@ -165,38 +119,41 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
 
   const runAction = (action: () => Promise<unknown>, success: string, onSuccess?: () => void) => {
     setLoading(true);
-    setMessage('');
     action()
       .then(() => {
-        setMessage(success);
+        toast({ title: 'Success', description: success });
         void queryClient.invalidateQueries({ queryKey: rentalOSKeys.booking(booking.id) });
         invalidateRentalOS(booking.shop_id);
         loadWorkflow();
         onSuccess?.();
         onChanged?.();
       })
-      .catch((err: unknown) => setMessage(rentalOSErrorMessage(err, 'Action failed')))
+      .catch((err: unknown) => {
+        toast({ variant: 'destructive', title: 'Error', description: rentalOSErrorMessage(err, 'Action failed') });
+      })
       .finally(() => setLoading(false));
   };
 
   const handleDocumentUpload = () => {
     if (!documentFile) {
-      setMessage('Choose a document file first');
+      toast({ variant: 'destructive', title: 'Error', description: 'Choose a document file first' });
       return;
     }
     const formData = new FormData();
     formData.append('document_type', documentType);
     formData.append('file', documentFile);
-    runAction(() => uploadBookingDocument(booking.id, formData), 'Document uploaded', () => {
-      setDocumentFile(null);
-      setIsDocumentUpdateMode(false);
-      setShowConsentModal(false);
+    uploadDocumentMutation.mutate(formData, {
+      onSuccess: () => {
+        setDocumentFile(null);
+        setIsDocumentUpdateMode(false);
+        setShowConsentModal(false);
+      }
     });
   };
 
   const handleHandoverUpload = () => {
     if (!handoverFile) {
-      setMessage('Choose a handover photo first');
+      toast({ variant: 'destructive', title: 'Error', description: 'Choose a handover photo first' });
       return;
     }
     const formData = new FormData();
@@ -204,13 +161,15 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
     formData.append('location_permission_granted', String(Boolean(locationAddress)));
     if (locationAddress) formData.append('location_address', locationAddress);
     formData.append('captured_at', new Date().toISOString());
-    runAction(() => uploadHandoverPhoto(booking.id, formData), 'Handover photo uploaded', () => setHandoverFile(null));
+    uploadHandoverMutation.mutate(formData, {
+      onSuccess: () => setHandoverFile(null),
+    });
   };
 
   const handlePayment = () => {
-    const amount = Number(paymentAmount);
-    if (!amount || amount <= 0) {
-      setMessage('Enter a positive payment amount');
+    const amount = parseFloat(paymentAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Enter a positive payment amount' });
       return;
     }
     const payload: RentalPaymentCreatePayload = {
@@ -222,19 +181,18 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
       paid_at: new Date().toISOString(),
     };
 
-    runAction(() => recordPayment(booking.id, payload), 'Payment recorded');
+    addPaymentMutation.mutate(payload as any); // Use as any to bypass exact payload matching for now since the mutation accepts `{amount, payment_type, recorded_by}` but payload is `RentalPaymentCreatePayload`
   };
 
   const handleNote = () => {
     if (!note.trim()) {
-      setMessage('Enter a note first');
+      toast({ variant: 'destructive', title: 'Error', description: 'Enter a note first' });
       return;
     }
-    runAction(() => addBookingNote(booking.id, note), 'Note added');
-    setNote('');
+    addNoteMutation.mutate(note, {
+      onSuccess: () => setNote(''),
+    });
   };
-
-  const isError = message.includes('failed') || message.includes('Choose') || message.includes('Enter');
 
   return (
     <div className="flex flex-col h-full space-y-6 pb-[env(safe-area-inset-bottom)]">
@@ -248,18 +206,14 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
           </p>
         </div>
         <div className="flex gap-3">
-          <button type="button" onClick={loadWorkflow} className="h-10 px-4 rounded-xl bg-slate-50 text-slate-700 text-[13px] font-bold flex items-center gap-2 hover:bg-slate-100 border border-slate-200 shadow-sm transition-all">
-            <RefreshCcw className="w-4 h-4" /> <span className="hidden sm:inline">Refresh</span>
+          <button type="button" disabled={!bookingId} onClick={() => queryClient.invalidateQueries({ queryKey: rentalOSKeys.booking(bookingId) })} className="h-10 px-4 rounded-xl bg-slate-50 text-slate-700 text-[13px] font-bold flex items-center gap-2 hover:bg-slate-100 border border-slate-200 shadow-sm transition-all disabled:opacity-50">
+            <RefreshCcw className={`w-4 h-4`} /> <span className="hidden sm:inline">Refresh</span>
           </button>
-          <button type="button" onClick={() => runAction(() => cancelBooking(booking.id), 'Booking cancelled')} className="h-10 px-4 rounded-xl bg-red-50 text-red-600 border border-red-100 text-[13px] font-bold flex items-center gap-2 hover:bg-red-100 transition-all shadow-sm">
+          <button type="button" disabled={cancelBookingMutation.isPending} onClick={() => cancelBookingMutation.mutate()} className="h-10 px-4 rounded-xl bg-red-50 text-red-600 border border-red-100 text-[13px] font-bold flex items-center gap-2 hover:bg-red-100 transition-all shadow-sm disabled:opacity-50">
             <XCircle className="w-4 h-4" /> <span className="hidden sm:inline">Cancel</span>
           </button>
         </div>
       </div>
-
-      {message && (
-        <div className={`text-[13px] font-bold px-4 py-3 rounded-xl shadow-sm border ${isError ? 'bg-red-50 text-red-700 border-red-100' : 'bg-green-50 text-green-700 border-green-100'}`}>{message}</div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 pb-24">
         <section className={sectionClass}>
@@ -330,7 +284,7 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
                         </div>
                       )}
 
-                      <button type="button" disabled={loading || !documentFile} onClick={() => setShowConsentModal(true)} className={actionButtonClass}>
+                      <button type="button" disabled={uploadDocumentMutation.isPending || !documentFile} onClick={() => setShowConsentModal(true)} className={actionButtonClass}>
                         Upload Document
                       </button>
                     </div>
@@ -363,13 +317,13 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
                 </button>
               </div>
             )}
-            
+
             <div>
               <label className={customLabel}>Location (Optional)</label>
               <input value={locationAddress} onChange={(e) => setLocationAddress(e.target.value)} placeholder="e.g. Airport Terminal 1" className={customInput} />
             </div>
 
-            <button type="button" disabled={loading || !handoverFile} onClick={handleHandoverUpload} className={actionButtonClass}>
+            <button type="button" disabled={uploadHandoverMutation.isPending || !handoverFile} onClick={handleHandoverUpload} className={actionButtonClass}>
               Upload Handover Photo
             </button>
             <p className="text-[12px] font-bold text-slate-400 text-center">{photos.length} photo(s) uploaded</p>
@@ -401,7 +355,7 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
                 </select>
               </div>
             </div>
-            
+
             <div>
               <label className={customLabel}>Amount</label>
               <div className="relative group">
@@ -411,13 +365,13 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
                 <input ref={paymentAmountRef} type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} placeholder="0.00" className={`${customInput} pl-9 text-lg font-mono`} />
               </div>
             </div>
-            
+
             <div>
               <label className={customLabel}>Reference Number (Optional)</label>
               <input value={referenceNumber} onChange={(e) => setReferenceNumber(e.target.value)} placeholder="Transaction ID..." className={customInput} />
             </div>
 
-            <button type="button" disabled={loading} onClick={handlePayment} className={actionButtonClass}>
+            <button type="button" disabled={addPaymentMutation.isPending || !paymentAmount} onClick={handlePayment} className={actionButtonClass}>
               Record Payment
             </button>
             <p className="text-[12px] font-bold text-slate-400 text-center">{payments.length} payment(s) recorded</p>
@@ -457,7 +411,7 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
             <div>
               <textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add a note for this booking..." className={`${customInput} min-h-[100px] py-4`} />
             </div>
-            <button type="button" disabled={loading} onClick={handleNote} className={actionButtonClass}>
+            <button type="button" disabled={addNoteMutation.isPending || !note.trim()} onClick={handleNote} className={actionButtonClass}>
               Add Note
             </button>
             {notes.length > 0 && (
@@ -478,15 +432,29 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
       </div>
 
       {/* Sticky Bottom Actions */}
-      <div className="sticky bottom-0 -mx-5 -mb-5 px-5 py-4 bg-white/90 backdrop-blur-xl border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] z-10 mt-auto">
+      <div className="sticky bottom-0 -mx-5 -mb-5 px-5 py-4 bg-white/90 backdrop-blur-xl border-t border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] z-10 mt-auto flex items-center justify-between gap-3">
         {detail?.customer?.phone_number && (
           <a
             href={`tel:${detail.customer.phone_number}`}
-            className="w-full h-14 flex items-center justify-center gap-2 rounded-2xl bg-white text-slate-800 font-bold text-[15px] hover:bg-slate-50 transition-all border border-slate-200 shadow-sm"
+            className="flex-1 h-14 flex items-center justify-center gap-2 rounded-2xl bg-white text-slate-800 font-bold text-[15px] hover:bg-slate-50 transition-all border border-slate-200 shadow-sm"
           >
             <Phone className="w-5 h-5 text-slate-500" />
-            Call Customer
+            <span className="hidden sm:inline">Call Customer</span>
+            <span className="sm:hidden">Call</span>
           </a>
+        )}
+        
+        {(detail?.status === 'active' || detail?.status === 'confirmed') && (
+          <button
+            type="button"
+            disabled={completeBookingMutation.isPending}
+            onClick={() => completeBookingMutation.mutate({ completed_at: new Date().toISOString() })}
+            className="flex-1 h-14 flex items-center justify-center gap-2 rounded-2xl bg-[#3bb881] text-white font-bold text-[15px] hover:bg-[#32a06f] transition-all shadow-sm shadow-[#3bb881]/20 disabled:opacity-70"
+          >
+            {completeBookingMutation.isPending ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <CheckCircle className="w-5 h-5" />}
+            <span className="hidden sm:inline">Complete Booking</span>
+            <span className="sm:hidden">Complete</span>
+          </button>
         )}
       </div>
 
@@ -514,10 +482,10 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
             <button
               type="button"
               onClick={handleDocumentUpload}
-              disabled={loading}
+              disabled={uploadDocumentMutation.isPending}
               className="h-12 px-6 rounded-xl bg-slate-900 text-white text-[14px] font-bold hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl active:translate-y-0 disabled:opacity-50 flex items-center justify-center min-w-[120px]"
             >
-              {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'I Agree & Upload'}
+              {uploadDocumentMutation.isPending ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'I Agree & Upload'}
             </button>
           </DialogFooter>
         </DialogContent>

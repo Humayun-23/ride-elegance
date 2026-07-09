@@ -8,13 +8,13 @@ import CustomerLookupStep from './CustomerLookupStep';
 import type { RentalBooking, RentalCustomerSearch } from '../types';
 
 export default function BookingModal() {
-  const { 
-    selectedBooking, 
-    setSelectedBooking, 
+  const {
+    selectedBooking,
+    setSelectedBooking,
     manageBookingFocus,
     setManageBookingFocus,
-    selectedVehicle, 
-    setSelectedVehicle, 
+    selectedVehicle,
+    setSelectedVehicle,
     refreshBookings,
     createBookingOpen,
     setCreateBookingOpen
@@ -58,14 +58,14 @@ export default function BookingModal() {
 
           {mode === 'create' ? (
             !customerData ? (
-              <CustomerLookupStep 
-                onContinue={(data) => setCustomerData(data)} 
-                onCancel={handleClose} 
+              <CustomerLookupStep
+                onContinue={(data) => setCustomerData(data)}
+                onCancel={handleClose}
               />
             ) : (
-              <CreateBooking 
-                initialCustomer={customerData} 
-                onCreated={handleCreated} 
+              <CreateBooking
+                initialCustomer={customerData}
+                onCreated={handleCreated}
                 onCancel={() => setCustomerData(null)}
               />
             )

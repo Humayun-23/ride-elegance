@@ -22,8 +22,8 @@ export default function CustomerLookupStep({ onContinue, onCancel }: CustomerLoo
   const [result, setResult] = useState<RentalCustomerSearch | null>(null);
   const [error, setError] = useState('');
 
-  const handleSearch = () => {
-    if (!shopId || !phone || phone.length < 5) {
+  const handleSearch = (searchPhone = phone) => {
+    if (!shopId || !searchPhone || searchPhone.length < 5) {
       setError('Please enter a valid phone number');
       return;
     }
@@ -31,12 +31,16 @@ export default function CustomerLookupStep({ onContinue, onCancel }: CustomerLoo
     setError('');
     
     queryClient.fetchQuery({
-      queryKey: [...rentalOSKeys.customers(shopId), 'search', phone],
-      queryFn: async () => (await searchCustomer(shopId, phone)).data,
+      queryKey: [...rentalOSKeys.customers(shopId), 'search', searchPhone],
+      queryFn: async () => (await searchCustomer(shopId, searchPhone)).data,
       staleTime: 2 * 60 * 1000,
     })
       .then((customerResult) => {
         setResult(customerResult);
+        if (!customerResult.found) {
+          // Auto skip to booking form for new customer
+          onContinue({ ...customerResult, phone_number: searchPhone });
+        }
       })
       .catch((err) => {
         setError(err.response?.data?.detail || 'Failed to search customer');
@@ -76,7 +80,13 @@ export default function CustomerLookupStep({ onContinue, onCancel }: CustomerLoo
               <input
                 type="tel"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                  setPhone(val);
+                  if (val.length === 10) {
+                    handleSearch(val);
+                  }
+                }}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 placeholder="Enter 10-digit number"
                 className="w-full h-16 pl-12 pr-[110px] bg-gray-50/50 border border-gray-200 rounded-2xl text-[16px] font-semibold text-black focus:outline-none focus:bg-white focus:ring-4 focus:ring-black/5 focus:border-black transition-all shadow-sm"
@@ -170,12 +180,9 @@ export default function CustomerLookupStep({ onContinue, onCancel }: CustomerLoo
       </div>
       
       {/* Footer Actions */}
-      <div className="p-6 flex flex-col-reverse sm:flex-row items-center justify-between gap-4 mt-auto border-t border-gray-100 bg-white/80 backdrop-blur-md">
+      <div className="p-6 flex items-center justify-start mt-auto border-t border-gray-100 bg-white/80 backdrop-blur-md">
         <button type="button" onClick={onCancel} className="w-full sm:w-auto h-12 px-8 rounded-xl bg-gray-100 text-gray-600 text-[14px] font-bold hover:bg-gray-200 hover:text-black transition-all active:scale-[0.98]">
           Cancel
-        </button>
-        <button type="button" onClick={() => onContinue({ found: false, phone_number: phone, id: null, email: null, firstname: null, lastname: null, current_flag_status: null, previous_booking_count: 0, latest_flag: null, latest_note: null })} className="w-full sm:w-auto h-12 px-6 rounded-xl border border-gray-200 text-gray-600 text-[14px] font-bold hover:border-black hover:text-black hover:bg-gray-50 transition-all active:scale-[0.98]">
-          Skip / Walk-in Customer
         </button>
       </div>
     </div>

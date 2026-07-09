@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Plus, User, CarFront, Wallet, CheckCircle2, FileUp, Camera, Upload, X } from 'lucide-react';
 import { createBooking, uploadBookingDocument } from '../services/rentalosService';
 import { useRentalOS } from './RentalOSContext';
+import { useToast } from '@/hooks/use-toast';
 import type { RentalCustomerSearch } from '../types';
 
 interface CreateBookingProps {
@@ -51,7 +52,7 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
   const [idProofFile, setIdProofFile] = useState<File | null>(null);
 
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const { toast } = useToast();
 
   const effectiveBikeId = selectedVehicle?.bike_id ? String(selectedVehicle.bike_id) : '';
   const isExisting = initialCustomer?.found;
@@ -68,21 +69,20 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
 
   const handleCreate = async () => {
     if (!shopId || !effectiveBikeId || !phone || !startTime || !endTime) {
-      setMessage('Bike, phone, start time, and end time are required.');
+      toast({ variant: 'destructive', title: 'Error', description: 'Bike, phone, start time, and end time are required.' });
       return;
     }
     const phoneDigits = phone.replace(/\D/g, '');
     if (phoneDigits.length < 10 || phoneDigits.length > 20) {
-      setMessage('Please enter a valid 10-digit phone number');
+      toast({ variant: 'destructive', title: 'Error', description: 'Please enter a valid 10-digit phone number' });
       return;
     }
     if (total < 0 || advance < 0 || securityDeposit < 0) {
-      setMessage('Amounts cannot be negative');
+      toast({ variant: 'destructive', title: 'Error', description: 'Amounts cannot be negative' });
       return;
     }
 
     setLoading(true);
-    setMessage('');
 
     const payload = {
       shop_id: shopId,
@@ -119,16 +119,14 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
         await uploadBookingDocument(bookingId, fd).catch((e) => console.error(e));
       }
 
-      setMessage('Booking created successfully!');
+      toast({ title: 'Success', description: 'Booking created successfully!' });
       onCreated?.(res.data);
     } catch (err: any) {
-      setMessage(err.response?.data?.detail || 'Failed to create booking');
+      toast({ variant: 'destructive', title: 'Error', description: err.response?.data?.detail || 'Failed to create booking' });
     } finally {
       setLoading(false);
     }
   };
-
-  const isSuccess = message.includes('success');
 
   const FileUploader = ({
     label,
@@ -204,6 +202,7 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
               value={firstname}
               onChange={(e) => setFirstname(e.target.value)}
               readOnly={isExisting}
+              autoFocus={!isExisting}
               className={customInput}
               placeholder="e.g. John"
             />
@@ -254,9 +253,8 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
             <button
               type="button"
               onClick={openCatalogue}
-              className={`${customInput} flex items-center justify-between text-left ${
-                !selectedVehicle ? 'text-slate-400' : 'text-slate-900'
-              }`}
+              className={`${customInput} flex items-center justify-between text-left ${!selectedVehicle ? 'text-slate-400' : 'text-slate-900'
+                }`}
             >
               <span className="truncate">
                 {selectedVehicle ? `${selectedVehicle.name} - ${selectedVehicle.model}` : 'Tap to select vehicle'}
@@ -356,24 +354,13 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
         </div>
       </FormGroup>
 
-      {message && (
-        <div
-          className={`flex items-center gap-3 text-[13px] font-bold p-4 rounded-xl mb-6 shadow-sm border ${
-            isSuccess ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'
-          }`}
-        >
-          {isSuccess && <CheckCircle2 className="w-5 h-5 shrink-0" />}
-          {message}
-        </div>
-      )}
-
       <button
         onClick={handleCreate}
         disabled={loading}
-        className="w-full px-8 py-4 rounded-2xl font-bold text-white bg-slate-900 hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:pointer-events-none flex items-center justify-center gap-2 text-[15px]"
+        className="h-14 w-full sm:w-auto px-8 rounded-xl bg-black text-white text-[15px] font-bold flex items-center justify-center gap-2 hover:bg-gray-900 shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
       >
         {loading ? (
-          'Processing...'
+          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
         ) : (
           <>
             <CheckCircle2 className="w-5 h-5" /> Confirm Booking

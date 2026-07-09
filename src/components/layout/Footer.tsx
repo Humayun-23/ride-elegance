@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const POPULAR_AREAS = [
   "Guwahati Airport",
@@ -16,6 +17,7 @@ const FOOTER_COLUMNS = [
       { label: "Bike Rental in Guwahati", href: "/rent/bike/in/guwahati" },
       { label: "Scooty Rental in Guwahati", href: "/rent/scooty/in/guwahati" },
       { label: "Self-Drive Car Rental in Guwahati", href: "/rent/car/in/guwahati" },
+      { label: "Self-Drive Car Rental in Jorhat", href: "/rent/car/in/jorhat" },
     ],
   },
   {
@@ -61,12 +63,24 @@ function FooterColumn({ title, links }: { title: string; links: { label: string;
       <ul className="space-y-2.5">
         {links.map((link) => (
           <li key={link.href}>
-            <a
-              href={link.href}
-              className="text-sm leading-5 text-[#4d5650] transition-colors hover:text-[#3bb881]"
-            >
-              {link.label}
-            </a>
+            {link.href.startsWith("http") ? (
+              <a
+                href={link.href}
+                className="text-sm leading-5 text-[#4d5650] transition-colors hover:text-[#3bb881]"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {link.label}
+              </a>
+            ) : (
+              <Link
+                to={link.href}
+                state={link.label === "List Your Shop" ? { userType: 'shop_owner' } : undefined}
+                className="text-sm leading-5 text-[#4d5650] transition-colors hover:text-[#3bb881]"
+              >
+                {link.label}
+              </Link>
+            )}
           </li>
         ))}
       </ul>

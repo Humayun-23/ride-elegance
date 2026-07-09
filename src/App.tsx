@@ -5,6 +5,7 @@ import ScrollToTop from './components/common/ScrollToTop';
 import { AuthProvider } from './features/auth/context/AuthContext';
 import { FavoritesProvider } from './features/vehicles/context/FavoritesContext';
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { Toaster } from './components/ui/toaster';
 
 const MainLayout = lazy(() => import('./components/layout/MainLayout'));
 const Index = lazy(() => import('./pages/Index'));
@@ -149,6 +150,7 @@ function App() {
             </Routes>
           </BrowserRouter>
         </FavoritesProvider>
+        <Toaster />
     </AuthProvider>
   );
 }

@@ -7,6 +7,11 @@ import {
   getDashboardSummary,
   getMe,
   getStaff,
+  getBooking,
+  getBookingDocuments,
+  getHandoverPhotos,
+  getPayments,
+  getBookingNotes,
 } from '../services/rentalosService';
 
 export type BookingFilters = {
@@ -123,6 +128,51 @@ export function useRentalOSStaff(shopId: number | string | null | undefined, ena
     staleTime: DIRECTORY_STALE_TIME,
     placeholderData: keepPreviousData,
     refetchOnWindowFocus: false,
+  });
+}
+
+export function useRentalOSBookingDetail(bookingId: number | string | null | undefined, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: rentalOSKeys.booking(bookingId),
+    queryFn: async () => (await getBooking(bookingId as number | string)).data,
+    enabled: Boolean(bookingId) && (options?.enabled ?? true),
+    staleTime: SHORT_STALE_TIME,
+  });
+}
+
+export function useRentalOSBookingDocuments(bookingId: number | string | null | undefined) {
+  return useQuery({
+    queryKey: rentalOSKeys.bookingDocuments(bookingId),
+    queryFn: async () => (await getBookingDocuments(bookingId as number | string)).data,
+    enabled: Boolean(bookingId),
+    staleTime: SHORT_STALE_TIME,
+  });
+}
+
+export function useRentalOSBookingPhotos(bookingId: number | string | null | undefined) {
+  return useQuery({
+    queryKey: rentalOSKeys.bookingHandoverPhotos(bookingId),
+    queryFn: async () => (await getHandoverPhotos(bookingId as number | string)).data,
+    enabled: Boolean(bookingId),
+    staleTime: SHORT_STALE_TIME,
+  });
+}
+
+export function useRentalOSBookingPayments(bookingId: number | string | null | undefined) {
+  return useQuery({
+    queryKey: rentalOSKeys.bookingPayments(bookingId),
+    queryFn: async () => (await getPayments(bookingId as number | string)).data,
+    enabled: Boolean(bookingId),
+    staleTime: SHORT_STALE_TIME,
+  });
+}
+
+export function useRentalOSBookingNotes(bookingId: number | string | null | undefined) {
+  return useQuery({
+    queryKey: rentalOSKeys.bookingNotes(bookingId),
+    queryFn: async () => (await getBookingNotes(bookingId as number | string)).data,
+    enabled: Boolean(bookingId),
+    staleTime: SHORT_STALE_TIME,
   });
 }
 

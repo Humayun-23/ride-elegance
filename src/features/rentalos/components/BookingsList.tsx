@@ -4,7 +4,6 @@ import { motion, useAnimation, type PanInfo } from 'framer-motion';
 import { useRentalOS } from './RentalOSContext';
 import { EmptyState } from './ui';
 import { Tabs, TabsList, TabsTrigger } from '../../../components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table';
 import type { RentalBooking } from '../types';
 import { useRentalOSBookings } from '../hooks/useRentalOSQueries';
 
@@ -33,7 +32,7 @@ type TabKey = 'all' | 'active' | 'due_today' | 'overdue' | 'completed';
 function SwipeableRow({ booking, isSelected, onClick, onSwipeComplete, now }: { booking: RentalBooking, isSelected: boolean, onClick: () => void, onSwipeComplete: () => void, now: Date }) {
   const controls = useAnimation();
   const isActiveTrip = booking.status === 'active' || booking.status === 'confirmed';
-  
+
   const end = new Date(booking.end_time);
   const isOverdue = isActiveTrip && !Number.isNaN(end.getTime()) && end < now;
 
@@ -45,55 +44,55 @@ function SwipeableRow({ booking, isSelected, onClick, onSwipeComplete, now }: { 
   };
 
   const RowContent = (
-    <>
-      <TableCell className="min-h-[44px]">
-        <div className="font-semibold text-[color:var(--rl-ink)]">
+    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-4 w-full bg-white">
+      <div className="flex-1 min-w-0 flex sm:flex-col justify-between sm:justify-start items-center sm:items-start">
+        <div className="font-bold text-[color:var(--rl-ink)] truncate text-[14px]">
           {booking.customer?.firstname || 'Walk-in'} {booking.customer?.lastname || ''}
         </div>
-        <div className="text-xs text-[color:var(--rl-muted)]">
+        <div className="text-[11px] text-[color:var(--rl-muted)] font-medium bg-gray-50 px-1.5 py-0.5 rounded-md border border-gray-100 sm:border-0 sm:bg-transparent sm:px-0 sm:py-0">
           {booking.customer?.phone_number || `#${booking.id}`}
         </div>
-      </TableCell>
-      <TableCell>
-        <div className="text-[color:var(--rl-ink)]">
+      </div>
+      <div className="flex-1 min-w-0 mt-1 sm:mt-0">
+        <div className="text-[color:var(--rl-ink)] font-semibold truncate text-[13px]">
           {booking.bike?.name || `Bike ${booking.bike_id}`}
         </div>
-        <div className="text-xs text-[color:var(--rl-muted)]">
+        <div className="text-[11px] text-[color:var(--rl-muted)] truncate">
           {booking.bike?.model || ''}
         </div>
-      </TableCell>
-      <TableCell>
-        <div className="text-[color:var(--rl-ink)]">
+      </div>
+      <div className="flex-1 min-w-0 mt-2 sm:mt-0">
+        <div className="text-[12px] font-medium text-[color:var(--rl-ink)] bg-gray-50 inline-block px-2 py-1 rounded-md border border-gray-100">
           {!Number.isNaN(end.getTime()) ? end.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown'}
         </div>
-      </TableCell>
-      <TableCell>
+      </div>
+      <div className="flex items-center justify-between sm:justify-end gap-3 mt-3 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-0 border-gray-100">
         <span className={`rl-pill ${isOverdue ? 'rl-pill-danger' : statusTone(booking.status)}`}>
           {isOverdue ? 'Overdue' : booking.status}
         </span>
-      </TableCell>
-      <TableCell className="text-right">
-        <span className={`rl-num font-semibold ${booking.balance_due > 0 ? 'text-[#8a5a10]' : 'text-[color:var(--rl-brand-deep)]'}`}>
+        <span className={`rl-num font-extrabold text-[15px] tracking-tight ${booking.balance_due > 0 ? 'text-[#8a5a10]' : 'text-[color:var(--rl-brand-deep)]'}`}>
           ₹{currency.format(booking.balance_due || 0)}
         </span>
-      </TableCell>
-    </>
+      </div>
+    </div>
   );
+
+  const cardClasses = "cursor-pointer rounded-xl overflow-hidden border border-gray-200/80 hover:border-gray-300 transition-all data-[state=selected]:ring-2 data-[state=selected]:ring-black shadow-sm mb-3 touch-pan-y block";
 
   if (!isActiveTrip) {
     return (
-      <TableRow 
+      <div
         data-state={isSelected ? "selected" : undefined}
         onClick={onClick}
-        className="cursor-pointer hover:bg-[color:var(--rl-hover)]"
+        className={cardClasses}
       >
         {RowContent}
-      </TableRow>
+      </div>
     );
   }
 
   return (
-    <motion.tr
+    <motion.div
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.1}
@@ -101,10 +100,10 @@ function SwipeableRow({ booking, isSelected, onClick, onSwipeComplete, now }: { 
       animate={controls}
       data-state={isSelected ? "selected" : undefined}
       onClick={onClick}
-      className="cursor-pointer hover:bg-[color:var(--rl-hover)] border-b transition-colors data-[state=selected]:bg-muted hover:bg-muted/50"
+      className={cardClasses}
     >
       {RowContent}
-    </motion.tr>
+    </motion.div>
   );
 }
 
@@ -112,7 +111,7 @@ export default function BookingsList({ onSelectBooking }: BookingsListProps) {
   const { shopId, selectedBooking } = useRentalOS();
   const { data: allBookings = [], isLoading: loading } = useRentalOSBookings(shopId);
   const [activeTab, setActiveTab] = useState<TabKey>('all');
-  
+
   const [sortCol, setSortCol] = useState<'customer' | 'vehicle' | 'end_time' | 'balance_due'>('end_time');
   const [sortAsc, setSortAsc] = useState(true);
 
@@ -146,11 +145,11 @@ export default function BookingsList({ onSelectBooking }: BookingsListProps) {
     } else if (activeTab === 'completed') {
       list = allBookings.filter(b => b.status === 'completed');
     }
-    
+
     return [...list].sort((a, b) => {
       let valA: string | number = '';
       let valB: string | number = '';
-      
+
       if (sortCol === 'customer') {
         valA = a.customer?.firstname || '';
         valB = b.customer?.firstname || '';
@@ -164,7 +163,7 @@ export default function BookingsList({ onSelectBooking }: BookingsListProps) {
         valA = a.balance_due || 0;
         valB = b.balance_due || 0;
       }
-      
+
       if (valA < valB) return sortAsc ? -1 : 1;
       if (valA > valB) return sortAsc ? 1 : -1;
       return 0;
@@ -198,8 +197,8 @@ export default function BookingsList({ onSelectBooking }: BookingsListProps) {
       <div className="hidden absolute top-0 left-0 text-[10px] text-gray-400 -mt-3 md:block">
         Tip: Swipe active trips right to complete.
       </div>
-      
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabKey)} className="w-full overflow-x-auto">
+
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabKey)} className="w-full overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <TabsList className="bg-transparent p-0 justify-start h-auto space-x-1 border-b w-full rounded-none">
           <TabsTrigger value="all" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[color:var(--rl-brand)] data-[state=active]:shadow-none data-[state=active]:bg-transparent px-4 py-2">
             All <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">{counts.all}</span>
@@ -224,38 +223,34 @@ export default function BookingsList({ onSelectBooking }: BookingsListProps) {
       ) : filtered.length === 0 ? (
         <EmptyState icon={<Calendar className="w-6 h-6" />} message="No bookings match this filter." />
       ) : (
-        <div className="overflow-hidden relative w-full">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="cursor-pointer" onClick={() => handleSort('customer')}>
-                  Customer <SortIcon col="customer" />
-                </TableHead>
-                <TableHead className="cursor-pointer" onClick={() => handleSort('vehicle')}>
-                  Vehicle <SortIcon col="vehicle" />
-                </TableHead>
-                <TableHead className="cursor-pointer" onClick={() => handleSort('end_time')}>
-                  End Time <SortIcon col="end_time" />
-                </TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right cursor-pointer" onClick={() => handleSort('balance_due')}>
-                  Balance <SortIcon col="balance_due" />
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.map((b) => (
-                <SwipeableRow
-                  key={b.id}
-                  booking={b}
-                  now={now}
-                  isSelected={selectedBooking?.id === b.id}
-                  onClick={() => onSelectBooking?.(b)}
-                  onSwipeComplete={() => handleSwipeComplete(b)}
-                />
+        <div className="flex flex-col w-full relative pt-2">
+          <div className="flex items-center justify-between mb-4 mt-1">
+            <div className="flex items-center gap-2 w-full overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-1 pb-1">
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest shrink-0 mr-1">Sort:</span>
+              {(['end_time', 'customer', 'balance_due'] as const).map(col => (
+                <button
+                  key={col}
+                  onClick={() => handleSort(col)}
+                  className={`whitespace-nowrap shrink-0 px-3 py-1.5 text-[11px] font-bold rounded-full uppercase tracking-wider transition-all border ${sortCol === col ? 'border-gray-300 bg-white text-black shadow-sm' : 'border-transparent text-gray-500 hover:text-black hover:bg-gray-100/80'}`}
+                >
+                  {col.replace('_', ' ')} <SortIcon col={col} />
+                </button>
               ))}
-            </TableBody>
-          </Table>
+            </div>
+          </div>
+
+          <div className="flex flex-col">
+            {filtered.map((b) => (
+              <SwipeableRow
+                key={b.id}
+                booking={b}
+                isSelected={selectedBooking?.id === b.id}
+                onClick={() => onSelectBooking?.(b)}
+                onSwipeComplete={() => handleSwipeComplete(b)}
+                now={now}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>

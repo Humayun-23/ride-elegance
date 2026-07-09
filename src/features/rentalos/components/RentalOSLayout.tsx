@@ -199,7 +199,7 @@ export default function RentalOSLayout() {
           <div className="flex-1 flex flex-col overflow-hidden">
             <Topbar onMenuClick={() => setMobileSidebarOpen(true)} onOpenCommand={openCommand} />
             <main className="flex-1 overflow-x-hidden overflow-y-auto">
-               <Paywall shopName={activeShop.shop_name} />
+              <Paywall shopName={activeShop.shop_name} />
             </main>
           </div>
           <BottomNav />

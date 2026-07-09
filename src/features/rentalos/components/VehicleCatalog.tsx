@@ -63,16 +63,16 @@ export default function VehicleCatalog({ onVehicleSelect, selectedBikeId }: Vehi
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col sm:flex-row sm:items-end gap-3 justify-between">
-        <div className="flex flex-1 gap-3">
-          <div className="flex-1 max-w-[200px]">
+        <div className="flex flex-col sm:flex-row flex-1 gap-3 sm:items-end">
+          <div className="flex-1 sm:max-w-[200px]">
             <label className={labelClass}>Start time</label>
-            <input type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} />
+            <input type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={`${inputClass} w-full`} />
           </div>
-          <div className="flex-1 max-w-[200px]">
+          <div className="flex-1 sm:max-w-[200px]">
             <label className={labelClass}>End time</label>
-            <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={inputClass} />
+            <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={`${inputClass} w-full`} />
           </div>
-          <button onClick={() => refetch()} disabled={isFetching} className={primaryButtonClass}>
+          <button onClick={() => refetch()} disabled={isFetching} className={`${primaryButtonClass} w-full sm:w-auto`}>
             <Search className="w-4 h-4" />
             {isFetching ? 'Checking' : 'Check'}
           </button>

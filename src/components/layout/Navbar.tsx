@@ -79,7 +79,7 @@ export default function Navbar() {
           {NAV_LINKS.map((link) => {
             if (user && link.label === "List Your Shop") return null;
             return (
-              <Link key={link.to} to={link.to} className="whitespace-nowrap px-3 lg:px-3.5 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-950 hover:bg-white transition-all rounded-full">
+              <Link key={link.to} to={link.to} state={link.label === "List Your Shop" ? { userType: 'shop_owner' } : undefined} className="whitespace-nowrap px-3 lg:px-3.5 py-1.5 text-sm font-semibold text-slate-600 hover:text-slate-950 hover:bg-white transition-all rounded-full">
                 {link.label}
               </Link>
             );
@@ -181,7 +181,7 @@ export default function Navbar() {
                     if (user && link.label === "List Your Shop") return null;
                     const isActive = location.pathname === link.to || (link.to !== "/" && location.pathname.startsWith(link.to));
                     return (
-                      <Link key={link.to} to={link.to} className={`block px-4 py-3 text-sm font-medium rounded-xl transition-colors ${isActive ? "bg-primary/10 text-primary font-bold" : "text-foreground hover:bg-slate-100"}`} onClick={() => setMobileOpen(false)}>
+                      <Link key={link.to} to={link.to} state={link.label === "List Your Shop" ? { userType: 'shop_owner' } : undefined} className={`block px-4 py-3 text-sm font-medium rounded-xl transition-colors ${isActive ? "bg-primary/10 text-primary font-bold" : "text-foreground hover:bg-slate-100"}`} onClick={() => setMobileOpen(false)}>
                         {link.label}
                       </Link>
                     );
