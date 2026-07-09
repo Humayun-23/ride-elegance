@@ -6,6 +6,7 @@ import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import BottomNav from './BottomNav';
 import Paywall from './Paywall';
+import { ReloadPrompt } from './ReloadPrompt';
 import { RentalOSContext, type ManageBookingFocus } from './RentalOSContext';
 import type { CatalogVehicle, RentalBooking, RentalOSMe } from '../types';
 import { rentalOSErrorMessage, useInvalidateRentalOS, useRentalOSAccess } from '../hooks/useRentalOSQueries';
@@ -261,6 +262,7 @@ export default function RentalOSLayout() {
             <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
           </Suspense>
         )}
+        <ReloadPrompt />
       </div>
     </RentalOSContext.Provider>
   );

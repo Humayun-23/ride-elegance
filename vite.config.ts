@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
-
+import { VitePWA } from "vite-plugin-pwa";
 // Plugin to make Vite's injected CSS load asynchronously, eliminating render-blocking delays for the App Shell
 const asyncCssPlugin = () => ({
   name: 'async-css',
@@ -24,7 +24,53 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
-  plugins: [react(), asyncCssPlugin()],
+  plugins: [
+    react(),
+    asyncCssPlugin(),
+    VitePWA({
+      registerType: 'prompt',
+      injectRegister: false, // We will manually manage registration for the prompt component
+      manifest: {
+        scope: '/rentalos/',
+        start_url: '/rentalos/',
+        name: 'RentalOS by GoPanda',
+        short_name: 'RentalOS',
+        description: 'Manage your rental business efficiently',
+        theme_color: '#3bb881',
+        background_color: '#ffffff',
+        display: 'standalone',
+        icons: [
+          {
+            src: '/rentalos-icons/pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: '/rentalos-icons/pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          },
+          {
+            src: '/rentalos-icons/pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
+          }
+        ]
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        // We only want to cache assets inside rentalos or common assets, but globPatterns catches all static assets.
+        // It's usually fine to precache the whole shell.
+        navigateFallback: '/index.html',
+        navigateFallbackAllowlist: [/^\/rentalos/],
+      },
+      devOptions: {
+        enabled: true,
+        type: 'module',
+      }
+    })
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
