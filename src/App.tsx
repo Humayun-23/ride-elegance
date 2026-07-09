@@ -71,6 +71,7 @@ function App() {
   useEffect(() => {
     // Clean up the index.html initialization class once React boots up
     document.documentElement.classList.remove('rentalos-init');
+    (window as any).__APP_HAS_MOUNTED__ = true;
   }, []);
 
   return (

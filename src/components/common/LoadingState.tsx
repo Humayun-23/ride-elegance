@@ -8,6 +8,15 @@ let hasPlayedAnimationThisSession = false;
 
 export function LoadingState({ text = "Loading...", type = "default" }: LoadingStateProps) {
   if (type === "rentalos") {
+    // Prevent jarring green splash screen on client-side navigations
+    if (typeof window !== 'undefined' && (window as any).__APP_HAS_MOUNTED__) {
+      return (
+        <div className="min-h-screen bg-[#fafaf9] flex flex-col items-center justify-center">
+          <div className="w-8 h-8 border-4 border-[#3bb881]/30 border-t-[#3bb881] rounded-full animate-spin" />
+        </div>
+      );
+    }
+
     const animateClass = hasPlayedAnimationThisSession ? "rentalos-no-animate" : "";
     hasPlayedAnimationThisSession = true;
 
