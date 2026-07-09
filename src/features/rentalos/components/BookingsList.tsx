@@ -113,7 +113,7 @@ export default function BookingsList({ onSelectBooking }: BookingsListProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('all');
 
   const [sortCol, setSortCol] = useState<'customer' | 'vehicle' | 'end_time' | 'balance_due'>('end_time');
-  const [sortAsc, setSortAsc] = useState(true);
+  const [sortAsc, setSortAsc] = useState(false);
 
   // Use a stable 'now' for the render cycle
   const now = useMemo(() => new Date(), []);
