@@ -181,7 +181,7 @@ export default function BookingWorkflow({ booking, focusSection, onFocusHandled,
       paid_at: new Date().toISOString(),
     };
 
-    addPaymentMutation.mutate(payload as any); // Use as any to bypass exact payload matching for now since the mutation accepts `{amount, payment_type, recorded_by}` but payload is `RentalPaymentCreatePayload`
+    addPaymentMutation.mutate(payload);
   };
 
   const handleNote = () => {

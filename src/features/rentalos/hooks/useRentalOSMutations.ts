@@ -9,7 +9,15 @@ import {
   uploadHandoverPhoto,
 } from '../services/rentalosService';
 import { rentalOSKeys, rentalOSErrorMessage } from './useRentalOSQueries';
-import type { RentalBookingNote, RentalBooking, RentalPayment, RentalBookingDocument } from '../types';
+import type {
+  RentalBookingCompletePayload,
+  RentalBookingDocument,
+  RentalBookingNote,
+  RentalBooking,
+  RentalHandoverPhoto,
+  RentalPayment,
+  RentalPaymentCreatePayload,
+} from '../types';
 
 export function useAddBookingNoteMutation(bookingId: number | string | null | undefined, shopId: number | string | null | undefined) {
   const queryClient = useQueryClient();
@@ -97,7 +105,7 @@ export function useCompleteBookingMutation(bookingId: number | string | null | u
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (payload: any = {}) => completeBooking(bookingId as string | number, payload),
+    mutationFn: (payload: RentalBookingCompletePayload = {}) => completeBooking(bookingId as string | number, payload),
     onMutate: async () => {
       if (!bookingId) return;
       await queryClient.cancelQueries({ queryKey: rentalOSKeys.booking(bookingId) });
@@ -138,7 +146,7 @@ export function useAddPaymentMutation(bookingId: number | string | null | undefi
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: (payload: { amount: number, payment_type: string, recorded_by?: string }) => recordPayment(bookingId as string | number, payload),
+    mutationFn: (payload: RentalPaymentCreatePayload) => recordPayment(bookingId as string | number, payload),
     onMutate: async (newPayment) => {
       if (!bookingId) return;
       await queryClient.cancelQueries({ queryKey: rentalOSKeys.bookingPayments(bookingId) });
@@ -152,9 +160,12 @@ export function useAddPaymentMutation(bookingId: number | string | null | undefi
         booking_id: Number(bookingId),
         amount: newPayment.amount,
         payment_type: newPayment.payment_type,
-        status: 'completed',
+        status: newPayment.status,
+        method: newPayment.method,
+        reference_number: newPayment.reference_number ?? null,
+        paid_at: newPayment.paid_at ?? null,
+        received_by_user_id: null,
         created_at: new Date().toISOString(),
-        transaction_reference: null,
       };
 
       queryClient.setQueryData<RentalPayment[]>(rentalOSKeys.bookingPayments(bookingId), (old) => {
@@ -241,17 +252,22 @@ export function useUploadHandoverMutation(bookingId: number | string | null | un
     onMutate: async (formData) => {
       if (!bookingId) return;
       await queryClient.cancelQueries({ queryKey: rentalOSKeys.bookingHandoverPhotos(bookingId) });
-      const previousPhotos = queryClient.getQueryData<any[]>(rentalOSKeys.bookingHandoverPhotos(bookingId));
+      const previousPhotos = queryClient.getQueryData<RentalHandoverPhoto[]>(rentalOSKeys.bookingHandoverPhotos(bookingId));
 
-      const tempPhoto = {
+      const tempPhoto: RentalHandoverPhoto = {
         id: Math.random(),
         booking_id: Number(bookingId),
-        photo_type: (formData.get('photo_type') as string) || 'unknown',
-        file_url: URL.createObjectURL(formData.get('file') as File),
+        image_url: URL.createObjectURL(formData.get('file') as File),
+        latitude: null,
+        longitude: null,
+        location_accuracy_meters: null,
+        location_address: (formData.get('location_address') as string) || null,
+        location_permission_granted: formData.get('location_permission_granted') === 'true',
+        captured_at: (formData.get('captured_at') as string) || null,
         created_at: new Date().toISOString(),
       };
 
-      queryClient.setQueryData<any[]>(rentalOSKeys.bookingHandoverPhotos(bookingId), (old) => {
+      queryClient.setQueryData<RentalHandoverPhoto[]>(rentalOSKeys.bookingHandoverPhotos(bookingId), (old) => {
         return old ? [...old, tempPhoto] : [tempPhoto];
       });
 
