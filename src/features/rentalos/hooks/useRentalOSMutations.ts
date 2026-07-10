@@ -103,15 +103,19 @@ export function useCancelBookingMutation(bookingId: number | string | null | und
 export function useCompleteBookingMutation(bookingId: number | string | null | undefined, shopId: number | string | null | undefined) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const shopBookingsKey = shopId ? ([...rentalOSKeys.shop(shopId), 'bookings'] as const) : null;
 
   return useMutation({
     mutationFn: (payload: RentalBookingCompletePayload = {}) => completeBooking(bookingId as string | number, payload),
     onMutate: async () => {
       if (!bookingId) return;
       await queryClient.cancelQueries({ queryKey: rentalOSKeys.booking(bookingId) });
-      if (shopId) await queryClient.cancelQueries({ queryKey: rentalOSKeys.bookings(shopId) });
+      if (shopBookingsKey) await queryClient.cancelQueries({ queryKey: shopBookingsKey });
 
       const previousBooking = queryClient.getQueryData<RentalBooking>(rentalOSKeys.booking(bookingId));
+      const previousBookingLists = shopBookingsKey
+        ? queryClient.getQueriesData<RentalBooking[]>({ queryKey: shopBookingsKey })
+        : [];
       
       if (previousBooking) {
         queryClient.setQueryData<RentalBooking>(rentalOSKeys.booking(bookingId), {
@@ -120,23 +124,41 @@ export function useCompleteBookingMutation(bookingId: number | string | null | u
         });
       }
 
-      return { previousBooking };
+      if (shopBookingsKey) {
+        queryClient.setQueriesData<RentalBooking[]>({ queryKey: shopBookingsKey }, (old) => {
+          return old?.map((booking) => (
+            booking.id === Number(bookingId) ? { ...booking, status: 'completed' } : booking
+          ));
+        });
+      }
+
+      return { previousBooking, previousBookingLists };
     },
     onError: (err, variables, context) => {
       if (bookingId && context?.previousBooking) {
         queryClient.setQueryData(rentalOSKeys.booking(bookingId), context.previousBooking);
       }
+      context?.previousBookingLists?.forEach(([queryKey, data]) => {
+        queryClient.setQueryData(queryKey, data);
+      });
       toast({ variant: 'destructive', title: 'Error', description: rentalOSErrorMessage(err, 'Failed to complete booking') });
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
+      const completedBooking = response.data;
+      if (bookingId) {
+        queryClient.setQueryData<RentalBooking>(rentalOSKeys.booking(bookingId), completedBooking);
+      }
+      if (shopBookingsKey) {
+        queryClient.setQueriesData<RentalBooking[]>({ queryKey: shopBookingsKey }, (old) => {
+          return old?.map((booking) => (
+            booking.id === completedBooking.id ? { ...booking, ...completedBooking } : booking
+          ));
+        });
+      }
       toast({ title: 'Success', description: 'Booking completed successfully' });
     },
     onSettled: () => {
-      if (bookingId) queryClient.invalidateQueries({ queryKey: rentalOSKeys.booking(bookingId) });
-      if (shopId) {
-        queryClient.invalidateQueries({ queryKey: rentalOSKeys.bookings(shopId) });
-        queryClient.invalidateQueries({ queryKey: rentalOSKeys.shop(shopId) });
-      }
+      if (bookingId) queryClient.invalidateQueries({ queryKey: rentalOSKeys.bookingDocuments(bookingId) });
     },
   });
 }
