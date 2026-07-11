@@ -49,7 +49,7 @@ export default function ShopDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { setDynamicNumber, setDynamicMessage } = useWhatsApp();
+  const { setDynamicNumber, setDynamicMessage, setShopContext } = useWhatsApp();
 
   const isAdmin = user?.user_type === "admin";
   const isOwner = isAdmin || (user?.user_type === "shop_owner" && shop?.owner_id === user?.id);
@@ -59,8 +59,9 @@ export default function ShopDetail() {
     return () => {
       setDynamicNumber(null);
       setDynamicMessage(null);
+      setShopContext(null);
     };
-  }, [setDynamicNumber, setDynamicMessage]);
+  }, [setDynamicNumber, setDynamicMessage, setShopContext]);
 
   useEffect(() => {
     if (!id) return;
@@ -74,6 +75,7 @@ export default function ShopDetail() {
       if (s?.phone_number) {
         setDynamicNumber(s.phone_number);
         setDynamicMessage(`Hi! I'm interested in renting a vehicle from ${s.name || 'your shop'} listed on GoPanda.`);
+        setShopContext({ id: s.id, name: s.name });
       }
     }).finally(() => setLoading(false));
   }, [id]);

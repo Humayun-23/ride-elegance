@@ -5,6 +5,8 @@ interface WhatsAppContextType {
   setDynamicNumber: (number: string | null) => void;
   dynamicMessage: string | null;
   setDynamicMessage: (message: string | null) => void;
+  shopContext: { id?: string | number, name?: string } | null;
+  setShopContext: (shop: { id?: string | number, name?: string } | null) => void;
 }
 
 const WhatsAppContext = createContext<WhatsAppContextType | undefined>(undefined);
@@ -12,6 +14,7 @@ const WhatsAppContext = createContext<WhatsAppContextType | undefined>(undefined
 export function WhatsAppProvider({ children }: { children: ReactNode }) {
   const [dynamicNumber, setDynamicNumber] = useState<string | null>(null);
   const [dynamicMessage, setDynamicMessage] = useState<string | null>(null);
+  const [shopContext, setShopContext] = useState<{ id?: string | number, name?: string } | null>(null);
 
   return (
     <WhatsAppContext.Provider
@@ -20,6 +23,8 @@ export function WhatsAppProvider({ children }: { children: ReactNode }) {
         setDynamicNumber,
         dynamicMessage,
         setDynamicMessage,
+        shopContext,
+        setShopContext,
       }}
     >
       {children}

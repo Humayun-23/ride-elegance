@@ -13,6 +13,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@datadog/browser-rum": "^7.5.0",
+    "@datadog/browser-rum-react": "^7.5.0",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/space-grotesk": "^5.2.10",
     "@hookform/resolvers": "^3.10.0",

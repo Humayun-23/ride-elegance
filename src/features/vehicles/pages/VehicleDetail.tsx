@@ -28,6 +28,7 @@ import VehicleCard from "@/features/vehicles/components/VehicleCard";
 import { buildWhatsAppUrl, formatIndianPhone } from "@/lib/phone";
 import { QRCodeSVG } from "qrcode.react";
 import { useWhatsApp } from "@/context/WhatsAppContext";
+import { datadogRum } from '@datadog/browser-rum';
 
 const TYPE_ICON: Record<string, any> = {
   scooty: Bike,
@@ -113,15 +114,16 @@ export default function VehicleDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { setDynamicNumber, setDynamicMessage } = useWhatsApp();
+  const { setDynamicNumber, setDynamicMessage, setShopContext } = useWhatsApp();
 
   useEffect(() => {
     // Clear dynamic number when component unmounts
     return () => {
       setDynamicNumber(null);
       setDynamicMessage(null);
+      setShopContext(null);
     };
-  }, [setDynamicNumber, setDynamicMessage]);
+  }, [setDynamicNumber, setDynamicMessage, setShopContext]);
 
   useEffect(() => {
     if (!id) return;
@@ -144,6 +146,7 @@ export default function VehicleDetail() {
         if (res.data.shop?.phone_number) {
           setDynamicNumber(res.data.shop.phone_number);
           setDynamicMessage(`Hi! I'm interested in the ${res.data.vehicle?.name} listed on GoPanda.`);
+          setShopContext({ id: res.data.shop.id, name: res.data.shop.name });
         }
       } catch (err: any) {
         if (!active || err.name === 'CanceledError' || err.message === 'canceled') return;
@@ -583,6 +586,16 @@ ${rejectLink}`;
                     <Button
                       className="w-full font-display gap-2 rounded-xl"
                       size="lg"
+                      onClick={() => {
+                        if (datadogRum) {
+                          datadogRum.addAction('review_booking_button_click', {
+                            shop_id: shop?.id,
+                            shop_name: shop?.name,
+                            vehicle_id: vehicle?.id,
+                            vehicle_name: vehicle?.name
+                          });
+                        }
+                      }}
                       disabled={booking || vehicle.is_available === false || !startTime || !endTime || Boolean(bookingRangeError)}
                     >
                       <Calendar className="h-4 w-4" />

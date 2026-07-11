@@ -54,18 +54,20 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  const [isFareEdited, setIsFareEdited] = useState(false);
+
   const effectiveBikeId = selectedVehicle?.bike_id ? String(selectedVehicle.bike_id) : '';
   const isExisting = initialCustomer?.found;
 
   useEffect(() => {
-    if (selectedVehicle?.price_per_day && startTime && endTime) {
+    if (selectedVehicle?.price_per_day && startTime && endTime && !isFareEdited) {
       const ms = new Date(endTime).getTime() - new Date(startTime).getTime();
       const hours = ms / (1000 * 60 * 60);
       let days = Math.ceil(hours / 24);
       if (days < 1) days = 1; // Minimum 1 day charge
       setTotal(selectedVehicle.price_per_day * days);
     }
-  }, [selectedVehicle, startTime, endTime]);
+  }, [selectedVehicle, startTime, endTime, isFareEdited]);
 
   const handleCreate = async () => {
     if (!shopId || !effectiveBikeId || !phone || !startTime || !endTime) {
@@ -293,7 +295,10 @@ export default function CreateBooking({ initialCustomer, onCreated, onCancel }: 
             <input
               type="number"
               value={total}
-              onChange={(e) => setTotal(Number(e.target.value))}
+              onChange={(e) => {
+                setTotal(Number(e.target.value));
+                setIsFareEdited(true);
+              }}
               className={`${customInput} pl-9`}
             />
           </div>

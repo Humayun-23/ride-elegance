@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useWhatsApp } from "@/context/WhatsAppContext";
+import { datadogRum } from '@datadog/browser-rum';
 
 const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "918638578854";
 const DEFAULT_MESSAGE = "Hi! I'd like to know more about renting a vehicle on GoPanda.";
 
 export default function WhatsAppButton() {
   const [isHovered, setIsHovered] = useState(false);
-  const { dynamicNumber, dynamicMessage } = useWhatsApp();
+  const { dynamicNumber, dynamicMessage, shopContext } = useWhatsApp();
   const location = useLocation();
 
   const isVehicleOrShopPage = location.pathname.startsWith("/bikes/") || location.pathname.startsWith("/shops/");
@@ -21,9 +22,23 @@ export default function WhatsAppButton() {
 
   const whatsappUrl = `https://wa.me/${numberToUse}?text=${encodeURIComponent(messageToUse)}`;
 
+  const handleWhatsAppClick = () => {
+    if (datadogRum) {
+      if (shopContext?.id) {
+        datadogRum.addAction('whatsapp_button_click', {
+          shop_id: shopContext.id,
+          shop_name: shopContext.name,
+        });
+      } else {
+        datadogRum.addAction('whatsapp_button_click_global');
+      }
+    }
+  };
+
   return (
     <a
       href={whatsappUrl}
+      onClick={handleWhatsAppClick}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with us on WhatsApp"
