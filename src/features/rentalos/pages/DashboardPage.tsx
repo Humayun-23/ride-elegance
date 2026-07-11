@@ -100,6 +100,10 @@ function statusTone(status: string) {
   return 'rl-pill-warn';
 }
 
+function listOrEmpty<T>(value: T[] | null | undefined): T[] {
+  return Array.isArray(value) ? value : [];
+}
+
 function KpiCard({
   label,
   value,
@@ -257,10 +261,10 @@ export default function DashboardPage() {
   const dashboard = useMemo(() => {
     if (!details) return { overdue: [], timeline: [], timelineGroups: [], activeTrips: [], attention: { overdue: [], unpaid: [], flagged: [], documentChecks: [] } };
 
-    const timelineEvents = details.timeline_events ?? [];
-    const activeTripsDueToday = details.active_trips_due_today ?? [];
-    const unpaidBookings = details.unpaid_bookings ?? [];
-    const flaggedBookings = details.flagged_bookings ?? [];
+    const timelineEvents = listOrEmpty(details.timeline_events);
+    const activeTripsDueToday = listOrEmpty(details.active_trips_due_today);
+    const unpaidBookings = listOrEmpty(details.unpaid_bookings);
+    const flaggedBookings = listOrEmpty(details.flagged_bookings);
 
     const overdue = timelineEvents.filter(e => e.overdue && e.type === 'return').map(e => e.booking);
 
