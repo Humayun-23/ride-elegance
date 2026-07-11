@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import WhatsAppButton from "@/components/common/WhatsAppButton";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,7 +24,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SEO } from "@/components/common/SEO";
 import { EmptyState } from "@/components/common/EmptyState";
 import { getShop } from "@/features/shops/services/shopService";
-import { useWhatsApp } from "@/context/WhatsAppContext";
 
 const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || "918011401900";
 
@@ -49,19 +49,9 @@ export default function ShopDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { setDynamicNumber, setDynamicMessage, setShopContext } = useWhatsApp();
 
   const isAdmin = user?.user_type === "admin";
   const isOwner = isAdmin || (user?.user_type === "shop_owner" && shop?.owner_id === user?.id);
-
-  useEffect(() => {
-    // Clear dynamic number when component unmounts
-    return () => {
-      setDynamicNumber(null);
-      setDynamicMessage(null);
-      setShopContext(null);
-    };
-  }, [setDynamicNumber, setDynamicMessage, setShopContext]);
 
   useEffect(() => {
     if (!id) return;
@@ -71,12 +61,6 @@ export default function ShopDetail() {
     ]).then(([s, b]) => {
       setShop(s);
       setBikes(Array.isArray(b) ? b : []);
-      
-      if (s?.phone_number) {
-        setDynamicNumber(s.phone_number);
-        setDynamicMessage(`Hi! I'm interested in renting a vehicle from ${s.name || 'your shop'} listed on GoPanda.`);
-        setShopContext({ id: s.id, name: s.name });
-      }
     }).finally(() => setLoading(false));
   }, [id]);
 
@@ -257,7 +241,7 @@ export default function ShopDetail() {
                   <p className="text-xs text-muted-foreground max-w-2xl">
                     GoPanda is built in Assam to make local vehicle rentals simpler, safer, and more transparent.
                   </p>
-                  
+
                   {(contactShopUrl || mapUrl) && (
                     <div className="flex flex-col sm:flex-row gap-3 pt-2 w-full sm:w-auto">
                       {contactShopUrl && (
@@ -467,6 +451,12 @@ export default function ShopDetail() {
         </Dialog>
 
       </div>
+
+      <WhatsAppButton
+        dynamicNumber={shop?.phone_number}
+        dynamicMessage={`Hi! I'm interested in renting a vehicle from ${shop?.name || 'your shop'} listed on GoPanda.`}
+        shopContext={{ id: shop?.id, name: shop?.name }}
+      />
     </div>
   );
 }

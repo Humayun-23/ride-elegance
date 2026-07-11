@@ -86,6 +86,14 @@ export interface RentalBooking {
   } | null;
 }
 
+export interface RentalBookingCounts {
+  all: number;
+  active: number;
+  due_today: number;
+  overdue: number;
+  completed: number;
+}
+
 export interface RentalDashboardSummary {
   generated_at: string;
   active_count: number;
@@ -100,6 +108,19 @@ export interface RentalDashboardSummary {
   revenue_delta: number;
   monthly_booking_count: number;
   monthly_booking_delta: number;
+}
+
+export interface RentalDashboardDetails {
+  active_trips_due_today: RentalBooking[];
+  timeline_events: {
+    id: string;
+    booking: RentalBooking;
+    type: 'pickup' | 'return';
+    time: string;
+    overdue: boolean;
+  }[];
+  flagged_bookings: RentalBooking[];
+  unpaid_bookings: RentalBooking[];
 }
 
 export interface RentalDocument {

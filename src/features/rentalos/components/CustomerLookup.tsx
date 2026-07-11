@@ -7,7 +7,7 @@ import { useRentalOS } from './RentalOSContext';
 import { inputClass, labelClass, primaryButtonClass, secondaryButtonClass } from './ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table';
 import type { RentalCustomer, RentalCustomerSearch, RentalBooking } from '../types';
-import { rentalOSKeys, useInvalidateRentalOS } from '../hooks/useRentalOSQueries';
+import { normalizeBookingsResponse, rentalOSKeys, useInvalidateRentalOS } from '../hooks/useRentalOSQueries';
 
 const currency = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
 
@@ -56,7 +56,7 @@ export default function CustomerLookup() {
           queryClient
             .fetchQuery({
               queryKey: rentalOSKeys.bookings(shopId, { customer_id: customerResult.id }),
-              queryFn: async () => (await getBookings(shopId, { customer_id: customerResult.id })).data,
+              queryFn: async () => normalizeBookingsResponse((await getBookings(shopId, { customer_id: customerResult.id })).data).items,
               staleTime: 30 * 1000,
             })
             .then((bookings) => setHistory(bookings))

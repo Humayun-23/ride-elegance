@@ -6,7 +6,6 @@ import { AuthProvider } from './features/auth/context/AuthContext';
 import { FavoritesProvider } from './features/vehicles/context/FavoritesContext';
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Toaster } from './components/ui/toaster';
-import { WhatsAppProvider } from './context/WhatsAppContext';
 
 import MainLayout from './components/layout/MainLayout';
 const Index = lazy(() => import('./pages/Index'));
@@ -78,7 +77,6 @@ function App() {
   return (
     <AuthProvider>
       <FavoritesProvider>
-        <WhatsAppProvider>
           <BrowserRouter>
             <ScrollToTop />
             <Routes>
@@ -150,7 +148,6 @@ function App() {
               </Route>
             </Routes>
           </BrowserRouter>
-        </WhatsAppProvider>
       </FavoritesProvider>
       <Toaster />
     </AuthProvider>

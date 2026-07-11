@@ -20,14 +20,14 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { ArrowLeft, Gauge, Calendar, Info, Shield, Clock, CheckCircle2, Star, MessageSquare, ChevronRight, Phone, MapPinned, MapPin, Bike, Car, Zap } from "lucide-react";
+import { ArrowLeft, Star, Clock, MapPin, Gauge, Calendar, Info, Shield, Bike, Car, Zap, CheckCircle2, ChevronRight, Phone, MapPinned, MessageSquare } from "lucide-react";
+import WhatsAppButton from "@/components/common/WhatsAppButton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SEO } from "@/components/common/SEO";
 import { EmptyState } from "@/components/common/EmptyState";
 import VehicleCard from "@/features/vehicles/components/VehicleCard";
 import { buildWhatsAppUrl, formatIndianPhone } from "@/lib/phone";
 import { QRCodeSVG } from "qrcode.react";
-import { useWhatsApp } from "@/context/WhatsAppContext";
 import { datadogRum } from '@datadog/browser-rum';
 
 const TYPE_ICON: Record<string, any> = {
@@ -114,16 +114,6 @@ export default function VehicleDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { setDynamicNumber, setDynamicMessage, setShopContext } = useWhatsApp();
-
-  useEffect(() => {
-    // Clear dynamic number when component unmounts
-    return () => {
-      setDynamicNumber(null);
-      setDynamicMessage(null);
-      setShopContext(null);
-    };
-  }, [setDynamicNumber, setDynamicMessage, setShopContext]);
 
   useEffect(() => {
     if (!id) return;
@@ -142,12 +132,6 @@ export default function VehicleDetail() {
         setAvailability(res.data.availability ?? null);
         setShop(res.data.shop ?? null);
         setReviews(Array.isArray(res.data.reviews) ? res.data.reviews : []);
-        
-        if (res.data.shop?.phone_number) {
-          setDynamicNumber(res.data.shop.phone_number);
-          setDynamicMessage(`Hi! I'm interested in the ${res.data.vehicle?.name} listed on GoPanda.`);
-          setShopContext({ id: res.data.shop.id, name: res.data.shop.name });
-        }
       } catch (err: any) {
         if (!active || err.name === 'CanceledError' || err.message === 'canceled') return;
         setVehicle(null);
@@ -217,14 +201,14 @@ export default function VehicleDetail() {
     const toDate = new Date(booking.end_time).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
     const message = `*--- NEW BOOKING REQUEST ---*
-    
+
 *Vehicle:* ${vehicleName}
 *Customer:* ${customerName}
 *From:* ${fromDate}
 *To:* ${toDate}
 
 *Payment Details:*
-Token Received: *Rs.${booking.token_amount || 299}* 
+Token Received: *Rs.${booking.token_amount || 299}*
 Customer UTR Number: *${booking.utr_number}*
 Balance to Collect at Shop: *Rs.${Math.max(0, (booking.total_price || 0) - (booking.token_amount || 299))}*
 
@@ -513,7 +497,7 @@ ${rejectLink}`;
                     <div>
                       <span className="text-primary font-display text-3xl font-bold">₹{vehicle.price_per_hour}</span>
                       <span className="text-muted-foreground text-sm">/hour</span>
-                    </div> 
+                    </div>
                   )*/}
                   {vehicle.price_per_day != null && (
                     <div>
@@ -843,6 +827,11 @@ ${rejectLink}`;
           )}
         </div>
       </div>
+      <WhatsAppButton
+        dynamicNumber={shop?.phone_number}
+        dynamicMessage={`Hi! I'm interested in the ${vehicle?.name} listed on GoPanda.`}
+        shopContext={{ id: shop?.id, name: shop?.name }}
+      />
     </div>
   );
 }

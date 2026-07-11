@@ -29,9 +29,14 @@ export default function CustomersPage() {
     [selectedCustomer],
   );
   const {
-    data: history = [],
+    data: historyPages,
     isLoading: loadingHistory,
-  } = useRentalOSBookings(shopId, historyFilters, { enabled: Boolean(selectedCustomer) });
+  } = useRentalOSBookings(shopId, historyFilters, { enabled: Boolean(selectedCustomer), limit: 100 });
+
+  const history = useMemo(
+    () => historyPages?.pages.flatMap((page) => page.items) || [],
+    [historyPages],
+  );
 
   useEffect(() => {
     setSelectedCustomer((current) => {

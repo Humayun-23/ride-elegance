@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import {
   addBookingNote,
@@ -18,6 +18,13 @@ import type {
   RentalPayment,
   RentalPaymentCreatePayload,
 } from '../types';
+
+function invalidateShopDashboard(queryClient: QueryClient, shopId: number | string | null | undefined) {
+  if (!shopId) return;
+  queryClient.invalidateQueries({ queryKey: rentalOSKeys.dashboardSummary(shopId) });
+  queryClient.invalidateQueries({ queryKey: rentalOSKeys.dashboardDetails(shopId) });
+  queryClient.invalidateQueries({ queryKey: rentalOSKeys.bookings(shopId) });
+}
 
 export function useAddBookingNoteMutation(bookingId: number | string | null | undefined, shopId: number | string | null | undefined) {
   const queryClient = useQueryClient();
@@ -54,7 +61,7 @@ export function useAddBookingNoteMutation(bookingId: number | string | null | un
     },
     onSettled: () => {
       if (bookingId) queryClient.invalidateQueries({ queryKey: rentalOSKeys.bookingNotes(bookingId) });
-      if (shopId) queryClient.invalidateQueries({ queryKey: rentalOSKeys.shop(shopId) });
+      invalidateShopDashboard(queryClient, shopId);
     },
   });
 }
@@ -93,8 +100,7 @@ export function useCancelBookingMutation(bookingId: number | string | null | und
     onSettled: () => {
       if (bookingId) queryClient.invalidateQueries({ queryKey: rentalOSKeys.booking(bookingId) });
       if (shopId) {
-        queryClient.invalidateQueries({ queryKey: rentalOSKeys.bookings(shopId) });
-        queryClient.invalidateQueries({ queryKey: rentalOSKeys.shop(shopId) });
+        invalidateShopDashboard(queryClient, shopId);
       }
     },
   });
@@ -103,20 +109,21 @@ export function useCancelBookingMutation(bookingId: number | string | null | und
 export function useCompleteBookingMutation(bookingId: number | string | null | undefined, shopId: number | string | null | undefined) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const shopBookingsKey = shopId ? ([...rentalOSKeys.shop(shopId), 'bookings'] as const) : null;
 
   return useMutation({
     mutationFn: (payload: RentalBookingCompletePayload = {}) => completeBooking(bookingId as string | number, payload),
     onMutate: async () => {
       if (!bookingId) return;
+      const completionToast = toast({
+        title: 'Completing booking...',
+        description: 'Updating trip status and refreshing RentalOS.',
+      });
+
       await queryClient.cancelQueries({ queryKey: rentalOSKeys.booking(bookingId) });
-      if (shopBookingsKey) await queryClient.cancelQueries({ queryKey: shopBookingsKey });
+      if (shopId) await queryClient.cancelQueries({ queryKey: rentalOSKeys.bookings(shopId) });
 
       const previousBooking = queryClient.getQueryData<RentalBooking>(rentalOSKeys.booking(bookingId));
-      const previousBookingLists = shopBookingsKey
-        ? queryClient.getQueriesData<RentalBooking[]>({ queryKey: shopBookingsKey })
-        : [];
-      
+
       if (previousBooking) {
         queryClient.setQueryData<RentalBooking>(rentalOSKeys.booking(bookingId), {
           ...previousBooking,
@@ -124,41 +131,45 @@ export function useCompleteBookingMutation(bookingId: number | string | null | u
         });
       }
 
-      if (shopBookingsKey) {
-        queryClient.setQueriesData<RentalBooking[]>({ queryKey: shopBookingsKey }, (old) => {
-          return old?.map((booking) => (
-            booking.id === Number(bookingId) ? { ...booking, status: 'completed' } : booking
-          ));
-        });
-      }
-
-      return { previousBooking, previousBookingLists };
+      return { completionToast, previousBooking };
     },
     onError: (err, variables, context) => {
       if (bookingId && context?.previousBooking) {
         queryClient.setQueryData(rentalOSKeys.booking(bookingId), context.previousBooking);
       }
-      context?.previousBookingLists?.forEach(([queryKey, data]) => {
-        queryClient.setQueryData(queryKey, data);
-      });
-      toast({ variant: 'destructive', title: 'Error', description: rentalOSErrorMessage(err, 'Failed to complete booking') });
+      const description = rentalOSErrorMessage(err, 'Failed to complete booking');
+      if (context?.completionToast) {
+        context.completionToast.update({
+          variant: 'destructive',
+          title: 'Complete booking failed',
+          description,
+        });
+      } else {
+        toast({ variant: 'destructive', title: 'Complete booking failed', description });
+      }
     },
     onSuccess: (response) => {
       const completedBooking = response.data;
       if (bookingId) {
         queryClient.setQueryData<RentalBooking>(rentalOSKeys.booking(bookingId), completedBooking);
       }
-      if (shopBookingsKey) {
-        queryClient.setQueriesData<RentalBooking[]>({ queryKey: shopBookingsKey }, (old) => {
-          return old?.map((booking) => (
-            booking.id === completedBooking.id ? { ...booking, ...completedBooking } : booking
-          ));
-        });
-      }
-      toast({ title: 'Success', description: 'Booking completed successfully' });
     },
-    onSettled: () => {
-      if (bookingId) queryClient.invalidateQueries({ queryKey: rentalOSKeys.bookingDocuments(bookingId) });
+    onSettled: (response, error, variables, context) => {
+      if (!error) {
+        if (context?.completionToast) {
+          context.completionToast.update({
+            title: 'Booking completed',
+            description: 'Trip status and dashboard are being refreshed.',
+          });
+        } else {
+          toast({ title: 'Booking completed', description: 'Trip status and dashboard are being refreshed.' });
+        }
+      }
+      if (bookingId) {
+        queryClient.invalidateQueries({ queryKey: rentalOSKeys.booking(bookingId) });
+        queryClient.invalidateQueries({ queryKey: rentalOSKeys.bookingDocuments(bookingId) });
+      }
+      invalidateShopDashboard(queryClient, shopId);
     },
   });
 }
@@ -218,7 +229,7 @@ export function useAddPaymentMutation(bookingId: number | string | null | undefi
         queryClient.invalidateQueries({ queryKey: rentalOSKeys.bookingPayments(bookingId) });
         queryClient.invalidateQueries({ queryKey: rentalOSKeys.booking(bookingId) });
       }
-      if (shopId) queryClient.invalidateQueries({ queryKey: rentalOSKeys.shop(shopId) });
+      invalidateShopDashboard(queryClient, shopId);
     },
   });
 }
@@ -260,7 +271,7 @@ export function useUploadDocumentMutation(bookingId: number | string | null | un
     },
     onSettled: () => {
       if (bookingId) queryClient.invalidateQueries({ queryKey: rentalOSKeys.bookingDocuments(bookingId) });
-      if (shopId) queryClient.invalidateQueries({ queryKey: rentalOSKeys.shop(shopId) });
+      invalidateShopDashboard(queryClient, shopId);
     },
   });
 }
@@ -306,7 +317,7 @@ export function useUploadHandoverMutation(bookingId: number | string | null | un
     },
     onSettled: () => {
       if (bookingId) queryClient.invalidateQueries({ queryKey: rentalOSKeys.bookingHandoverPhotos(bookingId) });
-      if (shopId) queryClient.invalidateQueries({ queryKey: rentalOSKeys.shop(shopId) });
+      invalidateShopDashboard(queryClient, shopId);
     },
   });
 }

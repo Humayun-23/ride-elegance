@@ -61,6 +61,7 @@ export default function CompleteTripModal({ booking, isOpen, onClose, onComplete
 
     setLoading(true);
     setMessage('');
+    const completionToastId = toast.loading('Completing booking...');
 
     try {
       const payload: RentalBookingCompletePayload = {
@@ -75,10 +76,12 @@ export default function CompleteTripModal({ booking, isOpen, onClose, onComplete
       }
 
       await completeBooking(booking.id, payload);
-      toast.success('Trip completed successfully');
+      toast.success('Booking completed', { id: completionToastId });
       onComplete();
     } catch (err: unknown) {
-      setMessage(rentalOSErrorMessage(err, 'Failed to complete trip'));
+      const description = rentalOSErrorMessage(err, 'Failed to complete booking');
+      setMessage(description);
+      toast.error(description, { id: completionToastId });
       setLoading(false);
     }
   };

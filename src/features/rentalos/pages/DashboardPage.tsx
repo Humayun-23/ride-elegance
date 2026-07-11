@@ -20,7 +20,7 @@ import { useRentalOS } from '../components/RentalOSContext';
 import { Card, EmptyState } from '../components/ui';
 import type { RentalBooking } from '../types';
 import ActiveTripCard from '../components/ActiveTripCard';
-import { useRentalOSBookings, useRentalOSDashboardSummary } from '../hooks/useRentalOSQueries';
+import { useRentalOSDashboardDetails, useRentalOSDashboardSummary } from '../hooks/useRentalOSQueries';
 
 const AddVehicleModal = lazy(() => import('../components/AddVehicleModal'));
 const CompleteTripModal = lazy(() => import('../components/CompleteTripModal'));
@@ -32,7 +32,7 @@ type TimelineEvent = {
   id: string;
   booking: RentalBooking;
   type: 'pickup' | 'return';
-  time: Date;
+  time: string;
   overdue: boolean;
 };
 
@@ -77,6 +77,12 @@ function formatTime(dateStr: string) {
   const date = safeDate(dateStr);
   if (!date) return '--:--';
   return date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatHour(dateStr: string) {
+  const date = safeDate(dateStr);
+  if (!date) return 'Unknown';
+  return date.toLocaleTimeString('en-IN', { hour: '2-digit' });
 }
 
 function formatDelta(value: number, money = false, suffix = 'vs yesterday') {
@@ -218,16 +224,16 @@ const itemVariants = {
 export default function DashboardPage() {
   const { activeShop, isOwner, shopId, refreshBookings, setSelectedBooking } = useRentalOS();
   const {
-    data: bookings = [],
-    isLoading: loading,
-    isFetching,
-    dataUpdatedAt,
-  } = useRentalOSBookings(shopId, { dashboard: true }, { refetchInterval: 30000 });
-  const {
     data: summary,
     isFetching: isFetchingSummary,
     dataUpdatedAt: summaryUpdatedAt,
-  } = useRentalOSDashboardSummary(shopId, { refetchInterval: 30000 });
+  } = useRentalOSDashboardSummary(shopId, { refetchInterval: 60000 });
+  const {
+    data: details,
+    isFetching: isFetchingDetails,
+    dataUpdatedAt: detailsUpdatedAt,
+  } = useRentalOSDashboardDetails(shopId, { enabled: Boolean(summary), refetchInterval: 180000 });
+
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [currentTime, setCurrentTime] = useState(() => new Date());
   const [metricPulse, setMetricPulse] = useState(false);
@@ -238,7 +244,7 @@ export default function DashboardPage() {
   const [addVehicleOpen, setAddVehicleOpen] = useState(false);
 
   useEffect(() => {
-    const latestUpdatedAt = Math.max(dataUpdatedAt || 0, summaryUpdatedAt || 0);
+    const latestUpdatedAt = Math.max(summaryUpdatedAt || 0, detailsUpdatedAt || 0);
     if (!latestUpdatedAt) return;
     const refreshedAt = new Date(latestUpdatedAt);
     setLastUpdated(refreshedAt);
@@ -246,38 +252,20 @@ export default function DashboardPage() {
     setMetricPulse(true);
     const pulseTimer = window.setTimeout(() => setMetricPulse(false), 700);
     return () => window.clearTimeout(pulseTimer);
-  }, [dataUpdatedAt, summaryUpdatedAt]);
-
-  const now = currentTime;
+  }, [detailsUpdatedAt, summaryUpdatedAt]);
 
   const dashboard = useMemo(() => {
-    const active = bookings.filter(isOpenBooking);
-    const overdue = active.filter((booking) => isOverdue(booking, now));
+    if (!details) return { overdue: [], timeline: [], timelineGroups: [], activeTrips: [], attention: { overdue: [], unpaid: [], flagged: [], documentChecks: [] } };
 
-    const activeTripsDueToday = active.filter((b) => {
-      const end = safeDate(b.end_time);
-      if (!end) return false;
-      return isSameDay(b.end_time, now) || end < now;
-    });
+    const timelineEvents = details.timeline_events ?? [];
+    const activeTripsDueToday = details.active_trips_due_today ?? [];
+    const unpaidBookings = details.unpaid_bookings ?? [];
+    const flaggedBookings = details.flagged_bookings ?? [];
 
-    const timeline = bookings
-      .filter((booking) => !isClosedBooking(booking))
-      .flatMap<TimelineEvent>((booking) => {
-        const pickup = safeDate(booking.start_time);
-        const drop = safeDate(booking.end_time);
-        const events: TimelineEvent[] = [];
-        if (pickup && isSameDay(booking.start_time, now)) {
-          events.push({ id: `${booking.id}-pickup`, booking, type: 'pickup', time: pickup, overdue: false });
-        }
-        if (drop && isSameDay(booking.end_time, now)) {
-          events.push({ id: `${booking.id}-return`, booking, type: 'return', time: drop, overdue: isOverdue(booking, now) });
-        }
-        return events;
-      })
-      .sort((a, b) => Number(b.overdue) - Number(a.overdue) || a.time.getTime() - b.time.getTime());
+    const overdue = timelineEvents.filter(e => e.overdue && e.type === 'return').map(e => e.booking);
 
-    const timelineGroups = timeline.reduce<Array<{ hour: string; events: TimelineEvent[] }>>((groups, event) => {
-      const hour = event.overdue ? 'Overdue' : event.time.toLocaleTimeString('en-IN', { hour: '2-digit' });
+    const timelineGroups = timelineEvents.reduce<Array<{ hour: string; events: TimelineEvent[] }>>((groups, event) => {
+      const hour = event.overdue ? 'Overdue' : formatHour(event.time);
       const existing = groups.find((group) => group.hour === hour);
       if (existing) {
         existing.events.push(event);
@@ -296,24 +284,22 @@ export default function DashboardPage() {
       return left.localeCompare(right) * direction;
     });
 
-    const flagged = bookings.filter((booking) => booking.customer?.current_flag_status);
-    const unpaid = bookings
-      .filter((booking) => booking.balance_due > 0 && !overdue.some((item) => item.id === booking.id))
-      .sort((a, b) => b.balance_due - a.balance_due);
+    // Some basic attention checks
+    const documentChecks = activeTripsDueToday.filter(b => b.status === 'active').slice(0, 2);
 
     return {
       overdue,
-      timeline,
+      timeline: timelineEvents,
       timelineGroups,
       activeTrips: sortedActiveTrips,
       attention: {
         overdue: overdue.slice(0, 3),
-        unpaid: unpaid.slice(0, 3),
-        flagged: flagged.slice(0, 2),
-        documentChecks: active.slice(0, 2),
+        unpaid: unpaidBookings.slice(0, 3),
+        flagged: flaggedBookings.slice(0, 2),
+        documentChecks,
       },
     };
-  }, [bookings, now, sortDirection, sortKey]);
+  }, [details, sortDirection, sortKey]);
 
   const kpiSyncing = !summary;
   const kpiValue = (value: number, money = false) => {
@@ -363,7 +349,7 @@ export default function DashboardPage() {
           </p>
         </div>
         <p className="rl-num flex items-center gap-1.5 text-[11px] text-[color:var(--rl-faint)]">
-          {isFetching || isFetchingSummary ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Clock3 className="h-3.5 w-3.5" />}
+          {isFetchingSummary || isFetchingDetails ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Clock3 className="h-3.5 w-3.5" />}
           {lastUpdated ? `Updated ${lastUpdated.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}` : 'Syncing'}
         </p>
       </div>
@@ -383,8 +369,8 @@ export default function DashboardPage() {
           <h2 className="text-[18px] font-bold text-[color:var(--rl-ink)]">Active Bookings Due Today</h2>
           <p className="text-[13px] text-[color:var(--rl-muted)]">Mark returned vehicles as completed and make them available again.</p>
         </div>
-        
-        {loading && bookings.length === 0 ? (
+
+        {!details ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map(i => <TripCardSkeleton key={i} />)}
           </div>
@@ -397,10 +383,10 @@ export default function DashboardPage() {
           <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {dashboard.activeTrips.map((booking) => (
               <motion.div key={booking.id} variants={itemVariants} className="h-full">
-                <ActiveTripCard 
-                  booking={booking} 
-                  onRecordPayment={setPaymentBooking} 
-                  onCompleteTrip={(b) => setCompleteBookingData(b)} 
+                <ActiveTripCard
+                  booking={booking}
+                  onRecordPayment={setPaymentBooking}
+                  onCompleteTrip={(b) => setCompleteBookingData(b)}
                 />
               </motion.div>
             ))}
@@ -412,7 +398,7 @@ export default function DashboardPage() {
         <Card className="overflow-hidden">
           <PanelHeader title="Today's timeline" meta={`${dashboard.timeline.length} events`} />
           <div className="max-h-[560px] overflow-y-auto">
-            {loading && bookings.length === 0 ? (
+            {!details ? (
               <TimelineSkeleton />
             ) : dashboard.timeline.length === 0 ? (
               <div className="p-8">
@@ -428,12 +414,12 @@ export default function DashboardPage() {
                     <div className="relative">
                       {/* Vertical line connecting nodes */}
                       <div className="absolute top-0 bottom-0 left-[75px] w-[2px] bg-gray-100 z-0"></div>
-                      
+
                       {group.events.map((event) => {
                         const isOverdue = event.overdue;
                         const isPickup = event.type === 'pickup';
                         const dotColor = isOverdue ? 'bg-[color:var(--rl-danger)]' : isPickup ? 'bg-[color:var(--rl-info)]' : 'bg-[color:var(--rl-warn)]';
-                        
+
                         return (
                           <motion.button
                             initial={{ opacity: 0, y: 5 }}
@@ -444,12 +430,12 @@ export default function DashboardPage() {
                             className={`relative flex w-full items-start gap-4 px-4 py-3 text-left transition-colors hover:bg-[color:var(--rl-hover)] ${event.overdue ? 'bg-[color:var(--rl-danger-soft)]/60' : ''}`}
                           >
                             <span className={`rl-num w-14 shrink-0 text-right text-[12px] font-semibold mt-0.5 ${event.overdue ? 'text-[color:var(--rl-danger)]' : 'text-[color:var(--rl-muted)]'}`}>
-                              {formatTime(event.time.toISOString())}
+                              {formatTime(event.time)}
                             </span>
-                            
+
                             {/* Timeline Node */}
                             <div className={`w-2.5 h-2.5 rounded-full mt-[7px] shrink-0 z-10 ring-4 ring-white ${dotColor}`} />
-                            
+
                             <span className="min-w-0 flex-1 pl-1">
                               <span className="flex items-center gap-2">
                                 <span className={`rl-pill ${isPickup ? 'rl-pill-info' : isOverdue ? 'rl-pill-danger' : 'rl-pill-warn'}`}>
@@ -566,16 +552,16 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
-      
+
       {addVehicleOpen && (
         <Suspense fallback={null}>
           <AddVehicleModal isOpen={addVehicleOpen} onClose={() => setAddVehicleOpen(false)} />
         </Suspense>
       )}
-      
+
       {completeBookingData !== null && (
         <Suspense fallback={null}>
-          <CompleteTripModal 
+          <CompleteTripModal
             booking={completeBookingData}
             isOpen={true}
             onClose={() => setCompleteBookingData(null)}

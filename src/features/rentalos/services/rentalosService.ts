@@ -2,11 +2,13 @@ import api from '@/lib/api';
 import type {
   CatalogVehicle,
   RentalBooking,
+  RentalBookingCounts,
   RentalBookingCompletePayload,
   RentalBookingNote,
   RentalCustomer,
   RentalCustomerFlag,
   RentalCustomerSearch,
+  RentalDashboardDetails,
   RentalDashboardSummary,
   RentalDocument,
   RentalHandoverPhoto,
@@ -15,6 +17,24 @@ import type {
   RentalPaymentCreatePayload,
   RentalStaff,
 } from '../types';
+
+export type RentalBookingsResponse = {
+  items: RentalBooking[];
+  total: number;
+  counts?: RentalBookingCounts;
+};
+
+export type RentalBookingFilters = {
+  status?: string;
+  tab?: 'all' | 'active' | 'due_today' | 'overdue' | 'completed';
+  customer_id?: number;
+  start_date?: string;
+  end_date?: string;
+  dashboard?: boolean;
+  sort_by?: 'end_time' | 'customer' | 'vehicle' | 'balance_due';
+  sort_dir?: 'asc' | 'desc';
+  timezone_offset_minutes?: number;
+};
 
 export const getMe = () => {
   return api.get<RentalOSMe>('/rentalos/me');
@@ -55,13 +75,25 @@ export const createCustomer = (payload: Record<string, unknown>) => {
 
 export const getBookings = (
   shopId: number | string,
-  filters?: { status?: string; customer_id?: number; start_date?: string; end_date?: string; dashboard?: boolean },
+  filters?: RentalBookingFilters,
+  pagination?: { skip?: number; limit?: number }
 ) => {
-  return api.get<RentalBooking[]>('/rentalos/bookings', { params: { shop_id: shopId, ...filters } });
+  return api.get<RentalBookingsResponse>('/rentalos/bookings', {
+    params: { shop_id: shopId, ...filters, ...pagination }
+  });
 };
 
 export const getDashboardSummary = (shopId: number | string) => {
   return api.get<RentalDashboardSummary>('/rentalos/dashboard/summary', {
+    params: {
+      shop_id: shopId,
+      timezone_offset_minutes: new Date().getTimezoneOffset(),
+    },
+  });
+};
+
+export const getDashboardDetails = (shopId: number | string) => {
+  return api.get<RentalDashboardDetails>('/rentalos/dashboard/details', {
     params: {
       shop_id: shopId,
       timezone_offset_minutes: new Date().getTimezoneOffset(),
