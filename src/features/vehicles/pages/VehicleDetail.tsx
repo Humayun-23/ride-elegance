@@ -27,6 +27,7 @@ import { EmptyState } from "@/components/common/EmptyState";
 import VehicleCard from "@/features/vehicles/components/VehicleCard";
 import { buildWhatsAppUrl, formatIndianPhone } from "@/lib/phone";
 import { QRCodeSVG } from "qrcode.react";
+import { useWhatsApp } from "@/context/WhatsAppContext";
 
 const TYPE_ICON: Record<string, any> = {
   scooty: Bike,
@@ -112,6 +113,15 @@ export default function VehicleDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { setDynamicNumber, setDynamicMessage } = useWhatsApp();
+
+  useEffect(() => {
+    // Clear dynamic number when component unmounts
+    return () => {
+      setDynamicNumber(null);
+      setDynamicMessage(null);
+    };
+  }, [setDynamicNumber, setDynamicMessage]);
 
   useEffect(() => {
     if (!id) return;
@@ -130,6 +140,11 @@ export default function VehicleDetail() {
         setAvailability(res.data.availability ?? null);
         setShop(res.data.shop ?? null);
         setReviews(Array.isArray(res.data.reviews) ? res.data.reviews : []);
+        
+        if (res.data.shop?.phone_number) {
+          setDynamicNumber(res.data.shop.phone_number);
+          setDynamicMessage(`Hi! I'm interested in the ${res.data.vehicle?.name} listed on GoPanda.`);
+        }
       } catch (err: any) {
         if (!active || err.name === 'CanceledError' || err.message === 'canceled') return;
         setVehicle(null);

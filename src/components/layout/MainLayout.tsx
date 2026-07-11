@@ -4,6 +4,7 @@ import Navbar from './Navbar';
 import MobileBottomNav from './MobileBottomNav';
 import Footer from './Footer';
 import { LoadingState } from '../common/LoadingState';
+import WhatsAppButton from '../common/WhatsAppButton';
 
 export default function MainLayout() {
   return (
@@ -14,6 +15,7 @@ export default function MainLayout() {
       </Suspense>
       <Footer />
       <MobileBottomNav />
+      <WhatsAppButton />
     </>
   );
 }
