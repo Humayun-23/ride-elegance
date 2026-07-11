@@ -234,11 +234,9 @@ ${rejectLink}`;
     }
     if (!startTime || !endTime) { showBookingError("Select pickup and return dates."); return; }
     if (bookingRangeError) { showBookingError(bookingRangeError); return; }
-    if (utrNumber.length !== 12) { showBookingError("Please enter your 12-digit UTR number."); return; }
-
     setBooking(true);
     try {
-      const response = await createBooking({ bike_id: Number(id), start_time: startTime, end_time: endTime, utr_number: utrNumber });
+      const response = await createBooking({ bike_id: Number(id), start_time: startTime, end_time: endTime, utr_number: "000000000000" });
       const newBooking = response.data;
       const confirmationState = { booking: newBooking, vehicle, shop };
       const whatsappUrl = shop?.phone_number
@@ -534,7 +532,7 @@ ${rejectLink}`;
                     </div>
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-relaxed text-center px-2">
-                    Pay the token now to lock your dates. The balance is paid directly to the rental shop at pickup.
+                    Contact the shop owner to confirm your booking and lock your dates.
                   </p>
                 </div>
 
@@ -607,90 +605,23 @@ ${rejectLink}`;
 
                         {/* Payment Box */}
                         <div className="bg-secondary/30 border border-border/50 rounded-xl p-3 space-y-4">
-                          {shop?.upi_id ? (
-                            <>
-                              <div className="space-y-1">
-                                <Label className="text-xs font-display uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Shield className="h-3 w-3" /> Step 1: Pay Token</Label>
-                              </div>
-
-                              <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-background p-3 rounded-lg border border-border">
-                                <div className="flex flex-col gap-1 items-center md:items-start text-center md:text-left">
-                                  <span className="font-display font-bold text-2xl text-primary">₹{tokenAmount}.00</span>
-                                  <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Scan or Click to Pay</span>
-                                </div>
-
-                                {/* Desktop QR Code */}
-                                <div className="hidden md:block bg-white p-2 rounded-xl shadow-sm border border-slate-100 shrink-0">
-                                  <QRCodeSVG
-                                    value={upiPaymentUrl}
-                                    size={90}
-                                    level="L"
-                                  />
-                                </div>
-
-                                {/* Mobile Deep Link */}
-                                <div className="md:hidden w-full">
-                                  <Button asChild size="lg" className="w-full font-display">
-                                    <a href={upiPaymentUrl} target="_blank" rel="noopener noreferrer">
-                                      Pay via UPI App
-                                    </a>
-                                  </Button>
-                                </div>
-                              </div>
-
-                              <div className="space-y-2 pt-2">
-                                <div className="flex items-center justify-between">
-                                  <Label htmlFor="booking-utr-number" className="text-xs font-display uppercase tracking-wider text-muted-foreground">Step 2: Enter 12-Digit UTR</Label>
-                                  <div className="group relative">
-                                    <span className="text-[10px] text-primary underline decoration-primary/30 underline-offset-2 cursor-help">Where to find UTR?</span>
-                                    <div className="absolute right-0 bottom-full mb-2 hidden group-hover:block w-64 p-3 bg-slate-900 text-white text-[11px] rounded-xl shadow-xl z-50">
-                                      <p className="font-bold mb-1 border-b border-white/20 pb-1">Where is my 12-digit UTR/Ref Number?</p>
-                                      <ul className="list-disc pl-4 space-y-1 mt-1 text-slate-300">
-                                        <li><strong className="text-white">GPay:</strong> Open transaction history → "UPI transaction ID"</li>
-                                        <li><strong className="text-white">PhonePe:</strong> Open history → "UTR" under transfer details</li>
-                                        <li><strong className="text-white">Paytm:</strong> Open history → "UPI Ref No"</li>
-                                      </ul>
-                                      <div className="absolute -bottom-1 right-4 w-2 h-2 bg-slate-900 rotate-45"></div>
-                                    </div>
-                                  </div>
-                                </div>
-                                <Input id="booking-utr-number" placeholder="e.g. 321456789012" value={utrNumber} onChange={(e) => setUtrNumber(e.target.value)} maxLength={12} className="bg-background font-mono text-sm tracking-widest" />
-                              </div>
-                            </>
-                          ) : (
-                            <div className="text-center p-4">
-                              <Phone className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
-                              <h4 className="font-bold text-foreground mb-1">Online Booking Unavailable</h4>
-                              <p className="text-xs text-muted-foreground mb-4">This shop hasn't set up their UPI payment ID yet. Please contact them directly to reserve this vehicle.</p>
-                              {contactShopUrl && (
-                                <Button asChild className="w-full rounded-xl" variant="outline">
-                                  <a href={contactShopUrl} target="_blank" rel="noopener noreferrer">
-                                    Contact Shop via WhatsApp
-                                  </a>
-                                </Button>
-                              )}
-                            </div>
-                          )}
+                          <div className="text-center p-4">
+                            <h4 className="font-bold text-foreground mb-3 text-lg">Booking pending</h4>
+                            <p className="text-sm text-muted-foreground mb-4">Your booking is almost complete.</p>
+                            {contactShopUrl && (
+                              <Button asChild className="w-full rounded-xl gap-2 font-display text-base py-6 whitespace-normal h-auto" variant="default" onClick={handleBook}>
+                                <a href={contactShopUrl} target="_blank" rel="noopener noreferrer">
+                                  <Phone className="h-5 w-5 shrink-0" /> Booking pending, click here to call the owner to confirm your booking
+                                </a>
+                              </Button>
+                            )}
+                          </div>
                         </div>
 
                         <p className="text-[10px] text-muted-foreground text-center">
                           By confirming, you agree to our <a href="/terms" target="_blank" className="underline">Cancellation Policy</a> (Full refund if canceled 24hrs before pickup).
                         </p>
                       </div>
-
-                      <DialogFooter>
-                        {shop?.upi_id && (
-                          <Button
-                            className={`w-full font-display gap-2 rounded-xl ${utrNumber.length === 12 ? "bg-primary text-primary-foreground" : ""}`}
-                            size="lg"
-                            onClick={handleBook}
-                            disabled={booking || utrNumber.length !== 12}
-                          >
-                            <CheckCircle2 className="h-4 w-4" />
-                            {booking ? "Confirming..." : utrNumber.length !== 12 ? "Enter UTR to confirm" : "Confirm Booking"}
-                          </Button>
-                        )}
-                      </DialogFooter>
                     </DialogContent>
                   )}
                 </Dialog>
